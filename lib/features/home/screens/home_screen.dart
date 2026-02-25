@@ -176,7 +176,7 @@ class _SharedReadingTab extends ConsumerWidget {
                       padding: const EdgeInsets.only(bottom: 20.0),
                       child: GestureDetector(
                         onTap: () {
-                          context.push('/social/detail/${project.id}', extra: project);
+                          context.push('/home/social/detail/${project.id}', extra: project);
                         },
                         child: Container(
                           decoration: BoxDecoration(
