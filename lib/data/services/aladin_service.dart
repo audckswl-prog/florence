@@ -11,7 +11,7 @@ class AladinService {
   AladinService({required this.ttbKey});
 
   Future<List<Book>> searchBook(String query) async {
-    String urlStr = '$baseUrl/ItemSearch.aspx?ttbkey=$ttbKey&Query=$query&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&Output=js&Version=20131101&OptResult=subInfo';
+    String urlStr = '$baseUrl/ItemSearch.aspx?ttbkey=$ttbKey&Query=$query&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&Output=js&Version=20131101';
     
     if (kIsWeb) {
       // Use corsproxy.io for better stability

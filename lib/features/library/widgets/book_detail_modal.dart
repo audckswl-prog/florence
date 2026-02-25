@@ -27,6 +27,29 @@ class BookDetailModal extends ConsumerStatefulWidget {
 
 class _BookDetailModalState extends ConsumerState<BookDetailModal> {
   bool _isLoading = false;
+  Book? _detailedBook; // Holds detailed book info with page count
+
+  @override
+  void initState() {
+    super.initState();
+    // If page count is missing, fetch detailed info
+    if (widget.book.pageCount == 0) {
+      _fetchDetailedBook();
+    }
+  }
+
+  Future<void> _fetchDetailedBook() async {
+    try {
+      final detailed = await ref.read(bookRepositoryProvider).getBookDetail(widget.book.isbn);
+      if (detailed != null && mounted) {
+        setState(() => _detailedBook = detailed);
+      }
+    } catch (_) {
+      // Silently fail - page count just won't show
+    }
+  }
+
+  Book get _book => _detailedBook ?? widget.book;
 
   Future<void> _saveOrUpdateBook(String status) async {
     final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -39,27 +62,15 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
         // Update existing book
         await ref.read(supabaseRepositoryProvider).updateUserBookStatus(
               userId,
-              widget.book.isbn,
+              _book.isbn,
               status,
             );
         if (mounted) {
           FlorenceToast.show(context, '도서 상태가 수정되었습니다.');
         }
       } else {
-        // Add new book
-        // If pageCount is 0, try to fetch detailed info first
-        Book bookToAdd = widget.book;
-        if (bookToAdd.pageCount == 0) {
-          try {
-             final detailedBook = await ref.read(bookRepositoryProvider).getBookDetail(bookToAdd.isbn);
-             if (detailedBook != null) {
-               bookToAdd = detailedBook;
-             }
-          } catch (e) {
-            // Ignore error and use original book data if fetch fails
-            debugPrint('Failed to fetch detailed book info: $e');
-          }
-        }
+        // Use _book which may have detailed info from async fetch
+        final bookToAdd = _book;
 
         await ref.read(supabaseRepositoryProvider).addUserBook(
               userId: userId,
@@ -78,9 +89,9 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
         final mockUserBook = widget.userBook ?? UserBook(
             id: 'temp',
             userId: userId,
-            isbn: widget.book.isbn,
+            isbn: _book.isbn,
             status: 'read',
-            book: widget.book,
+            book: _book,
             readCount: 1, // default
         );
         
@@ -191,7 +202,7 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: CachedNetworkImage(
-                    imageUrl: widget.book.coverUrl,
+                    imageUrl: _book.coverUrl,
                     width: 100,
                     height: 150,
                     fit: BoxFit.cover,
@@ -204,7 +215,7 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.book.title,
+                      _book.title,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: AppColors.black,
@@ -212,22 +223,22 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      widget.book.author,
+                      _book.author,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: AppColors.grey,
                           ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      widget.book.publisher,
+                      _book.publisher,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.grey,
                           ),
                     ),
-                    if (widget.book.pageCount > 0) ...[
+                    if (_book.pageCount > 0) ...[
                       const SizedBox(height: 4),
                       Text(
-                        '${widget.book.pageCount}쪽',
+                        '${_book.pageCount}쪽',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppColors.burgundy,
                               fontWeight: FontWeight.w600,
@@ -240,7 +251,7 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
             ],
           ),
           const SizedBox(height: 24),
-          AIPromotionCard(book: widget.book),
+          AIPromotionCard(book: _book),
           const SizedBox(height: 32),
           // Action Buttons
           if (_isLoading)
