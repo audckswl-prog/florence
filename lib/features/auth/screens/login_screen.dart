@@ -38,12 +38,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 실패: ${e.toString().replaceAll("Exception: Login failed: ", "")}')),
+          SnackBar(content: Text('로그인 실패: ${_translateAuthError(e.toString())}')),
         );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String _translateAuthError(String error) {
+    if (error.contains('invalid_credentials') || error.contains('Invalid login credentials')) {
+      return '이메일 또는 비밀번호가 올바르지 않습니다.';
+    }
+    if (error.contains('over_email_send_rate_limit') || error.contains('rate limit')) {
+      return '요청 횟수가 초과되었습니다. 잠시 후 다시 시도해주세요.';
+    }
+    if (error.contains('Email not confirmed')) {
+      return '이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.';
+    }
+    return error.replaceAll('Exception: Login failed: ', '').replaceAll('AuthApiException(message: ', '').replaceAll(')', '');
   }
 
   @override

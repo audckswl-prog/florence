@@ -37,6 +37,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
 
+    if (_passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('비밀번호는 6자 이상이어야 합니다.')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -47,19 +54,38 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('회원가입 성공! 로그인해주세요.')),
+          const SnackBar(content: Text('회원가입 성공! 로그인 화면으로 이동합니다.')),
         );
-        context.pop(); // Go back to login
+        context.go('/login');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('가입 실패: ${e.toString().replaceAll("Exception: Sign up failed: ", "")}')),
+          SnackBar(content: Text('가입 실패: ${_translateAuthError(e.toString())}')),
         );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  String _translateAuthError(String error) {
+    if (error.contains('over_email_send_rate_limit') || error.contains('rate limit')) {
+      return '이메일 전송 횟수가 초과되었습니다. 잠시 후 다시 시도해주세요.';
+    }
+    if (error.contains('User already registered') || error.contains('already been registered')) {
+      return '이미 가입된 이메일 주소입니다.';
+    }
+    if (error.contains('invalid_credentials') || error.contains('Invalid login credentials')) {
+      return '이메일 또는 비밀번호가 올바르지 않습니다.';
+    }
+    if (error.contains('Password should be at least')) {
+      return '비밀번호는 6자 이상이어야 합니다.';
+    }
+    if (error.contains('Unable to validate email')) {
+      return '올바른 이메일 주소를 입력해주세요.';
+    }
+    return error.replaceAll('Exception: Sign up failed: ', '').replaceAll('AuthApiException(message: ', '').replaceAll(')', '');
   }
 
   @override
