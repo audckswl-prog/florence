@@ -69,13 +69,16 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               if (members.isEmpty) return const Center(child: Text('멤버 정보를 불러올 수 없습니다.'));
               
               ProjectMember? me;
-              ProjectMember? friend;
+              final others = <ProjectMember>[];
               for (var m in members) {
-                if (m.userId == myId) me = m;
-                else friend = m;
+                if (m.userId == myId) {
+                  me = m;
+                } else {
+                  others.add(m);
+                }
               }
               
-              if (me == null || friend == null) return const Center(child: Text('멤버 정보를 불러올 수 없습니다.'));
+              if (me == null) return const Center(child: Text('멤버 정보를 불러올 수 없습니다.'));
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -83,13 +86,13 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Header Area
-                    _buildHeader(project, me, friend),
+                    _buildHeader(project, me, others),
                     const SizedBox(height: 32),
                     
                     if (project.status == 'pending_books') 
-                      _buildBookSelectionPhase(project, me, friend)
+                      _buildBookSelectionPhase(project, me, others)
                     else 
-                      _buildInProgressPhase(project, me, friend),
+                      _buildInProgressPhase(project, me, others),
                       
                     const SizedBox(height: 32),
                     // Members Section & AI Chat
@@ -108,7 +111,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildHeader(Project project, ProjectMember me, ProjectMember friend) {
+  Widget _buildHeader(Project project, ProjectMember me, List<ProjectMember> others) {
     String subtitle = '준비 중';
     if (project.status == 'in_progress') {
        if (project.endDate != null) {
@@ -134,16 +137,16 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildAvatarPair(me, friend),
-            ],
-          ),
+          _buildAvatarGroup(me, others),
           const SizedBox(height: 20),
           Text(
             project.name,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.charcoal),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${others.length + 1}명 참여 중',
+            style: const TextStyle(fontSize: 13, color: AppColors.grey),
           ),
           const SizedBox(height: 8),
           Container(
@@ -165,42 +168,42 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildAvatarPair(ProjectMember me, ProjectMember friend) {
-    // In a real app we'd fetch the profile_url for both. For now, we use placeholders.
+  Widget _buildAvatarGroup(ProjectMember me, List<ProjectMember> others) {
+    final allMembers = [me, ...others];
+    final displayCount = allMembers.length > 5 ? 5 : allMembers.length;
+    final avatarRadius = displayCount <= 3 ? 24.0 : 20.0;
+    final overlap = avatarRadius * 0.8;
+    final totalWidth = (avatarRadius * 2) * displayCount - overlap * (displayCount - 1);
+    
     return SizedBox(
-      width: 100,
-      height: 60,
+      width: totalWidth,
+      height: avatarRadius * 2,
       child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            left: 0,
-            child: CircleAvatar(
-              radius: 30,
-              backgroundColor: AppColors.ivory,
-              child: const Icon(Icons.person, color: AppColors.grey),
-            ),
-          ),
-          Positioned(
-            right: 0,
+        children: List.generate(displayCount, (index) {
+          return Positioned(
+            left: index * (avatarRadius * 2 - overlap),
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
+                border: Border.all(color: Colors.white, width: 2),
               ),
               child: CircleAvatar(
-                radius: 30,
-                backgroundColor: AppColors.greyLight,
-                child: const Icon(Icons.person, color: Colors.white),
+                radius: avatarRadius,
+                backgroundColor: index == 0 ? AppColors.ivory : AppColors.greyLight,
+                child: Icon(
+                  Icons.person,
+                  color: index == 0 ? AppColors.burgundy : Colors.white,
+                  size: avatarRadius * 0.8,
+                ),
               ),
             ),
-          ),
-        ],
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildBookSelectionPhase(Project project, ProjectMember me, ProjectMember friend) {
+  Widget _buildBookSelectionPhase(Project project, ProjectMember me, List<ProjectMember> others) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -210,12 +213,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         ),
         const SizedBox(height: 16),
         _buildBookSelectionCard(me, isMe: true),
-        const SizedBox(height: 16),
-        _buildBookSelectionCard(friend, isMe: false),
+        ...others.map((other) => Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: _buildBookSelectionCard(other, isMe: false),
+        )),
         const SizedBox(height: 24),
-        const Text(
-          '* 두 사람 모두 책을 선택하면 2주간의 독서 프로젝트가 자동으로 시작됩니다.',
-          style: TextStyle(color: AppColors.grey, fontSize: 12),
+        Text(
+          '* 모든 참여자가 책을 선택하면 2주간의 독서 프로젝트가 자동으로 시작됩니다.',
+          style: const TextStyle(color: AppColors.grey, fontSize: 12),
         ),
       ],
     );
@@ -452,7 +457,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildInProgressPhase(Project project, ProjectMember me, ProjectMember friend) {
+  Widget _buildInProgressPhase(Project project, ProjectMember me, List<ProjectMember> others) {
     if (project.status == 'completed') {
       return Column(
         children: [
@@ -481,9 +486,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       );
     }
 
-    // Default to In Progress -> Needs integration with user_books to get exact pages
-    // For this mockup, we'll assume we fetch the user's book progress.
-    // Actually, we must use a FutureBuilder or Provider to get the specific user_books row.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -493,8 +495,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         ),
         const SizedBox(height: 16),
         _buildProgressCard(me, isMe: true),
-        const SizedBox(height: 16),
-        _buildProgressCard(friend, isMe: false),
+        ...others.map((other) => Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: _buildProgressCard(other, isMe: false),
+        )),
       ],
     );
   }

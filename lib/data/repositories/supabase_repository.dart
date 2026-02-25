@@ -329,10 +329,10 @@ class SupabaseRepository {
 
   // --- Project Methods ---
 
-  Future<String> create1on1Project({
+  Future<String> createProject({
     required String name,
     required String ownerId,
-    required String friendId,
+    required List<String> friendIds,
   }) async {
     try {
       // 1. Create the project with 'pending_books' status
@@ -352,26 +352,30 @@ class SupabaseRepository {
         'reading_status': 'reading',
       });
       
-      // 3. Add friend as member
-      await _client.from('project_members').insert({
-        'project_id': projectId,
-        'user_id': friendId,
-        'role': 'member',
-        'reading_status': 'reading',
-      });
+      // 3. Add all friends as members
+      for (final friendId in friendIds) {
+        await _client.from('project_members').insert({
+          'project_id': projectId,
+          'user_id': friendId,
+          'role': 'member',
+          'reading_status': 'reading',
+        });
+      }
       
-      // 4. Send notification to friend
-      await createNotification(
-        userId: friendId,
-        senderId: ownerId,
-        type: 'project_invite',
-        message: '새로운 함께 읽기 프로젝트에 초대되었습니다!',
-        relatedId: projectId,
-      );
+      // 4. Send notifications to all friends
+      for (final friendId in friendIds) {
+        await createNotification(
+          userId: friendId,
+          senderId: ownerId,
+          type: 'project_invite',
+          message: '새로운 함께 읽기 프로젝트에 초대되었습니다!',
+          relatedId: projectId,
+        );
+      }
 
       return projectId;
     } catch (e) {
-      throw Exception('Error creating 1:1 project: $e');
+      throw Exception('Error creating project: $e');
     }
   }
 

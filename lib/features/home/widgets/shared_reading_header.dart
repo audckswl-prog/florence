@@ -242,10 +242,10 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                         final repository = ref.read(supabaseRepositoryProvider);
                         final name = '함께 읽기'; // We can auto-generate a name
                         
-                        await repository.create1on1Project(
+                        await repository.createProject(
                           name: name,
                           ownerId: myId,
-                          friendId: friendId,
+                          friendIds: [friendId],
                         );
                         
                         if (mounted) {

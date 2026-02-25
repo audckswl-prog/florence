@@ -92,10 +92,10 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
 
       // Note: In the new 1:1 flow, projects are created via friend profile directly.
       // This screen is technically deprecated but kept compilable for reference.
-      await ref.read(supabaseRepositoryProvider).create1on1Project(
+      await ref.read(supabaseRepositoryProvider).createProject(
             name: projectName,
             ownerId: userId,
-            friendId: userId, // Mocked for compile success
+            friendIds: [userId], // Mocked for compile success
           );
       
       // Refresh project list
