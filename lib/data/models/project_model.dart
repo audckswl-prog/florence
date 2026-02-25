@@ -54,6 +54,8 @@ class ProjectMember {
   final int aiQuestionCount;
   final String? receiptUrl;
   final String? selectedIsbn;
+  final String? selectedBookTitle;
+  final String? selectedBookCover;
   final DateTime joinedAt;
 
   ProjectMember({
@@ -65,10 +67,15 @@ class ProjectMember {
     required this.aiQuestionCount,
     this.receiptUrl,
     this.selectedIsbn,
+    this.selectedBookTitle,
+    this.selectedBookCover,
     required this.joinedAt,
   });
 
   factory ProjectMember.fromJson(Map<String, dynamic> json) {
+    // Parse joined book data if available
+    final bookData = json['books'] as Map<String, dynamic>?;
+
     return ProjectMember(
       id: json['id'],
       projectId: json['project_id'],
@@ -78,6 +85,8 @@ class ProjectMember {
       aiQuestionCount: json['ai_question_count'] ?? 0,
       receiptUrl: json['receipt_url'],
       selectedIsbn: json['selected_isbn'],
+      selectedBookTitle: bookData?['title'],
+      selectedBookCover: bookData?['cover_url'],
       joinedAt: DateTime.parse(json['joined_at']),
     );
   }

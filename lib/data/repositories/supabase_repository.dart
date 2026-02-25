@@ -442,10 +442,19 @@ class SupabaseRepository {
 
   Future<List<Map<String, dynamic>>> getProjectMembers(String projectId) async {
     try {
-      final response = await _client.from('project_members').select().eq('project_id', projectId);
+      // Try joining with books table for cover/title info
+      final response = await _client.from('project_members')
+          .select('*, books(*)')
+          .eq('project_id', projectId);
       return response;
     } catch (e) {
-      throw Exception('Error fetching project members: $e');
+      // Fallback: fetch without join if FK relationship is not found
+      try {
+        final response = await _client.from('project_members').select().eq('project_id', projectId);
+        return response;
+      } catch (e2) {
+        throw Exception('Error fetching project members: $e2');
+      }
     }
   }
 

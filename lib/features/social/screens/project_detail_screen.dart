@@ -222,6 +222,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
   Widget _buildBookSelectionCard(ProjectMember member, {required bool isMe}) {
     final hasSelected = member.selectedIsbn != null;
+    final coverUrl = member.selectedBookCover;
+    final bookTitle = member.selectedBookTitle;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -232,6 +234,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       ),
       child: Row(
         children: [
+          // Book cover
           Container(
             width: 50,
             height: 70,
@@ -239,10 +242,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               color: hasSelected ? AppColors.burgundy.withOpacity(0.1) : AppColors.ivory,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(
-              hasSelected ? Icons.book : Icons.help_outline,
-              color: hasSelected ? AppColors.burgundy : AppColors.greyLight,
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: hasSelected && coverUrl != null && coverUrl.isNotEmpty
+                ? Image.network(
+                    coverUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.book, color: AppColors.burgundy),
+                  )
+                : Icon(
+                    hasSelected ? Icons.book : Icons.help_outline,
+                    color: hasSelected ? AppColors.burgundy : AppColors.greyLight,
+                  ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -253,10 +263,19 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   isMe ? '나의 책' : '친구의 책',
                   style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal),
                 ),
+                if (hasSelected && bookTitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    bookTitle,
+                    style: const TextStyle(color: AppColors.charcoal, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
                 const SizedBox(height: 4),
                 Text(
                   hasSelected ? '책을 선택했습니다!' : '아직 고르지 않았어요.',
-                  style: TextStyle(color: hasSelected ? AppColors.burgundy : AppColors.grey, fontSize: 13),
+                  style: TextStyle(color: hasSelected ? AppColors.burgundy : AppColors.grey, fontSize: 12),
                 ),
               ],
             ),
