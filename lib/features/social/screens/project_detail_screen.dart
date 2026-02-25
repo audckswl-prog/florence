@@ -296,7 +296,16 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         ref.invalidate(myProjectsProvider);
         ref.invalidate(projectMembersProvider(projectId));
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('책 선택 실패: $e')));
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('책 선택 실패'),
+              content: Text('$e'),
+              actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+            ),
+          );
+        }
       }
     }
   }
