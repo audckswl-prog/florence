@@ -320,10 +320,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           // Also refresh user books so the book appears in "읽는 중" tab
           ref.invalidate(userBooksProvider);
 
-          showDialog(
+          showDialog<void>(
             context: context,
             barrierDismissible: false,
-            builder: (_) => AlertDialog(
+            builder: (dialogCtx) => AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -358,8 +358,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               actions: [
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
+                    onPressed: () async {
+                      Navigator.pop(dialogCtx);
                       // Refresh everything so the page shows in_progress state
                       ref.invalidate(myProjectsProvider);
                       ref.invalidate(projectMembersProvider(projectId));
@@ -387,10 +387,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         if (mounted) {
           showDialog(
             context: context,
-            builder: (_) => AlertDialog(
+            builder: (errCtx) => AlertDialog(
               title: const Text('책 선택 실패'),
               content: Text('$e'),
-              actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+              actions: [TextButton(onPressed: () => Navigator.pop(errCtx), child: const Text('확인'))],
             ),
           );
         }
@@ -402,7 +402,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     final controller = TextEditingController(text: currentTotal.toString());
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('총 페이지 수 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         content: TextField(
@@ -420,14 +420,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소', style: TextStyle(color: AppColors.grey)),
           ),
           ElevatedButton(
             onPressed: () async {
               final newTotal = int.tryParse(controller.text.trim());
               if (newTotal == null || newTotal <= 0) return;
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               try {
                 await ref.read(supabaseRepositoryProvider).updateUserBookStatus(
                   member.userId, member.selectedIsbn!, 'reading',
