@@ -11,6 +11,7 @@ import '../../../data/models/book_model.dart';
 import '../providers/social_providers.dart';
 import '../../library/screens/book_search_delegate.dart';
 import '../../library/providers/book_providers.dart';
+import '../../library/providers/library_providers.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
   final String projectId;
@@ -316,6 +317,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         ref.invalidate(projectMembersProvider(projectId));
 
         if (mounted && projectStarted) {
+          // Also refresh user books so the book appears in "읽는 중" tab
+          ref.invalidate(userBooksProvider);
+
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -325,10 +329,20 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  const Icon(Icons.celebration, color: AppColors.burgundy, size: 56),
+                  // Duomo icon (static, no animation)
+                  SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: CustomPaint(
+                      painter: FlorenceDomePainter(
+                        progress: 1.0,
+                        color: AppColors.burgundy,
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   const Text(
-                    '프로젝트가 시작되었습니다! 🎉',
+                    '프로젝트가 시작되었습니다!',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
@@ -344,7 +358,13 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               actions: [
                 Center(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Refresh everything so the page shows in_progress state
+                      ref.invalidate(myProjectsProvider);
+                      ref.invalidate(projectMembersProvider(projectId));
+                      setState(() {});
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.burgundy,
                       foregroundColor: Colors.white,
