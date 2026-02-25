@@ -250,8 +250,7 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
                       Text(
                         '${_book.pageCount}쪽',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.burgundy,
-                              fontWeight: FontWeight.w600,
+                              color: AppColors.grey,
                             ),
                       ),
                     ],
