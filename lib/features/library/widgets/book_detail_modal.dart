@@ -224,6 +224,16 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
                             color: AppColors.grey,
                           ),
                     ),
+                    if (widget.book.pageCount > 0) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '${widget.book.pageCount}쪽',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.burgundy,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
                   ],
                 ),
               ),
