@@ -9,102 +9,136 @@ import '../../library/screens/library_stack_view.dart';
 import '../../social/providers/social_providers.dart';
 import '../widgets/shared_reading_header.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.ivory,
+      appBar: AppBar(
         backgroundColor: AppColors.ivory,
-        appBar: AppBar(
-          backgroundColor: AppColors.ivory,
-          elevation: 0,
-          toolbarHeight: 70, // 검색창 공간 확보
-          title: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: GestureDetector(
-              onTap: () {
-                showSearch(
-                  context: context,
-                  delegate: BookSearchDelegate(ref),
-                );
-              },
-              child: Container(
-                height: 44,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.burgundy.withOpacity(0.1), width: 1.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.burgundy.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+        elevation: 0,
+        toolbarHeight: _tabController.index == 0 ? 70 : 56,
+        title: _tabController.index == 0
+            ? Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    showSearch(
+                      context: context,
+                      delegate: BookSearchDelegate(ref),
+                    );
+                  },
+                  child: Container(
+                    height: 44,
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.burgundy.withOpacity(0.1), width: 1.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.burgundy.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(Icons.search, color: AppColors.burgundy, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '제목, 저자 또는 ISBN으로 검색',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.grey.withOpacity(0.7),
+                                fontSize: 14,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search, color: AppColors.burgundy, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '제목, 저자 또는 ISBN으로 검색',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.grey.withOpacity(0.7),
-                            fontSize: 14,
-                          ),
-                    ),
-                  ],
+              )
+            : Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  '친구와 함께 책을 읽고, 서로의 독서 진도를 확인해보세요.',
+                  style: TextStyle(
+                    color: AppColors.grey,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
               ),
-            ),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(50), // 높이 줄임
-            child: Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.only(bottom: 8),
-              child: TabBar(
-                tabAlignment: TabAlignment.center,
-                isScrollable: true,
-                indicator: const CircleTabIndicator(color: AppColors.burgundy, radius: 4), // 점 인디케이터
-                indicatorSize: TabBarIndicatorSize.label,
-                indicatorPadding: const EdgeInsets.only(bottom: -4), // 위치 조정
-                dividerColor: Colors.transparent,
-                labelColor: AppColors.black,
-                unselectedLabelColor: AppColors.grey,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 24), // 간격 조정
-                
-                // 깔끔하고 미니멀한 폰트
-                labelStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Pretendard',
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: 'Pretendard',
-                ),
-                overlayColor: MaterialStateProperty.all(Colors.transparent),
-                tabs: const [
-                  Tab(text: '내 서재'),
-                  Tab(text: '함께한 독서'),
-                ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(50),
+          child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.only(bottom: 8),
+            child: TabBar(
+              controller: _tabController,
+              tabAlignment: TabAlignment.center,
+              isScrollable: true,
+              indicator: const CircleTabIndicator(color: AppColors.burgundy, radius: 4),
+              indicatorSize: TabBarIndicatorSize.label,
+              indicatorPadding: const EdgeInsets.only(bottom: -4),
+              dividerColor: Colors.transparent,
+              labelColor: AppColors.black,
+              unselectedLabelColor: AppColors.grey,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 24),
+              
+              labelStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Pretendard',
               ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                fontFamily: 'Pretendard',
+              ),
+              overlayColor: MaterialStateProperty.all(Colors.transparent),
+              tabs: const [
+                Tab(text: '내 서재'),
+                Tab(text: '함께한 독서'),
+              ],
             ),
           ),
         ),
-        body: const TabBarView(
-          children: [
-            _MyLibraryTab(),
-            _SharedReadingTab(),
-          ],
-        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          _MyLibraryTab(),
+          _SharedReadingTab(),
+        ],
       ),
     );
   }
