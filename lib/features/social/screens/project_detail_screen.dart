@@ -307,13 +307,62 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     if (book != null && mounted) {
       try {
         final myId = Supabase.instance.client.auth.currentUser!.id;
-        await ref.read(supabaseRepositoryProvider).selectProjectBook(
+        final projectStarted = await ref.read(supabaseRepositoryProvider).selectProjectBook(
           projectId: projectId,
           userId: myId,
           book: book,
         );
         ref.invalidate(myProjectsProvider);
         ref.invalidate(projectMembersProvider(projectId));
+
+        if (mounted && projectStarted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  const Icon(Icons.celebration, color: AppColors.burgundy, size: 56),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '프로젝트가 시작되었습니다! 🎉',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '2주 안에 완독에 도전하세요!\n서로의 진도를 확인하며 함께 읽어봐요.',
+                    style: TextStyle(color: AppColors.grey, fontSize: 14, height: 1.5),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+              actions: [
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.burgundy,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    ),
+                    child: const Text('시작하기', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          );
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('책을 선택했습니다! 친구의 선택을 기다리고 있어요.')),
+          );
+        }
       } catch (e) {
         if (mounted) {
           showDialog(

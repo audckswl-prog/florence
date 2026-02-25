@@ -362,7 +362,7 @@ class SupabaseRepository {
     }
   }
 
-  Future<void> selectProjectBook({
+  Future<bool> selectProjectBook({
     required String projectId,
     required String userId,
     required Book book,
@@ -407,7 +407,9 @@ class SupabaseRepository {
             relatedId: projectId,
           );
         }
+        return true; // Project started!
       }
+      return false; // Waiting for the other member
     } catch (e) {
       // Re-throw
       throw Exception('Error selecting project book: $e');
