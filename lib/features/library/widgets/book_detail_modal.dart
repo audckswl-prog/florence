@@ -40,9 +40,19 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
 
   Future<void> _fetchDetailedBook() async {
     try {
+      // 1. Check DB first (books table) - no API call needed
+      final cachedBook = await ref.read(supabaseRepositoryProvider).getBookByIsbn(widget.book.isbn);
+      if (cachedBook != null && cachedBook.pageCount > 0 && mounted) {
+        setState(() => _detailedBook = cachedBook);
+        return;
+      }
+
+      // 2. Not in DB → call Aladin API
       final detailed = await ref.read(bookRepositoryProvider).getBookDetail(widget.book.isbn);
       if (detailed != null && mounted) {
         setState(() => _detailedBook = detailed);
+        // Save to DB so next time we skip the API call
+        await ref.read(supabaseRepositoryProvider).saveBook(detailed);
       }
     } catch (_) {
       // Silently fail - page count just won't show

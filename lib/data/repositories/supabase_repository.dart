@@ -21,6 +21,19 @@ class SupabaseRepository {
     }
   }
 
+  /// Get a book from the books table by ISBN (cached data)
+  Future<Book?> getBookByIsbn(String isbn) async {
+    try {
+      final data = await _client.from('books').select().eq('isbn', isbn).maybeSingle();
+      if (data != null) {
+        return Book.fromJson(data);
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> addUserBook({
     required String userId,
     required Book book,
