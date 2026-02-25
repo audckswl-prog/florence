@@ -371,6 +371,14 @@ class SupabaseRepository {
       // Ensure book exists in global books table
       await saveBook(book);
 
+      // Also add to user_books so progress tracking works
+      await addUserBook(
+        userId: userId,
+        book: book,
+        status: 'reading',
+        totalPages: book.pageCount > 0 ? book.pageCount : null,
+      );
+
       // Update project member's selected book
       await _client.from('project_members').update({
         'selected_isbn': book.isbn,

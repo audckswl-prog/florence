@@ -378,6 +378,60 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     }
   }
 
+  void _editTotalPages(ProjectMember member, int currentTotal) {
+    final controller = TextEditingController(text: currentTotal.toString());
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('총 페이지 수 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: '실제 책 페이지 수 입력',
+            filled: true,
+            fillColor: AppColors.ivory,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소', style: TextStyle(color: AppColors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newTotal = int.tryParse(controller.text.trim());
+              if (newTotal == null || newTotal <= 0) return;
+              Navigator.pop(context);
+              try {
+                await ref.read(supabaseRepositoryProvider).updateUserBookStatus(
+                  member.userId, member.selectedIsbn!, 'reading',
+                  totalPages: newTotal,
+                );
+                setState(() {}); // Rebuild to refresh
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('수정 실패: $e')));
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.burgundy,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('저장'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInProgressPhase(Project project, ProjectMember me, ProjectMember friend) {
     if (project.status == 'completed') {
       return Column(
@@ -432,21 +486,38 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: ref.read(supabaseRepositoryProvider).getUserBooks(member.userId),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         
         final userBooks = snapshot.data!;
-        final userBook = userBooks.firstWhere(
-           (ub) => ub['isbn'] == member.selectedIsbn,
-           orElse: () => {'read_pages': 0, 'total_pages': 300}, // Fallback
-        );
+        Map<String, dynamic>? userBook;
+        try {
+          userBook = userBooks.firstWhere((ub) => ub['isbn'] == member.selectedIsbn);
+        } catch (_) {
+          userBook = null;
+        }
 
-        final int read = userBook['read_pages'] ?? 0;
-        final int total = userBook['total_pages'] ?? 300;
-        final double percent = total > 0 ? read / total : 0.0;
+        final int read = userBook?['read_pages'] ?? 0;
+        // Use book's actual page count from joined books data, or from member model
+        int total = userBook?['total_pages'] ?? 0;
+        if (total == 0) {
+          // Try getting from the joined books data
+          final bookData = userBook?['books'] as Map<String, dynamic>?;
+          total = bookData?['page_count'] ?? 0;
+        }
+        if (total == 0) {
+          // Use member's selected book info
+          total = 300; // Last resort fallback
+        }
+        
+        final double percent = total > 0 ? (read / total).clamp(0.0, 1.0) : 0.0;
         
         if (isMe && !_isDragging) {
            _currentSliderValue = read.toDouble();
         }
+
+        // Book title from member model
+        final bookTitle = isMe ? member.selectedBookTitle : member.selectedBookTitle;
+        final coverUrl = member.selectedBookCover;
 
         return Container(
           padding: const EdgeInsets.all(20),
@@ -459,17 +530,51 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header: title + page count
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    isMe ? '나의 진도' : '친구의 진도',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal),
+                  if (coverUrl != null && coverUrl.isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(coverUrl, width: 32, height: 44, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const SizedBox(width: 32, height: 44)),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isMe ? '나의 진도' : '친구의 진도',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal),
+                        ),
+                        if (bookTitle != null)
+                          Text(bookTitle, style: const TextStyle(fontSize: 12, color: AppColors.grey),
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
                   ),
-                  Text(
-                    '${isMe ? _currentSliderValue.toInt() : read} / $total p',
-                    style: const TextStyle(color: AppColors.burgundy, fontWeight: FontWeight.bold),
-                  ),
+                  // Page count with edit button for "me"
+                  if (isMe)
+                    GestureDetector(
+                      onTap: () => _editTotalPages(member, total),
+                      child: Row(
+                        children: [
+                          Text(
+                            '${_currentSliderValue.toInt()} / $total p',
+                            style: const TextStyle(color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.edit, size: 14, color: AppColors.grey),
+                        ],
+                      ),
+                    )
+                  else
+                    Text(
+                      '$read / $total p',
+                      style: const TextStyle(color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                    ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -503,7 +608,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                            totalPages: total,
                         );
                         ref.invalidate(myProjectsProvider);
-                        // Show motivational snackbar based on progress
                         if (mounted) {
                            if (val >= total) {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('축하합니다! 완독하셨네요!')));
