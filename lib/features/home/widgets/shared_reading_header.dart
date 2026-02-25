@@ -39,6 +39,7 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
       }
 
       await repository.createOrUpdateProfile(myId, nickname);
+      ref.invalidate(profileProvider(myId));
       ref.invalidate(myProfileProvider);
       
       if (mounted) {
