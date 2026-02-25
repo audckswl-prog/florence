@@ -395,7 +395,6 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(myProfileProvider);
-    final friendsAsync = ref.watch(friendsProvider);
     final pendingReqsAsync = ref.watch(pendingFriendRequestsProvider);
     final notisAsync = ref.watch(notificationsProvider);
     
@@ -412,11 +411,12 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
 
         return Column(
           children: [
-            // Top Row: Search Bar & Notification Bell
+            // Top Row: Search Bar + Friends Icon + Notification Bell
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
+                  // Search Bar (shortened)
                   Expanded(
                     child: Container(
                       height: 44,
@@ -457,7 +457,12 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
+                  
+                  // Friends List Icon
+                  _buildFriendsButton(),
+                  
+                  // Notification Bell
                   Stack(
                     children: [
                       IconButton(
@@ -485,66 +490,49 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             
-            // Friends List
-            SizedBox(
-              height: 90,
-              child: friendsAsync.when(
-                data: (friends) {
-                  if (friends.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        '친구를 추가하고 함께 독서를 시작해보세요!',
-                        style: TextStyle(color: AppColors.grey, fontSize: 12),
+            // "책 함께 읽기" Start Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: GestureDetector(
+                onTap: _showCreateProjectSheet,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.burgundy, AppColors.burgundy.withOpacity(0.85)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.burgundy.withOpacity(0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                    );
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: friends.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 16),
-                    itemBuilder: (context, index) {
-                      final friend = friends[index];
-                      // Determine profile details
-                      final myId = Supabase.instance.client.auth.currentUser!.id;
-                      final isRequester = friend['requester_id'] == myId;
-                      final friendProfile = isRequester ? friend['receiver'] : friend['requester'];
-                      
-                      return GestureDetector(
-                        onTap: () => _showFriendProfile(context, friend),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
-                              ),
-                              child: CircleAvatar(
-                                radius: 26,
-                                backgroundColor: Colors.white,
-                                backgroundImage: friendProfile['profile_url'] != null ? NetworkImage(friendProfile['profile_url']) : null,
-                                child: friendProfile['profile_url'] == null ? const Icon(Icons.person, color: AppColors.grey) : null,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              friendProfile['nickname'] ?? '이름 없음',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: AppColors.charcoal,
-                                    fontSize: 11,
-                                  ),
-                            ),
-                          ],
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.menu_book_rounded, color: Colors.white, size: 22),
+                      SizedBox(width: 10),
+                      Text(
+                        '책 함께 읽기',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          fontFamily: 'Pretendard',
                         ),
-                      );
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 14),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -552,6 +540,290 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('Error: $e')),
+    );
+  }
+
+  Widget _buildFriendsButton() {
+    final friendsAsync = ref.watch(friendsProvider);
+    
+    return friendsAsync.when(
+      data: (friends) {
+        return Stack(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.people_alt_outlined, color: AppColors.charcoal, size: 26),
+              onPressed: () => _showFriendsList(friends),
+            ),
+            if (friends.isNotEmpty)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: AppColors.burgundy,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    friends.length.toString(),
+                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+      loading: () => const IconButton(
+        icon: Icon(Icons.people_alt_outlined, color: AppColors.greyLight, size: 26),
+        onPressed: null,
+      ),
+      error: (_, __) => const IconButton(
+        icon: Icon(Icons.people_alt_outlined, color: AppColors.greyLight, size: 26),
+        onPressed: null,
+      ),
+    );
+  }
+
+  void _showFriendsList(List<Map<String, dynamic>> friends) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.ivory,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '내 친구',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.charcoal,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (friends.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(
+                      child: Text('아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: AppColors.grey),
+                      ),
+                    ),
+                  )
+                else
+                  ...friends.map((friend) {
+                    final myId = Supabase.instance.client.auth.currentUser!.id;
+                    final isRequester = friend['requester_id'] == myId;
+                    final profile = isRequester ? friend['receiver'] : friend['requester'];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.white,
+                        backgroundImage: profile['profile_url'] != null ? NetworkImage(profile['profile_url']) : null,
+                        child: profile['profile_url'] == null ? const Icon(Icons.person, color: AppColors.grey) : null,
+                      ),
+                      title: Text(
+                        profile['nickname'] ?? '이름 없음',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    );
+                  }),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCreateProjectSheet() {
+    final friends = ref.read(friendsProvider).valueOrNull ?? [];
+    final selectedFriendIds = <String>{};
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.ivory,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 24, right: 24, top: 24,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '책 함께 읽기',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.charcoal,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '함께 읽을 친구를 선택하세요',
+                      style: TextStyle(color: AppColors.grey, fontSize: 14),
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    if (friends.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '친구가 없습니다.\n먼저 닉네임 검색으로 친구를 추가해주세요!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.grey),
+                          ),
+                        ),
+                      )
+                    else ...[
+                      Container(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height * 0.3,
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: friends.length,
+                          itemBuilder: (context, index) {
+                            final friend = friends[index];
+                            final myId = Supabase.instance.client.auth.currentUser!.id;
+                            final isRequester = friend['requester_id'] == myId;
+                            final profile = isRequester ? friend['receiver'] : friend['requester'];
+                            final friendId = isRequester ? friend['receiver_id'] : friend['requester_id'];
+                            final isSelected = selectedFriendIds.contains(friendId);
+                            
+                            return GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  if (isSelected) {
+                                    selectedFriendIds.remove(friendId);
+                                  } else {
+                                    selectedFriendIds.add(friendId);
+                                  }
+                                });
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppColors.burgundy.withOpacity(0.08) : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected ? AppColors.burgundy.withOpacity(0.3) : Colors.transparent,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: AppColors.ivory,
+                                      backgroundImage: profile['profile_url'] != null ? NetworkImage(profile['profile_url']) : null,
+                                      child: profile['profile_url'] == null ? const Icon(Icons.person, color: AppColors.grey, size: 20) : null,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        profile['nickname'] ?? '이름 없음',
+                                        style: TextStyle(
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                          color: AppColors.charcoal,
+                                        ),
+                                      ),
+                                    ),
+                                    Icon(
+                                      isSelected ? Icons.check_circle : Icons.circle_outlined,
+                                      color: isSelected ? AppColors.burgundy : AppColors.greyLight,
+                                      size: 24,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: selectedFriendIds.isEmpty ? null : () async {
+                            try {
+                              final myId = Supabase.instance.client.auth.currentUser!.id;
+                              final repository = ref.read(supabaseRepositoryProvider);
+                              
+                              await repository.createProject(
+                                name: '함께 읽기',
+                                ownerId: myId,
+                                friendIds: selectedFriendIds.toList(),
+                              );
+                              
+                              ref.invalidate(myProjectsProvider);
+                              ref.invalidate(myProjectsWithMembersProvider);
+                              
+                              if (mounted) {
+                                Navigator.pop(ctx);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('함께 읽기 프로젝트가 시작되었습니다! 🎉')),
+                                );
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('오류: $e')),
+                                );
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.burgundy,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: AppColors.greyLight.withOpacity(0.3),
+                            disabledForegroundColor: AppColors.grey,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: Text(
+                            selectedFriendIds.isEmpty
+                                ? '친구를 선택해주세요'
+                                : '${selectedFriendIds.length}명과 함께 읽기 시작',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
