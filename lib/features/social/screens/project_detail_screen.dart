@@ -628,9 +628,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                            totalPages: total,
                         );
                         ref.invalidate(myProjectsProvider);
+                        ref.invalidate(projectMembersProvider(member.projectId));
                         if (mounted) {
                            if (val >= total) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('축하합니다! 완독하셨네요!')));
+                              // 완독 시 서재/프로젝트 갤러리 provider 무효화
+                              ref.invalidate(userBooksProvider);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('🎉 축하합니다! 완독하셨네요! 읽은 책이 서재에 자동으로 추가됩니다.'),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
                            } else {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('진도가 저장되었습니다. 화이팅!')));
                            }

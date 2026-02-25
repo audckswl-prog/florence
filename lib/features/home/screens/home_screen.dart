@@ -168,7 +168,7 @@ class _SharedReadingTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final projectsAsync = ref.watch(myProjectsProvider);
+    final projectsAsync = ref.watch(myProjectsWithMembersProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -180,8 +180,8 @@ class _SharedReadingTab extends ConsumerWidget {
           const SizedBox(height: 16),
           Expanded(
             child: projectsAsync.when(
-              data: (projects) {
-                if (projects.isEmpty) {
+              data: (projectsWithMembers) {
+                if (projectsWithMembers.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -201,11 +201,21 @@ class _SharedReadingTab extends ConsumerWidget {
                   );
                 }
 
+                // 완료된 프로젝트를 상단, 진행 중을 하단에 표시
+                final completed = projectsWithMembers.where((p) => p.project.status == 'completed').toList();
+                final active = projectsWithMembers.where((p) => p.project.status != 'completed').toList();
+                final sorted = [...completed, ...active];
+
                 return ListView.builder(
                   padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                  itemCount: projects.length,
+                  itemCount: sorted.length,
                   itemBuilder: (context, index) {
-                    final project = projects[index];
+                    final pw = sorted[index];
+                    final project = pw.project;
+                    final isCompleted = project.status == 'completed';
+                    final coverUrl = pw.firstBookCover;
+                    final bookTitle = pw.firstBookTitle;
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 20.0),
                       child: GestureDetector(
@@ -218,105 +228,152 @@ class _SharedReadingTab extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04), // Soft elevation
+                                color: Colors.black.withOpacity(0.04),
                                 blurRadius: 16,
                                 offset: const Offset(0, 4),
                               ),
                             ],
-                            border: Border.all(color: Colors.black.withOpacity(0.02)),
+                            border: Border.all(
+                              color: isCompleted 
+                                  ? AppColors.burgundy.withOpacity(0.15) 
+                                  : Colors.black.withOpacity(0.02),
+                            ),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(20),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Column(
                               children: [
-                                // Left: Book Cover (if available via relationships in real app, placeholder for now)
-                                Container(
-                                  width: 65,
-                                  height: 95,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.ivory,
-                                    borderRadius: BorderRadius.circular(6),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 6,
-                                        offset: const Offset(2, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Center(
-                                    child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                
-                                // Right: Info
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        project.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                          color: AppColors.black,
-                                          fontFamily: 'Pretendard',
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 6),
-                                      if (project.description != null && project.description!.isNotEmpty) ...[
-                                        Text(
-                                          project.description!,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: AppColors.grey.withOpacity(0.9),
-                                            fontSize: 12,
-                                            height: 1.4,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                      ],
-                                      
-                                      // View Project Info
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.ivory,
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                const Icon(Icons.people_alt, size: 12, color: AppColors.burgundy),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  project.status == 'in_progress' ? '진행 중' :
-                                                  project.status == 'pending_books' ? '책 선택 중' :
-                                                  project.status == 'completed' ? '완료됨' : '진행 중',
-                                                  style: const TextStyle(fontSize: 10, color: AppColors.burgundy, fontWeight: FontWeight.bold),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          const Text(
-                                            '상세보기 >',
-                                            style: TextStyle(
-                                              color: AppColors.greyLight,
-                                              fontSize: 11,
-                                            ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Left: Book Cover
+                                    Container(
+                                      width: 65,
+                                      height: 95,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.ivory,
+                                        borderRadius: BorderRadius.circular(6),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 6,
+                                            offset: const Offset(2, 2),
                                           ),
                                         ],
                                       ),
-                                    ],
-                                  ),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: coverUrl != null && coverUrl.isNotEmpty
+                                          ? Image.network(
+                                              coverUrl,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => const Center(
+                                                child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
+                                              ),
+                                            )
+                                          : const Center(
+                                              child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
+                                            ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    
+                                    // Right: Info
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            project.name,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              color: AppColors.black,
+                                              fontFamily: 'Pretendard',
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          if (bookTitle != null) ...[
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              bookTitle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: AppColors.grey.withOpacity(0.9),
+                                                fontSize: 12,
+                                                height: 1.4,
+                                              ),
+                                            ),
+                                          ],
+                                          const SizedBox(height: 12),
+                                          
+                                          // Status badge
+                                          Row(
+                                            children: [
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: isCompleted 
+                                                      ? AppColors.burgundy.withOpacity(0.1) 
+                                                      : AppColors.ivory,
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      isCompleted ? Icons.check_circle : Icons.people_alt,
+                                                      size: 12, 
+                                                      color: AppColors.burgundy,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      project.status == 'in_progress' ? '진행 중' :
+                                                      project.status == 'pending_books' ? '책 선택 중' :
+                                                      project.status == 'completed' ? '완료됨' : '진행 중',
+                                                      style: const TextStyle(fontSize: 10, color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Text(
+                                                isCompleted ? '티켓 보기 >' : '상세보기 >',
+                                                style: TextStyle(
+                                                  color: isCompleted ? AppColors.burgundy : AppColors.greyLight,
+                                                  fontSize: 11,
+                                                  fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                // 완료된 프로젝트: 독서 티켓 보기 버튼
+                                if (isCompleted) ...[
+                                  const SizedBox(height: 16),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        context.push(
+                                          '/home/social/detail/${project.id}/receipt',
+                                          extra: {'project': project, 'rate': 1.0},
+                                        );
+                                      },
+                                      icon: const Icon(Icons.confirmation_number_outlined, size: 16),
+                                      label: const Text('독서 티켓 확인하기'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppColors.burgundy,
+                                        side: BorderSide(color: AppColors.burgundy.withOpacity(0.3)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),

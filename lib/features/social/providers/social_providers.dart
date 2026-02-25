@@ -65,3 +65,55 @@ final myProfileProvider = FutureProvider.autoDispose<Profile?>((ref) async {
   if (userId == null) return null;
   return ref.watch(profileProvider(userId).future);
 });
+
+/// 프로젝트 + 멤버(선택 도서 포함) 통합 데이터
+class ProjectWithMembers {
+  final Project project;
+  final List<ProjectMember> members;
+  
+  ProjectWithMembers({required this.project, required this.members});
+  
+  /// 현재 사용자의 멤버 정보
+  ProjectMember? getMe(String userId) =>
+      members.where((m) => m.userId == userId).firstOrNull;
+  
+  /// 프로젝트에서 선택된 책 커버 중 첫 번째
+  String? get firstBookCover {
+    for (final m in members) {
+      if (m.selectedBookCover != null && m.selectedBookCover!.isNotEmpty) {
+        return m.selectedBookCover;
+      }
+    }
+    return null;
+  }
+  
+  /// 프로젝트에서 선택된 책 제목 중 첫 번째
+  String? get firstBookTitle {
+    for (final m in members) {
+      if (m.selectedBookTitle != null && m.selectedBookTitle!.isNotEmpty) {
+        return m.selectedBookTitle;
+      }
+    }
+    return null;
+  }
+}
+
+final myProjectsWithMembersProvider = FutureProvider.autoDispose<List<ProjectWithMembers>>((ref) async {
+  final repository = ref.watch(supabaseRepositoryProvider);
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+  if (userId == null) return [];
+
+  final projectData = await repository.getMyProjects(userId);
+  final projects = projectData.map((json) {
+    final projectJson = json['projects'] as Map<String, dynamic>;
+    return Project.fromJson(projectJson);
+  }).toList();
+
+  final result = <ProjectWithMembers>[];
+  for (final project in projects) {
+    final memberData = await repository.getProjectMembers(project.id);
+    final members = memberData.map((json) => ProjectMember.fromJson(json)).toList();
+    result.add(ProjectWithMembers(project: project, members: members));
+  }
+  return result;
+});

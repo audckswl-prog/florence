@@ -544,15 +544,40 @@ class SupabaseRepository {
        }
        
        if (allCompleted) {
+         // 1. 프로젝트 상태를 completed로 변경 + end_date 기록
          await _client.from('projects').update({
            'status': 'completed',
+           'end_date': DateTime.now().toIso8601String(),
          }).eq('id', projectId);
          
+         // 2. 각 멤버의 선택 도서를 모든 멤버의 서재에 'read' 상태로 추가
+         // (자기 책은 이미 있지만 upsert로 안전하게 처리)
+         final isbns = <String>{};
+         for (var m in members) {
+           final isbn = m['selected_isbn'] as String?;
+           if (isbn != null) isbns.add(isbn);
+         }
+         
+         for (final isbn in isbns) {
+           final book = await getBookByIsbn(isbn);
+           if (book != null) {
+             for (var m in members) {
+               await addUserBook(
+                 userId: m['user_id'],
+                 book: book,
+                 status: 'read',
+                 totalPages: book.pageCount > 0 ? book.pageCount : null,
+               );
+             }
+           }
+         }
+         
+         // 3. 프로젝트 성공 알림
          for (var m in members) {
            await createNotification(
              userId: m['user_id'],
              type: 'project_success',
-             message: '프로젝트 성공! 독서 티켓이 발급되었습니다.',
+             message: '프로젝트 성공! 독서 티켓이 발급되었습니다. 읽은 책이 서재에 추가되었어요.',
              relatedId: projectId,
            );
          }

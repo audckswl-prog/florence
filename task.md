@@ -59,7 +59,7 @@
     - [x] Gemini Chat Floating button/screen linked to project.
     - [x] Increment `ai_question_count` on message send.
 - [x] **Result & Receipt Generation**
-    - [ ] Save to 'My Storage' & Project Gallery.
+    - [x] Save to 'My Storage' & Project Gallery.
 
 ## Phase 11: Library Physicality & Status Management
 - [x] **Database Schema Update** (`read_pages`, `total_pages`, `read_count`)
