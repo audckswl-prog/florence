@@ -51,8 +51,8 @@ void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.burgundy,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       minimumSize: Size.zero,
                       elevation: 0,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
