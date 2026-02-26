@@ -3,6 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/models/project_model.dart';
 import '../../../data/models/profile_model.dart';
 import '../../library/providers/book_providers.dart';
+import 'package:flutter/material.dart';
+
+final sharedReadingSearchFocusNodeProvider = Provider<FocusNode>((ref) {
+  final node = FocusNode();
+  ref.onDispose(() => node.dispose());
+  return node;
+});
 
 final myProjectsProvider = FutureProvider.autoDispose<List<Project>>((ref) async {
   final repository = ref.watch(supabaseRepositoryProvider);

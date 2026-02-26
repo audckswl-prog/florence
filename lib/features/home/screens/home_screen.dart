@@ -43,11 +43,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       appBar: AppBar(
         backgroundColor: AppColors.ivory,
         elevation: 0,
-        toolbarHeight: _tabController.index == 0 ? 70 : 56,
-        title: _tabController.index == 0
-            ? Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: GestureDetector(
+        toolbarHeight: 70,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: _tabController.index == 0
+              ? GestureDetector(
                   onTap: () {
                     showSearch(
                       context: context,
@@ -84,9 +84,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       ],
                     ),
                   ),
-                ),
-              )
-            : const SizedBox.shrink(),
+                )
+              : const SharedReadingAppBarTitle(),
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Container(

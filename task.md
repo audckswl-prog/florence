@@ -128,3 +128,9 @@
 - [x] **Friends Bottom Sheet Refinement**
   - [x] Enforce minimum height so sheet slides up sufficiently even with few friends
   - [x] Match friend list item layout accurately with the provided design
+
+## Phase 20: Search Bar Alignment
+- [x] **Unify AppBar Search Row**
+  - [x] Move Shared Reading search and icons to `HomeScreen` AppBar
+  - [x] Split `SharedReadingHeader` into `SharedReadingAppBarTitle` and `SharedReadingBodyHeader` (merged logic)
+  - [x] Keep search focus synced using a global FocusNode
