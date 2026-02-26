@@ -102,27 +102,34 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Hero(
                       tag: 'ticket_${book.isbn}',
-                      child: aiDataAsync.when(
-                        data: (aiData) => _TicketWidget(
-                          userBook: widget.userBook,
-                          quote: widget.quote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: aiData.nationalityCode,
-                          nationalityName: aiData.nationalityName,
-                          publicationYear: aiData.publicationYear,
+                        child: aiDataAsync.when(
+                          data: (aiData) => _TicketWidget(
+                            userBook: widget.userBook,
+                            quote: widget.quote,
+                            readCountThisYear: readCountThisYear,
+                            nationalityCode: aiData.nationalityCode,
+                            nationalityName: aiData.nationalityName,
+                            publicationYear: aiData.publicationYear != '연도 미상' 
+                                ? aiData.publicationYear 
+                                : book.publicationYear,
+                          ),
+                          loading: () => _TicketWidget(
+                            userBook: widget.userBook,
+                            quote: widget.quote,
+                            readCountThisYear: readCountThisYear,
+                            nationalityCode: 'UN',
+                            nationalityName: '분석 중',
+                            publicationYear: book.publicationYear,
+                          ),
+                          error: (e, st) => _TicketWidget(
+                            userBook: widget.userBook,
+                            quote: widget.quote,
+                            readCountThisYear: readCountThisYear,
+                            nationalityCode: 'UN',
+                            nationalityName: '알 수 없음',
+                            publicationYear: book.publicationYear,
+                          ),
                         ),
-                        loading: () => const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                        error: (e, st) => _TicketWidget(
-                          userBook: widget.userBook,
-                          quote: widget.quote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: 'UN',
-                          nationalityName: '알 수 없음',
-                          publicationYear: '연도 미상',
-                        ),
-                      ),
                     ),
                   ),
                 ),

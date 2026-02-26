@@ -138,8 +138,8 @@
   - [x] Match button padding and radius (5) to the design guideline precisely
 
 ## Phase 21: Book Data Refinement (Year & Stats)
-- [ ] **Publication Year Display**
-  - [ ] Extract year from `pubDate` and display on `ProjectReceiptScreen`
-- [ ] **My Page Genre Mapping**
-  - [ ] Implement 7-category mapping logic for Reading Statistics
-  - [ ] Update `MyPageScreen` genre distribution chart
+- [x] **Publication Year Display**
+  - [x] Extract year from `pubDate` and display on `ProjectReceiptScreen`
+- [x] **My Page Genre Mapping**
+  - [x] Implement 7-category mapping logic for Reading Statistics
+  - [x] Update `MyPageScreen` genre distribution chart
