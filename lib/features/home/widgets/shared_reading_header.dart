@@ -51,10 +51,11 @@ void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.burgundy,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       minimumSize: Size.zero,
                       elevation: 0,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: const Text('+친구 추가하기', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ),
