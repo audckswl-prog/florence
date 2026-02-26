@@ -645,7 +645,7 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
   }
 
   void _showCreateProjectSheet() {
-    final friends = ref.read(friendsProvider).valueOrNull ?? [];
+    final friends = ref.read(friendsProvider).value ?? [];
     final selectedFriendIds = <String>{};
     
     showModalBottomSheet(
