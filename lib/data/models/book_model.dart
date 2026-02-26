@@ -9,6 +9,13 @@ class Book {
   final String categoryName;
   final String link;
   final int pageCount;
+  
+  String get publicationYear {
+    if (pubDate.length >= 4) {
+      return pubDate.substring(0, 4);
+    }
+    return '연도 미상';
+  }
 
   Book({
     required this.title,

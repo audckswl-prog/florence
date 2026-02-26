@@ -134,6 +134,7 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
                    // Date & Project
                    _buildRow('DATE', DateFormat('yyyy.MM.dd HH:mm').format(DateTime.now())),
                    _buildRow('PROJECT', widget.project.name),
+                   if (_book != null) _buildRow('YEAR', _book!.publicationYear),
                    const SizedBox(height: 16),
                    
                    // Book Info

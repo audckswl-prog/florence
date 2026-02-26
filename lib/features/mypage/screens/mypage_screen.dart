@@ -209,14 +209,23 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 });
 
                 // 2. Calculate Genre Stats
+                String getSimpleCategory(String rawCategory) {
+                  if (rawCategory.contains('소설')) return '소설';
+                  if (rawCategory.contains('경제') || rawCategory.contains('경영')) return '경제·경영';
+                  if (rawCategory.contains('자기계발')) return '자기계발';
+                  if (rawCategory.contains('에세이') || rawCategory.contains('시')) return '에세이·시';
+                  if (rawCategory.contains('인문') || rawCategory.contains('사회') || rawCategory.contains('역사')) return '인문·사회';
+                  if (rawCategory.contains('IT') || rawCategory.contains('컴퓨터') || rawCategory.contains('과학')) return 'IT·과학';
+                  if (rawCategory.contains('인물') || rawCategory.contains('전기') || rawCategory.contains('자서전')) return '인물·전기';
+                  return '기타 도서';
+                }
+
                 final genreCounts = <String, int>{};
                 int totalRead = 0;
                 for (var book in books) {
                   if (book.status == 'read') {
                     totalRead++;
-                    final category = book.book.categoryName.split('>').lastOrNull?.trim() ?? '기타';
-                     // Simplify category name
-                    final simpleCategory = category.split(' ').first;
+                    final simpleCategory = getSimpleCategory(book.book.categoryName);
                     genreCounts[simpleCategory] = (genreCounts[simpleCategory] ?? 0) + 1;
                   }
                 }

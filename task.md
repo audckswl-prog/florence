@@ -135,4 +135,11 @@
   - [x] Split `SharedReadingHeader` into `SharedReadingAppBarTitle` and `SharedReadingBodyHeader` (merged logic)
   - [x] Keep search focus synced using a global FocusNode
 - [x] **Friend Button Polish**
-  - [x] Increase padding and round corners of "+친구 추가하기" button for better balance
+  - [x] Match button padding and radius (5) to the design guideline precisely
+
+## Phase 21: Book Data Refinement (Year & Stats)
+- [ ] **Publication Year Display**
+  - [ ] Extract year from `pubDate` and display on `ProjectReceiptScreen`
+- [ ] **My Page Genre Mapping**
+  - [ ] Implement 7-category mapping logic for Reading Statistics
+  - [ ] Update `MyPageScreen` genre distribution chart
