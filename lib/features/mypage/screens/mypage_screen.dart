@@ -2,19 +2,65 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
-// import '../../../core/widgets/neumorphic_container.dart';
 import '../../../core/widgets/florence_loader.dart';
+import '../../../core/utils/florence_toast.dart';
+import '../../../data/repositories/supabase_repository.dart';
 import '../../library/providers/library_providers.dart';
+import '../../library/providers/book_providers.dart';
+import '../../social/providers/social_providers.dart';
 
-class MyPageScreen extends ConsumerWidget {
+class MyPageScreen extends ConsumerStatefulWidget {
   const MyPageScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyPageScreen> createState() => _MyPageScreenState();
+}
+
+class _MyPageScreenState extends ConsumerState<MyPageScreen> {
+  bool _isUploading = false;
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, maxWidth: 800, maxHeight: 800);
+    
+    if (pickedFile == null) return;
+
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      await ref.read(supabaseRepositoryProvider).uploadProfileImage(user.id, pickedFile.path);
+      // Invalidate the profile provider so it re-fetches the new image
+      ref.invalidate(myProfileProvider);
+      ref.invalidate(profileProvider(user.id));
+      if (mounted) {
+        FlorenceToast.show(context, '프로필 사진이 변경되었습니다.');
+      }
+    } catch (e) {
+      if (mounted) {
+        FlorenceToast.show(context, '프로필 변경 실패: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
     final email = user?.email ?? '로그인이 필요합니다';
     final booksAsync = ref.watch(userBooksProvider);
+    final profileAsync = ref.watch(myProfileProvider);
 
     return Scaffold(
       backgroundColor: AppColors.ivory,
@@ -49,37 +95,79 @@ class MyPageScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundColor: AppColors.burgundy,
-                    child: Icon(Icons.person, size: 32, color: Colors.white),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          email,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+              child: profileAsync.when(
+                data: (profile) {
+                  final nickname = profile?.nickname ?? '닉네임 미설정';
+                  final profileUrl = profile?.profileUrl;
+                  
+                  return Row(
+                    children: [
+                      GestureDetector(
+                        onTap: _isUploading ? null : _pickAndUploadImage,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: AppColors.burgundy,
+                              backgroundImage: profileUrl != null ? NetworkImage(profileUrl) : null,
+                              child: profileUrl == null ? const Icon(Icons.person, size: 32, color: Colors.white) : null,
+                            ),
+                            if (_isUploading)
+                              const CircularProgressIndicator(color: Colors.white),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.charcoal,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.camera_alt, size: 12, color: Colors.white),
                               ),
-                          overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '오늘도 즐거운 독서 되세요!',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.grey,
-                              ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nickname,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: AppColors.charcoal,
+                                  ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              email,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.grey,
+                                    fontSize: 13,
+                                  ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '오늘도 즐거운 독서 되세요!',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.greyLight,
+                                  ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => const Text('프로필을 불러올 수 없습니다.'),
               ),
             ),
             const SizedBox(height: 16),

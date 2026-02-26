@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cross_file/cross_file.dart';
 import '../models/book_model.dart';
@@ -212,6 +213,30 @@ class SupabaseRepository {
       return (response as List).map((json) => Profile.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Error searching profiles: $e');
+    }
+  }
+
+  Future<void> uploadProfileImage(String userId, String filePath) async {
+    try {
+      final file = File(filePath);
+      final fileExt = file.path.split('.').last;
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+      final storagePath = '$userId/$fileName';
+
+      // Upload to 'avatars' bucket
+      await _client.storage.from('avatars').upload(
+        storagePath,
+        file,
+        fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+      );
+
+      // Get public URL
+      final publicUrl = _client.storage.from('avatars').getPublicUrl(storagePath);
+
+      // Update profile
+      await _client.from('profiles').update({'profile_url': publicUrl}).eq('id', userId);
+    } catch (e) {
+      throw Exception('Error uploading profile image: $e');
     }
   }
 

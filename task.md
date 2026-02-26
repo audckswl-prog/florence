@@ -108,3 +108,10 @@
 ## Phase 16: UI/UX Refinement (Memo Screen)
 - [x] **Adjust Top Spacing**
   - [x] Reduce excessive top margin above the informational banner
+
+## Phase 17: Profile & Friends Refinement
+- [x] **My Page Profile**
+  - [x] Add explicit nickname display and editable profile image (upload to Supabase)
+- [x] **Friends UI & Invitation**
+  - [x] Redesign Friends bottom sheet with "+친구 추가하기" button
+  - [x] Show empty friends warning and automatically open friends list when clicking "책 함께 읽기" without friends

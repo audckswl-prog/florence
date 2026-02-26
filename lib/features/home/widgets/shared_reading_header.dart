@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/florence_toast.dart';
 import '../../../data/repositories/supabase_repository.dart';
 import '../../social/providers/social_providers.dart';
 import '../../library/providers/book_providers.dart';
@@ -16,6 +17,7 @@ class SharedReadingHeader extends ConsumerStatefulWidget {
 
 class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _nicknameController = TextEditingController();
   bool _isSavingNickname = false;
 
@@ -499,6 +501,7 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                           Expanded(
                             child: TextField(
                               controller: _searchController,
+                              focusNode: _searchFocusNode,
                               decoration: InputDecoration(
                                 hintText: '닉네임으로 친구 추가',
                                 hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -638,14 +641,34 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '내 친구 (${friends.length})',
-                  style: const TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.charcoal,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '내 친구 (${friends.length}명)',
+                      style: const TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.charcoal,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _searchFocusNode.requestFocus();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.burgundy,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        minimumSize: Size.zero,
+                        elevation: 0,
+                      ),
+                      child: const Text('+친구 추가하기', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 if (friends.isEmpty)
@@ -685,6 +708,13 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
 
   void _showCreateProjectSheet() {
     final friends = ref.read(friendsProvider).value ?? [];
+    
+    if (friends.isEmpty) {
+      _showFriendsList(friends);
+      FlorenceToast.show(context, '친구를 추가하고 이용할 수 있습니다.');
+      return;
+    }
+
     final selectedFriendIds = <String>{};
     
     showModalBottomSheet(
