@@ -19,7 +19,7 @@ class FlorenceToast {
 
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: 80.0,
+        top: 55.0,
         left: 0,
         right: 0,
         child: Align(

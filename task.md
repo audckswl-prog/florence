@@ -115,3 +115,9 @@
 - [x] **Friends UI & Invitation**
   - [x] Redesign Friends bottom sheet with "+친구 추가하기" button
   - [x] Show empty friends warning and automatically open friends list when clicking "책 함께 읽기" without friends
+
+## Phase 18: Layout & Notification Refinement
+- [x] **Adjust Memo Tab Banner**
+  - [x] Match Library tab's padding and style
+- [x] **Reposition Toast Notification**
+  - [x] Move FlorenceToast higher to avoid modal overlap

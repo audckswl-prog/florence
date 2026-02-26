@@ -21,19 +21,11 @@ class MemoScreen extends ConsumerWidget {
         elevation: 0,
         toolbarHeight: 0,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
+          preferredSize: const Size.fromHeight(70),
           child: Container(
             width: double.infinity,
             alignment: Alignment.center,
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.burgundy.withOpacity(0.1),
-                  width: 1,
-                ),
-              ),
-            ),
+            padding: const EdgeInsets.only(top: 10, bottom: 20, left: 24, right: 24),
             child: Text(
               '이 곳에서 메모를 작성하고\n그동안 메모한 것들을 확인하실 수 있습니다.',
               textAlign: TextAlign.center,
