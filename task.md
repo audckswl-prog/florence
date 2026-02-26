@@ -121,3 +121,10 @@
   - [x] Match Library tab's padding and style
 - [x] **Reposition Toast Notification**
   - [x] Move FlorenceToast higher to avoid modal overlap
+
+## Phase 19: UI Polish (My Page & Friends Sheet)
+- [x] **My Page Nickname**
+  - [x] Update nickname display to "닉네임 : [Name]" with different font styles
+- [x] **Friends Bottom Sheet Refinement**
+  - [x] Enforce minimum height so sheet slides up sufficiently even with few friends
+  - [x] Match friend list item layout accurately with the provided design

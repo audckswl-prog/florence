@@ -630,13 +630,17 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.ivory,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
+          child: Container(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            padding: const EdgeInsets.only(left: 24, right: 24, top: 32, bottom: 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -670,7 +674,7 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 32),
                 if (friends.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
@@ -686,15 +690,33 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                     final myId = Supabase.instance.client.auth.currentUser!.id;
                     final isRequester = friend['requester_id'] == myId;
                     final profile = isRequester ? friend['receiver'] : friend['requester'];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.white,
-                        backgroundImage: profile['profile_url'] != null ? NetworkImage(profile['profile_url']) : null,
-                        child: profile['profile_url'] == null ? const Icon(Icons.person, color: AppColors.grey) : null,
-                      ),
-                      title: Text(
-                        profile['nickname'] ?? '이름 없음',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: profile['profile_url'] != null
+                                ? ClipOval(child: Image.network(profile['profile_url'], fit: BoxFit.cover))
+                                : const Icon(Icons.person, color: AppColors.grey, size: 28),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              profile['nickname'] ?? '이름 없음',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.charcoal,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     );
                   }),
