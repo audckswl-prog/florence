@@ -104,3 +104,7 @@
 ## Phase 15: UI/UX Refinement (Toast Overlay)
 - [x] **Adjust Toast Position**
   - [x] Move FlorenceToast to top of screen to avoid modal overlap
+
+## Phase 16: UI/UX Refinement (Memo Screen)
+- [x] **Adjust Top Spacing**
+  - [x] Reduce excessive top margin above the informational banner

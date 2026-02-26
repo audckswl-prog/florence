@@ -19,8 +19,9 @@ class MemoScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.ivory,
         elevation: 0,
+        toolbarHeight: 0,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
+          preferredSize: const Size.fromHeight(60),
           child: Container(
             width: double.infinity,
             alignment: Alignment.center,
