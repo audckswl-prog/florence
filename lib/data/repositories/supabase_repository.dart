@@ -306,7 +306,7 @@ class SupabaseRepository {
     try {
       final response = await _client
           .from('notifications')
-          .select()
+          .select('*, sender:profiles!sender_id(*)')
           .eq('user_id', userId)
           .order('created_at', ascending: false);
       

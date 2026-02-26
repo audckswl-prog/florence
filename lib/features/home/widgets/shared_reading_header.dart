@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../data/repositories/supabase_repository.dart';
@@ -353,35 +354,93 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                          error: (_, __) => const Text('Error'),
                        ),
                        // Other Notifications
-                       notiAsync.when(
-                         data: (notis) {
-                           if (notis.isEmpty) {
-                             return const Padding(
-                               padding: EdgeInsets.all(20.0),
-                               child: Text('새로운 알림이 없습니다.', style: TextStyle(color: AppColors.grey)),
-                             );
-                           }
-                           return Column(
-                             children: notis.map((noti) {
-                               return ListTile(
-                                 title: Text(noti.message ?? '알림'),
-                                 subtitle: Text(
-                                   noti.createdAt.toString().split('.')[0],
-                                   style: const TextStyle(color: AppColors.greyLight, fontSize: 12),
-                                 ),
-                                 leading: const Icon(Icons.notifications_active, color: AppColors.burgundy),
-                                 tileColor: noti.isRead ? Colors.transparent : Colors.white,
-                                 onTap: () {
-                                    ref.read(supabaseRepositoryProvider).markNotificationAsRead(noti.id);
-                                    ref.invalidate(notificationsProvider);
-                                 },
-                               );
-                             }).toList(),
-                           );
-                         },
-                         loading: () => const CircularProgressIndicator(),
-                         error: (_, __) => const Text('Error'),
-                       ),
+                        notiAsync.when(
+                          data: (notis) {
+                            if (notis.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: Text('새로운 알림이 없습니다.', style: TextStyle(color: AppColors.grey, fontSize: 13)),
+                              );
+                            }
+                            return Column(
+                              children: notis.map((noti) {
+                                final nick = noti.senderNickname ?? '알 수 없음';
+                                String displayMessage;
+                                switch (noti.type) {
+                                  case 'friend_request':
+                                    displayMessage = '$nick님이 친구 요청을 보냈습니다.';
+                                    break;
+                                  case 'friend_accept':
+                                    displayMessage = '$nick님과 친구가 되었습니다!';
+                                    break;
+                                  case 'project_invite':
+                                    displayMessage = '$nick님의 함께 읽기에 초대되었습니다!';
+                                    break;
+                                  case 'project_started':
+                                    displayMessage = '함께 읽기가 시작되었습니다! 2주 안에 완독에 도전하세요.';
+                                    break;
+                                  case 'project_success':
+                                    displayMessage = '프로젝트 성공! 독서 티켓이 발급되었습니다.';
+                                    break;
+                                  default:
+                                    displayMessage = noti.message ?? '알림';
+                                }
+                                IconData icon;
+                                switch (noti.type) {
+                                  case 'friend_request':
+                                  case 'friend_accept':
+                                    icon = Icons.people_alt_outlined;
+                                    break;
+                                  case 'project_invite':
+                                  case 'project_started':
+                                    icon = Icons.menu_book_rounded;
+                                    break;
+                                  case 'project_success':
+                                    icon = Icons.emoji_events_outlined;
+                                    break;
+                                  default:
+                                    icon = Icons.notifications_active;
+                                }
+                                return ListTile(
+                                  dense: true,
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                  leading: Icon(icon, color: AppColors.burgundy, size: 22),
+                                  title: Text(
+                                    displayMessage,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: noti.isRead ? FontWeight.normal : FontWeight.w600,
+                                      color: AppColors.charcoal,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    noti.createdAt.toString().split('.')[0],
+                                    style: const TextStyle(color: AppColors.greyLight, fontSize: 11),
+                                  ),
+                                  tileColor: noti.isRead ? Colors.transparent : Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  onTap: () {
+                                     ref.read(supabaseRepositoryProvider).markNotificationAsRead(noti.id);
+                                     ref.invalidate(notificationsProvider);
+                                     Navigator.pop(context);
+                                     if ((noti.type == 'project_invite' ||
+                                          noti.type == 'project_started' ||
+                                          noti.type == 'project_success') &&
+                                         noti.relatedId != null) {
+                                       context.push('/home/social/detail/${noti.relatedId}');
+                                     } else if (noti.type == 'friend_request' ||
+                                                noti.type == 'friend_accept') {
+                                       final friends = ref.read(friendsProvider).value ?? [];
+                                       _showFriendsList(friends);
+                                     }
+                                  },
+                                );
+                              }).toList(),
+                            );
+                          },
+                          loading: () => const CircularProgressIndicator(),
+                          error: (_, __) => const Text('Error'),
+                        ),
                      ],
                    );
                  },
