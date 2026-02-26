@@ -100,3 +100,7 @@
   - [x] Remove sub-title text from AppBar in Shared Reading tab
   - [x] Remove friend count badge from header icon
   - [x] Display friend count inside friends list modal title
+
+## Phase 15: UI/UX Refinement (Toast Overlay)
+- [x] **Adjust Toast Position**
+  - [x] Move FlorenceToast to top of screen to avoid modal overlap

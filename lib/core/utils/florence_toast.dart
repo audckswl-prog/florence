@@ -19,7 +19,7 @@ class FlorenceToast {
 
     final overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: MediaQuery.of(context).size.height / 2 - 50,
+        top: 80.0,
         left: 0,
         right: 0,
         child: Align(
@@ -32,7 +32,7 @@ class FlorenceToast {
               return Opacity(
                 opacity: value,
                 child: Transform.translate(
-                  offset: Offset(0, 20 * (1 - value)),
+                  offset: Offset(0, -20 * (1 - value)),
                   child: child,
                 ),
               );
