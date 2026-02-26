@@ -12,6 +12,8 @@ import '../providers/social_providers.dart';
 import '../../library/screens/book_search_delegate.dart';
 import '../../library/providers/book_providers.dart';
 import '../../library/providers/library_providers.dart';
+import '../../library/widgets/reading_completion_dialog.dart';
+import '../../../data/models/user_book_model.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
   final String projectId;
@@ -637,12 +639,51 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                            if (val >= total) {
                               // 완독 시 서재/프로젝트 갤러리 provider 무효화
                               ref.invalidate(userBooksProvider);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('🎉 축하합니다! 완독하셨네요! 읽은 책이 서재에 자동으로 추가됩니다.'),
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
+                              
+                              // userBook 객체를 다시 가져와서 모달을 띄우기
+                              try {
+                                final ubs = await ref.read(supabaseRepositoryProvider).getUserBooks(member.userId);
+                                final uMap = ubs.firstWhere((element) => element['isbn'] == member.selectedIsbn);
+                                final uBook = UserBook.fromJson(uMap);
+                                
+                                if (mounted) {
+                                  final quote = await showDialog<String>(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (context) => ReadingCompletionDialog(
+                                      userBook: uBook,
+                                      isSharedReading: true,
+                                    ),
+                                  );
+                                  
+                                  if (quote != null) {
+                                    // Save quote to DB
+                                    await ref.read(supabaseRepositoryProvider).updateUserBookStatus(
+                                      member.userId,
+                                      member.selectedIsbn!,
+                                      'read',
+                                      quote: quote,
+                                    );
+                                    ref.invalidate(userBooksProvider);
+                                    
+                                    final currentProject = ref.read(myProjectsProvider).value?.firstWhere((element) => element.id == member.projectId);
+                                    if (currentProject != null) {
+                                      context.push(
+                                        '/home/social/detail/${member.projectId}/receipt',
+                                        extra: {'project': currentProject, 'rate': 1.0},
+                                      );
+                                    }
+                                  }
+                                }
+                              } catch (e) {
+                                debugPrint('Error loading user book for completion dialog: $e');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('🎉 축하합니다! 완독하셨네요! 읽은 책이 서재에 자동으로 추가됩니다.'),
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                              }
                            } else {
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('진도가 저장되었습니다. 화이팅!')));
                            }

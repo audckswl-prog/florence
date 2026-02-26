@@ -6,10 +6,12 @@ import 'ticket_quote_input_dialog.dart';
 
 class ReadingCompletionDialog extends StatelessWidget {
   final UserBook userBook;
+  final bool isSharedReading;
 
   const ReadingCompletionDialog({
     super.key,
     required this.userBook,
+    this.isSharedReading = false,
   });
 
   @override
@@ -89,22 +91,24 @@ class ReadingCompletionDialog extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(height: 12),
-            NeumorphicButton(
-              onPressed: () => Navigator.of(context).pop(),
-              color: AppColors.burgundy,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              borderRadius: 12,
-              child: const Text(
-                '닫기',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+            if (!isSharedReading) ...[
+              const SizedBox(height: 12),
+              NeumorphicButton(
+                onPressed: () => Navigator.of(context).pop(),
+                color: AppColors.burgundy,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                borderRadius: 12,
+                child: const Text(
+                  '닫기',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
+            ],
           ],
         ),
       ),

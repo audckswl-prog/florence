@@ -11,6 +11,7 @@ class UserBook {
   final int readCount;
   final DateTime? startedAt;
   final DateTime? finishedAt;
+  final String? quote;
   final Book book;
 
   UserBook({
@@ -24,6 +25,7 @@ class UserBook {
     this.readCount = 1,
     this.startedAt,
     this.finishedAt,
+    this.quote,
     required this.book,
   });
 
@@ -39,6 +41,7 @@ class UserBook {
       readCount: json['read_count'] != null ? (json['read_count'] as num).toInt() : 1,
       startedAt: json['started_at'] != null ? DateTime.parse(json['started_at']) : null,
       finishedAt: json['finished_at'] != null ? DateTime.parse(json['finished_at']) : null,
+      quote: json['quote'] as String?,
       book: Book.fromJson(json['books']), // Assumes 'books' is the joined table alias
     );
   }

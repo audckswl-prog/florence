@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 // import '../../../core/widgets/neumorphic_container.dart';
 import '../../../core/widgets/florence_loader.dart';
+import '../../../data/models/user_book_model.dart';
 import '../../library/screens/book_search_delegate.dart';
 import '../../library/screens/library_stack_view.dart';
+import '../../library/screens/reading_ticket_screen.dart';
+import '../../library/providers/library_providers.dart';
+import '../../library/providers/book_providers.dart';
 import '../../social/providers/social_providers.dart';
 import '../widgets/shared_reading_header.dart';
 
@@ -159,6 +164,7 @@ class _SharedReadingTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(myProjectsWithMembersProvider);
+    final myId = Supabase.instance.client.auth.currentUser?.id;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -194,183 +200,44 @@ class _SharedReadingTab extends ConsumerWidget {
                 // 완료된 프로젝트를 상단, 진행 중을 하단에 표시
                 final completed = projectsWithMembers.where((p) => p.project.status == 'completed').toList();
                 final active = projectsWithMembers.where((p) => p.project.status != 'completed').toList();
-                final sorted = [...completed, ...active];
 
-                return ListView.builder(
+                return ListView(
                   padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                  itemCount: sorted.length,
-                  itemBuilder: (context, index) {
-                    final pw = sorted[index];
-                    final project = pw.project;
-                    final isCompleted = project.status == 'completed';
-                    final coverUrl = pw.firstBookCover;
-                    final bookTitle = pw.firstBookTitle;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          context.push('/home/social/detail/${project.id}', extra: project);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 16,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                            border: Border.all(
-                              color: isCompleted 
-                                  ? AppColors.burgundy.withOpacity(0.15) 
-                                  : Colors.black.withOpacity(0.02),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Left: Book Cover
-                                    Container(
-                                      width: 65,
-                                      height: 95,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.ivory,
-                                        borderRadius: BorderRadius.circular(6),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.1),
-                                            blurRadius: 6,
-                                            offset: const Offset(2, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      clipBehavior: Clip.antiAlias,
-                                      child: coverUrl != null && coverUrl.isNotEmpty
-                                          ? Image.network(
-                                              coverUrl,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) => const Center(
-                                                child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
-                                              ),
-                                            )
-                                          : const Center(
-                                              child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
-                                            ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    
-                                    // Right: Info
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            project.name,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: AppColors.black,
-                                              fontFamily: 'Pretendard',
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          if (bookTitle != null) ...[
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              bookTitle,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: AppColors.grey.withOpacity(0.9),
-                                                fontSize: 12,
-                                                height: 1.4,
-                                              ),
-                                            ),
-                                          ],
-                                          const SizedBox(height: 12),
-                                          
-                                          // Status badge
-                                          Row(
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: isCompleted 
-                                                      ? AppColors.burgundy.withOpacity(0.1) 
-                                                      : AppColors.ivory,
-                                                  borderRadius: BorderRadius.circular(20),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Icon(
-                                                      isCompleted ? Icons.check_circle : Icons.people_alt,
-                                                      size: 12, 
-                                                      color: AppColors.burgundy,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      project.status == 'in_progress' ? '진행 중' :
-                                                      project.status == 'pending_books' ? '책 선택 중' :
-                                                      project.status == 'completed' ? '완료됨' : '진행 중',
-                                                      style: const TextStyle(fontSize: 10, color: AppColors.burgundy, fontWeight: FontWeight.bold),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              const Spacer(),
-                                              Text(
-                                                isCompleted ? '티켓 보기 >' : '상세보기 >',
-                                                style: TextStyle(
-                                                  color: isCompleted ? AppColors.burgundy : AppColors.greyLight,
-                                                  fontSize: 11,
-                                                  fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // 완료된 프로젝트: 독서 티켓 보기 버튼
-                                if (isCompleted) ...[
-                                  const SizedBox(height: 16),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      onPressed: () {
-                                        context.push(
-                                          '/home/social/detail/${project.id}/receipt',
-                                          extra: {'project': project, 'rate': 1.0},
-                                        );
-                                      },
-                                      icon: const Icon(Icons.confirmation_number_outlined, size: 16),
-                                      label: const Text('독서 티켓 확인하기'),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor: AppColors.burgundy,
-                                        side: BorderSide(color: AppColors.burgundy.withOpacity(0.3)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
+                  children: [
+                    // ── 진행 중인 프로젝트 ──
+                    if (active.isNotEmpty) ...[
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          '진행 중',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.charcoal,
+                            fontFamily: 'Pretendard',
                           ),
                         ),
                       ),
-                    );
-                  },
+                      ...active.map((pw) => _buildActiveProjectCard(context, pw)),
+                    ],
+
+                    // ── 완료된 프로젝트 (독서 티켓 전시) ──
+                    if (completed.isNotEmpty) ...[
+                      Padding(
+                        padding: EdgeInsets.only(top: active.isNotEmpty ? 24 : 0, bottom: 12),
+                        child: const Text(
+                          '독서 티켓',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.charcoal,
+                            fontFamily: 'Pretendard',
+                          ),
+                        ),
+                      ),
+                      ...completed.map((pw) => _buildCompletedTicket(context, ref, pw, myId)),
+                    ],
+                  ],
                 );
               },
               loading: () => const Center(child: FlorenceLoader()),
@@ -379,6 +246,232 @@ class _SharedReadingTab extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildActiveProjectCard(BuildContext context, ProjectWithMembers pw) {
+    final project = pw.project;
+    final coverUrl = pw.firstBookCover;
+    final bookTitle = pw.firstBookTitle;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: GestureDetector(
+        onTap: () {
+          context.push('/home/social/detail/${project.id}', extra: project);
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(color: Colors.black.withOpacity(0.02)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Left: Book Cover
+                Container(
+                  width: 65,
+                  height: 95,
+                  decoration: BoxDecoration(
+                    color: AppColors.ivory,
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                        offset: const Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: coverUrl != null && coverUrl.isNotEmpty
+                      ? Image.network(
+                          coverUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
+                        ),
+                ),
+                const SizedBox(width: 16),
+                
+                // Right: Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        project.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.black,
+                          fontFamily: 'Pretendard',
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (bookTitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          bookTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.grey.withOpacity(0.9),
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      
+                      // Status badge
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.ivory,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.people_alt, size: 12, color: AppColors.burgundy),
+                                const SizedBox(width: 4),
+                                Text(
+                                  project.status == 'in_progress' ? '진행 중' :
+                                  project.status == 'pending_books' ? '책 선택 중' : '진행 중',
+                                  style: const TextStyle(fontSize: 10, color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '상세보기 >',
+                            style: TextStyle(
+                              color: AppColors.greyLight,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompletedTicket(BuildContext context, WidgetRef ref, ProjectWithMembers pw, String? myId) {
+    if (myId == null) return const SizedBox.shrink();
+    
+    final project = pw.project;
+    // 내 멤버 정보에서 선택한 ISBN 찾기
+    final me = pw.getMe(myId);
+    final isbn = me?.selectedIsbn;
+    
+    if (isbn == null) return const SizedBox.shrink();
+    
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: ref.read(supabaseRepositoryProvider).getUserBooks(myId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        UserBook? userBook;
+        try {
+          final ubMap = snapshot.data!.firstWhere((ub) => ub['isbn'] == isbn);
+          userBook = UserBook.fromJson(ubMap);
+        } catch (_) {
+          userBook = null;
+        }
+        
+        if (userBook == null) {
+          return const SizedBox.shrink();
+        }
+        
+        final book = userBook.book;
+        final quote = userBook.quote ?? '';
+        final readCountThisYear = ref.watch(readBooksThisYearProvider).value ?? 1;
+        final aiDataAsync = ref.watch(aiTicketFutureProvider(book));
+        
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: GestureDetector(
+            onTap: () {
+              context.push(
+                '/home/social/detail/${project.id}/receipt',
+                extra: {'project': project, 'rate': 1.0},
+              );
+            },
+            child: Container(
+              height: 520,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: aiDataAsync.when(
+                data: (aiData) => ReadingTicketWidget(
+                  userBook: userBook!,
+                  quote: quote,
+                  readCountThisYear: readCountThisYear,
+                  nationalityCode: aiData.nationalityCode,
+                  nationalityName: aiData.nationalityName,
+                  publicationYear: aiData.publicationYear != '연도 미상'
+                      ? aiData.publicationYear
+                      : book.publicationYear,
+                ),
+                loading: () => ReadingTicketWidget(
+                  userBook: userBook!,
+                  quote: quote,
+                  readCountThisYear: readCountThisYear,
+                  nationalityCode: 'UN',
+                  nationalityName: '분석 중',
+                  publicationYear: book.publicationYear,
+                ),
+                error: (e, st) => ReadingTicketWidget(
+                  userBook: userBook!,
+                  quote: quote,
+                  readCountThisYear: readCountThisYear,
+                  nationalityCode: 'UN',
+                  nationalityName: '알 수 없음',
+                  publicationYear: book.publicationYear,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

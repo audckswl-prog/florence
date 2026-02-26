@@ -87,6 +87,7 @@ class SupabaseRepository {
     int? readPages,
     int? totalPages,
     int? readCount,
+    String? quote,
   }) async {
     try {
       final updates = <String, dynamic>{
@@ -97,6 +98,7 @@ class SupabaseRepository {
       if (readPages != null) updates['read_pages'] = readPages;
       if (totalPages != null) updates['total_pages'] = totalPages;
       if (readCount != null) updates['read_count'] = readCount;
+      if (quote != null) updates['quote'] = quote;
 
       if (status == 'reading') {
         updates['started_at'] = DateTime.now().toIso8601String();
@@ -528,6 +530,7 @@ class SupabaseRepository {
     required String isbn,
     required int readPages,
     required int totalPages,
+    String? quote,
   }) async {
     try {
       // 1. Sync to user_books
@@ -551,7 +554,7 @@ class SupabaseRepository {
       // If completed
       if (readPages >= totalPages && totalPages > 0) {
         await updateReadingStatus(projectId, userId, 'completed');
-        await updateUserBookStatus(userId, isbn, 'read', readPages: readPages, totalPages: totalPages);
+        await updateUserBookStatus(userId, isbn, 'read', readPages: readPages, totalPages: totalPages, quote: quote);
         
         await checkProjectCompletion(projectId);
       }

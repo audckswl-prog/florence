@@ -103,7 +103,7 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
                     child: Hero(
                       tag: 'ticket_${book.isbn}',
                         child: aiDataAsync.when(
-                          data: (aiData) => _TicketWidget(
+                          data: (aiData) => ReadingTicketWidget(
                             userBook: widget.userBook,
                             quote: widget.quote,
                             readCountThisYear: readCountThisYear,
@@ -113,7 +113,7 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
                                 ? aiData.publicationYear 
                                 : book.publicationYear,
                           ),
-                          loading: () => _TicketWidget(
+                          loading: () => ReadingTicketWidget(
                             userBook: widget.userBook,
                             quote: widget.quote,
                             readCountThisYear: readCountThisYear,
@@ -121,7 +121,7 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
                             nationalityName: '분석 중',
                             publicationYear: book.publicationYear,
                           ),
-                          error: (e, st) => _TicketWidget(
+                          error: (e, st) => ReadingTicketWidget(
                             userBook: widget.userBook,
                             quote: widget.quote,
                             readCountThisYear: readCountThisYear,
@@ -147,7 +147,7 @@ final aiTicketFutureProvider = FutureProvider.family.autoDispose((ref, Book book
   return repo.getTicketMetadata(book.isbn, book.title, book.author);
 });
 
-class _TicketWidget extends StatelessWidget {
+class ReadingTicketWidget extends StatelessWidget {
   final UserBook userBook;
   final String quote;
   final int readCountThisYear;
@@ -155,7 +155,7 @@ class _TicketWidget extends StatelessWidget {
   final String nationalityName;
   final String publicationYear;
 
-  const _TicketWidget({
+  const ReadingTicketWidget({
     required this.userBook,
     required this.quote,
     required this.readCountThisYear,
@@ -210,7 +210,7 @@ class _TicketWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const _DashedLine(),
+                      const DashedLine(),
                     ],
                   ),
                 ),
@@ -385,7 +385,7 @@ class _TicketWidget extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const _DashedLine(),
+                      const DashedLine(),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -437,8 +437,8 @@ class _TicketWidget extends StatelessWidget {
 }
 
 // ── Dashed divider ──────────────────────────────────────────────────
-class _DashedLine extends StatelessWidget {
-  const _DashedLine();
+class DashedLine extends StatelessWidget {
+  const DashedLine({super.key});
 
   @override
   Widget build(BuildContext context) {
