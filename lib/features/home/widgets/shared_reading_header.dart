@@ -548,29 +548,9 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
     
     return friendsAsync.when(
       data: (friends) {
-        return Stack(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.people_alt_outlined, color: AppColors.charcoal, size: 26),
-              onPressed: () => _showFriendsList(friends),
-            ),
-            if (friends.isNotEmpty)
-              Positioned(
-                right: 6,
-                top: 6,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: AppColors.burgundy,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    friends.length.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-          ],
+        return IconButton(
+          icon: const Icon(Icons.people_alt_outlined, color: AppColors.charcoal, size: 26),
+          onPressed: () => _showFriendsList(friends),
         );
       },
       loading: () => const IconButton(
@@ -599,9 +579,9 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '내 친구',
-                  style: TextStyle(
+                Text(
+                  '내 친구 (${friends.length})',
+                  style: const TextStyle(
                     fontFamily: 'Pretendard',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

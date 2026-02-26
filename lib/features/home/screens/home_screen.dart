@@ -86,17 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   ),
                 ),
               )
-            : Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  '친구와 함께 책을 읽고, 서로의 독서 진도를 확인해보세요.',
-                  style: TextStyle(
-                    color: AppColors.grey,
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
-                ),
-              ),
+            : const SizedBox.shrink(),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(50),
           child: Container(

@@ -94,3 +94,9 @@
 - [x] **Progress Sync & Completion Logic**
   - [x] Reading progress sync & milestone notifications
   - [x] Completion condition check & Ticket generation
+
+## Phase 14: Shared Reading UI Fine-tuning (User Request)
+- [x] **Refine Header UI**
+  - [x] Remove sub-title text from AppBar in Shared Reading tab
+  - [x] Remove friend count badge from header icon
+  - [x] Display friend count inside friends list modal title
