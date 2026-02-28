@@ -120,79 +120,7 @@ class LibraryStackView extends ConsumerWidget {
               }
             ),
           ),
-          // 책 권수 표시 (Shelf Header Style)
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              border: Border.symmetric(
-                horizontal: BorderSide(
-                  color: AppColors.burgundy.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Center(
-              child: Text.rich(
-                TextSpan(
-                  style: const TextStyle(
-                    color: AppColors.burgundy,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Pretendard',
-                  ),
-                  children: [
-                    const TextSpan(
-                      text: '총 ',
-                      style: TextStyle(letterSpacing: 4.0), // "총"과 숫자 사이는 여유롭게
-                    ),
-                    TextSpan(
-                      text: '${books.length}권',
-                      style: const TextStyle(letterSpacing: 2.0), // 숫자와 "권" 간격 조금 더 넓힘
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
 
-          // 책 권수 표시 (하단 네비바 바로 위쪽 고정)
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              border: Border.symmetric(
-                horizontal: BorderSide(
-                  color: AppColors.burgundy.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Center(
-              child: Text.rich(
-                TextSpan(
-                  style: const TextStyle(
-                    color: AppColors.burgundy,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Pretendard',
-                  ),
-                  children: [
-                    const TextSpan(
-                      text: '총 ',
-                      style: TextStyle(letterSpacing: 4.0),
-                    ),
-                    TextSpan(
-                      text: '${books.length}권',
-                      style: const TextStyle(letterSpacing: 2.0),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
         ],
       );
     } else {
