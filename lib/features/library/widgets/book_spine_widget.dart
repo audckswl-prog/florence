@@ -134,17 +134,22 @@ class BookSpineWidget extends ConsumerWidget {
                       style: TextStyle(
                         color: textColor,
                         fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         fontSize: thickness > 40 ? 12 : 10,
                         height: 1.1,
                         letterSpacing: -0.2,
                         shadows: [
-                          if (isDark)
-                            Shadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
+                          // Debossed (음각) text effect
+                          Shadow(
+                            color: Colors.white.withOpacity(0.5),
+                            offset: const Offset(0, 1.0),
+                            blurRadius: 0,
+                          ),
+                          Shadow(
+                            color: Colors.black.withOpacity(0.3),
+                            offset: const Offset(0, -1.0),
+                            blurRadius: 1.0,
+                          ),
                         ],
                       ),
                       maxLines: thickness > 45 ? 2 : 1,
@@ -208,18 +213,18 @@ class BookSpinePainter extends CustomPainter {
     );
 
     // ── 2. 책등 앞면 (Spine Face) ──
-    // 그라데이션 (원통형 입체감) - 매트하고 고급스러운 무광 느낌
+    // 그라데이션 - 원통형보다는 평면적이고 끝에만 살짝 어두운 느낌 (레퍼런스 스타일)
     final spineGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        Color.lerp(color, Colors.black, 0.1)!,  // Top Edge (Shadow)
-        Color.lerp(color, Colors.white, 0.1)!,  // Upper Highlight
+        Color.lerp(color, Colors.black, 0.35)!, // Top Edge (Shadow)
+        Color.lerp(color, Colors.white, 0.05)!, // Upper slight highlight
         color,                                  // Base
         Color.lerp(color, Colors.black, 0.1)!,  // Lower Base
-        Color.lerp(color, Colors.black, 0.4)!,  // Bottom Edge (Deep Shadow)
+        Color.lerp(color, Colors.black, 0.5)!,  // Bottom Edge (Deep Shadow)
       ],
-      stops: const [0.0, 0.15, 0.5, 0.85, 1.0],
+      stops: const [0.0, 0.08, 0.5, 0.9, 1.0],
     );
 
     final Paint spinePaint = Paint()
@@ -291,60 +296,74 @@ class BookSpinePainter extends CustomPainter {
     }
   }
 
-  // 노이즈 & 질감 텍스처 그리기
+  // 노이즈 & 질감 텍스처 그리기 (레퍼런스 이미지와 같은 켄트지/패브릭 질감)
   void _drawTexture(Canvas canvas, double width, double height) {
-    final random = Random(12345);
+    // 고정적인 질감을 위해 크기 기반의 시드 사용
+    final random = Random((width * height).toInt());
     
-    // 1. 노이즈 (기본 거친 느낌)
-    final Paint noisePaint = Paint()
-      ..color = Colors.black.withOpacity(0.05)
+    // 1. 강한 기본 노이즈 (종이/천의 미세한 구멍 및 돌기)
+    final Paint darkNoise = Paint()
+      ..color = Colors.black.withOpacity(0.06)
+      ..style = PaintingStyle.fill;
+    final Paint lightNoise = Paint()
+      ..color = Colors.white.withOpacity(0.06)
       ..style = PaintingStyle.fill;
       
-    final int density = (width * height * 0.15).toInt().clamp(100, 3000);
-    for (int i = 0; i < density; i++) {
+    // 밀도를 높게 설정하여 오돌토돌한 느낌을 극대화
+    final int noiseCount = (width * height * 0.8).toInt().clamp(500, 10000);
+    for (int i = 0; i < noiseCount; i++) {
       double x = random.nextDouble() * width;
       double y = random.nextDouble() * height;
-      canvas.drawRect(Rect.fromLTWH(x, y, 1, 1), noisePaint);
+      Paint p = random.nextBool() ? darkNoise : lightNoise;
+      // 점의 크기를 살짝 키워 질감 입자를 강조
+      canvas.drawRect(Rect.fromLTWH(x, y, 1.2, 1.2), p);
     }
 
-    // 2. 패브릭/천 질감 (Cross-hatch pattern)
-    // 실제 양장본의 천 느낌을 내기 위해 가로/세로 미세한 선을 교차
-    final Paint fabricPaint = Paint()
-      ..color = Colors.black.withOpacity(0.03) // 아주 은은하게
+    // 2. 패브릭/천 직조 질감 (Cross-hatch pattern)
+    // 얇은 가로/세로 선을 촘촘하게 그려 직물 느낌을 추가
+    final Paint hThreadInfo = Paint()
+      ..color = Colors.black.withOpacity(0.04)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.5;
+      ..strokeWidth = 0.8;
+      
+    final Paint vThreadInfo = Paint()
+      ..color = Colors.black.withOpacity(0.03)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
 
-    // 가로선 (Horizontal grain)
-    for (double y = 0; y < height; y += 1.5) {
-      if (random.nextDouble() > 0.3) { // 불규칙하게 끊김
+    // 가로 스레드
+    for (double y = 0; y < height; y += 1.8) {
+      if (random.nextDouble() > 0.15) { // 약간씩 끊어지는 느낌
         canvas.drawLine(
-          Offset(0, y + random.nextDouble()), 
-          Offset(width, y + random.nextDouble()), 
-          fabricPaint
+          Offset(0, y + (random.nextDouble() * 0.5)), 
+          Offset(width, y + (random.nextDouble() * 0.5)), 
+          hThreadInfo
         );
       }
     }
 
-    // 세로선 (Vertical grain) - 천 질감 강화
-    for (double x = 0; x < width; x += 1.5) {
-      if (random.nextDouble() > 0.3) {
+    // 세로 스레드
+    for (double x = 0; x < width; x += 1.8) {
+      if (random.nextDouble() > 0.15) {
         canvas.drawLine(
-          Offset(x + random.nextDouble(), 0), 
-          Offset(x + random.nextDouble(), height), 
-          fabricPaint
+          Offset(x + (random.nextDouble() * 0.5), 0), 
+          Offset(x + (random.nextDouble() * 0.5), height), 
+          vThreadInfo
         );
       }
     }
-    
-    // 3. 밝은 하이라이트 노이즈 (오돌토돌한 입체감)
-    final Paint highlightDotPaint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+
+    // 3. 종이의 불순물/먼지 같은 약간 큰 점들 추가
+    final Paint fleckPaint = Paint()
+      ..color = Colors.black.withOpacity(0.12)
       ..style = PaintingStyle.fill;
       
-    for (int i = 0; i < density / 2; i++) {
-        double x = random.nextDouble() * width;
-        double y = random.nextDouble() * height;
-        canvas.drawRect(Rect.fromLTWH(x, y, 1, 1), highlightDotPaint);
+    final int fleckCount = (width * height * 0.003).toInt();
+    for (int i = 0; i < fleckCount; i++) {
+      double x = random.nextDouble() * width;
+      double y = random.nextDouble() * height;
+      double size = 1.5 + random.nextDouble() * 1.5;
+      canvas.drawRect(Rect.fromLTWH(x, y, size, size), fleckPaint);
     }
   }
 
