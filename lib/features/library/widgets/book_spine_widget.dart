@@ -69,9 +69,6 @@ class BookSpineWidget extends ConsumerWidget {
 
     // 2. 세로 책 높이 (150px ~ 170px 사이에서 약간 불규칙하게)
     final double bookHeight = 150.0 + (random.nextDouble() * 20.0);
-    
-    // 3. 텍스트 방향 (세로 책의 표지도 위/아래 방향이 살짝 랜덤인 느낌)
-    final bool textTopToBottom = random.nextBool();
 
     return GestureDetector(
       onTap: () {
@@ -122,8 +119,8 @@ class BookSpineWidget extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 2.0),
               child: RotatedBox(
-                // 90도 회전하여 텍스트 세로로 렌더링
-                quarterTurns: textTopToBottom ? 1 : 3,
+                // 90도 회전하여 텍스트를 위에서 아래로 읽도록 고정 (quarterTurns: 1)
+                quarterTurns: 1,
                 child: Text(
                   userBook.book.title,
                   textAlign: TextAlign.center,
@@ -238,31 +235,42 @@ class BookSpinePainter extends CustomPainter {
     }
 
     // ── 5. N-th Reading Marker ──
+    // 질감(Texture) 위에 그려져야 하므로 맨 마지막에 그림 (수평선 형태)
     if (readCount > 1) {
       final Paint markerPaint = Paint()
-        ..color = AppColors.burgundy.withOpacity(0.7)
-        ..style = PaintingStyle.fill;
+        ..color = AppColors.charcoal.withOpacity(0.4) // 약간 어두운 색으로 은은하게
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.stroke;
         
-      // 마커를 위에서 아래로 떨어지게 세팅 (상단에 점 표시)
-      final double markerX = w / 2;
-      final double markerY = 16.0; 
+      // 맨 위에 수평선 형태로 그리기
+      final double startY = 12.0; 
       
       canvas.save();
-      canvas.translate(markerX, markerY);
+      // 책 너비(두께)를 가로지르는 선을 그리기 위해 padding을 줍니다.
+      final double linePaddingX = w * 0.15; // 좌우 여백
       
-      int dotsToDraw = readCount > 5 ? 5 : readCount;
-      for (int i = 0; i < dotsToDraw; i++) {
-        // 아래 방향으로 점을 그림
-        canvas.drawCircle(Offset(0, i * 6.0), 1.5, markerPaint);
+      int linesToDraw = readCount > 5 ? 5 : readCount;
+      for (int i = 0; i < linesToDraw; i++) {
+        // 수평선 (가로줄)을 아래로 내려가면서 그립니다.
+        double currentY = startY + (i * 4.0);
+        canvas.drawLine(
+          Offset(linePaddingX, currentY), 
+          Offset(w - linePaddingX, currentY), 
+          markerPaint
+        );
       }
       
+      // 5회 이상인 경우 마지막 선 아래에 작은 '+' 표시 추가
       if (readCount > 5) {
         final Paint plusPaint = Paint()
-          ..color = AppColors.burgundy.withOpacity(0.7)
+          ..color = AppColors.charcoal.withOpacity(0.4)
           ..strokeWidth = 1.0;
-        double lineY = dotsToDraw * 6.0;
-        canvas.drawLine(Offset(-2, lineY), Offset(2, lineY), plusPaint);
-        canvas.drawLine(Offset(0, lineY - 2), Offset(0, lineY + 2), plusPaint);
+          
+        double plusY = startY + (5 * 4.0);
+        double centerX = w / 2;
+        
+        canvas.drawLine(Offset(centerX - 2, plusY), Offset(centerX + 2, plusY), plusPaint);
+        canvas.drawLine(Offset(centerX, plusY - 2), Offset(centerX, plusY + 2), plusPaint);
       }
       
       canvas.restore();
