@@ -5,10 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 // import '../../../core/widgets/neumorphic_container.dart';
 import '../../../core/widgets/florence_loader.dart';
-import '../../../data/models/user_book_model.dart';
 import '../../library/screens/book_search_delegate.dart';
 import '../../library/screens/library_stack_view.dart';
-import '../../library/screens/reading_ticket_screen.dart';
 import '../../library/providers/library_providers.dart';
 import '../../library/providers/book_providers.dart';
 import '../../social/providers/social_providers.dart';
@@ -221,12 +219,12 @@ class _SharedReadingTab extends ConsumerWidget {
                       ...active.map((pw) => _buildActiveProjectCard(context, pw)),
                     ],
 
-                    // ── 완료된 프로젝트 (독서 티켓 전시) ──
+                    // ── 완료된 프로젝트 ──
                     if (completed.isNotEmpty) ...[
                       Padding(
                         padding: EdgeInsets.only(top: active.isNotEmpty ? 24 : 0, bottom: 12),
                         child: const Text(
-                          '독서 티켓',
+                          '완독',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -235,7 +233,7 @@ class _SharedReadingTab extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      ...completed.map((pw) => _buildCompletedTicket(context, ref, pw, myId)),
+                      ...completed.map((pw) => _buildActiveProjectCard(context, pw)),
                     ],
                   ],
                 );
@@ -352,11 +350,12 @@ class _SharedReadingTab extends ConsumerWidget {
                               children: [
                                 const Icon(Icons.people_alt, size: 12, color: AppColors.burgundy),
                                 const SizedBox(width: 4),
-                                Text(
-                                  project.status == 'in_progress' ? '진행 중' :
-                                  project.status == 'pending_books' ? '책 선택 중' : '진행 중',
-                                  style: const TextStyle(fontSize: 10, color: AppColors.burgundy, fontWeight: FontWeight.bold),
-                                ),
+                                  Text(
+                                    project.status == 'in_progress' ? '진행 중' :
+                                    project.status == 'pending_books' ? '책 선택 중' :
+                                    project.status == 'completed' ? '완독' : '진행 중',
+                                    style: const TextStyle(fontSize: 10, color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                                  ),
                               ],
                             ),
                           ),
@@ -381,99 +380,6 @@ class _SharedReadingTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildCompletedTicket(BuildContext context, WidgetRef ref, ProjectWithMembers pw, String? myId) {
-    if (myId == null) return const SizedBox.shrink();
-    
-    final project = pw.project;
-    // 내 멤버 정보에서 선택한 ISBN 찾기
-    final me = pw.getMe(myId);
-    final isbn = me?.selectedIsbn;
-    
-    if (isbn == null) return const SizedBox.shrink();
-    
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: ref.read(supabaseRepositoryProvider).getUserBooks(myId),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        
-        UserBook? userBook;
-        try {
-          final ubMap = snapshot.data!.firstWhere((ub) => ub['isbn'] == isbn);
-          userBook = UserBook.fromJson(ubMap);
-        } catch (_) {
-          userBook = null;
-        }
-        
-        if (userBook == null) {
-          return const SizedBox.shrink();
-        }
-        
-        final book = userBook.book;
-        final quote = userBook.quote ?? '';
-        final readCountThisYear = ref.watch(readBooksThisYearProvider).value ?? 1;
-        final aiDataAsync = ref.watch(aiTicketFutureProvider(book));
-        
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: GestureDetector(
-            onTap: () {
-              context.push(
-                '/home/social/detail/${project.id}/receipt',
-                extra: {'project': project, 'rate': 1.0},
-              );
-            },
-            child: Container(
-              height: 520,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: aiDataAsync.when(
-                data: (aiData) => ReadingTicketWidget(
-                  userBook: userBook!,
-                  quote: quote,
-                  readCountThisYear: readCountThisYear,
-                  nationalityCode: aiData.nationalityCode,
-                  nationalityName: aiData.nationalityName,
-                  publicationYear: aiData.publicationYear != '연도 미상'
-                      ? aiData.publicationYear
-                      : book.publicationYear,
-                ),
-                loading: () => ReadingTicketWidget(
-                  userBook: userBook!,
-                  quote: quote,
-                  readCountThisYear: readCountThisYear,
-                  nationalityCode: 'UN',
-                  nationalityName: '분석 중',
-                  publicationYear: book.publicationYear,
-                ),
-                error: (e, st) => ReadingTicketWidget(
-                  userBook: userBook!,
-                  quote: quote,
-                  readCountThisYear: readCountThisYear,
-                  nationalityCode: 'UN',
-                  nationalityName: '알 수 없음',
-                  publicationYear: book.publicationYear,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 }
 
 class CircleTabIndicator extends Decoration {
