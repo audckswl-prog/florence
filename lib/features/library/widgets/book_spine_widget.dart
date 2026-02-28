@@ -124,6 +124,7 @@ class BookSpineWidget extends ConsumerWidget {
                   thickness: thickness,
                   showSpineOnRight: showSpineOnRight,
                   readCount: readCount,
+                  textureStyle: userBook.isbn.hashCode.abs() % 3,
                 ),
                 child: Center(
                   child: Padding(
@@ -134,17 +135,21 @@ class BookSpineWidget extends ConsumerWidget {
                       style: TextStyle(
                         color: textColor,
                         fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         fontSize: thickness > 40 ? 12 : 10,
                         height: 1.1,
                         letterSpacing: -0.2,
                         shadows: [
-                          if (isDark)
-                            Shadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
-                            ),
+                          Shadow(
+                            color: Colors.white.withOpacity(0.5),
+                            offset: const Offset(0, 1.0),
+                            blurRadius: 0,
+                          ),
+                          Shadow(
+                            color: Colors.black.withOpacity(0.4),
+                            offset: const Offset(0, -1.0),
+                            blurRadius: 1.0,
+                          ),
                         ],
                       ),
                       maxLines: thickness > 45 ? 2 : 1,
@@ -166,12 +171,14 @@ class BookSpinePainter extends CustomPainter {
   final double thickness;
   final bool showSpineOnRight;
   final int readCount;
+  final int textureStyle;
 
   BookSpinePainter({
     required this.color,
     required this.thickness,
     required this.showSpineOnRight,
     this.readCount = 1,
+    this.textureStyle = 0,
   });
 
   @override
@@ -208,18 +215,18 @@ class BookSpinePainter extends CustomPainter {
     );
 
     // ── 2. 책등 앞면 (Spine Face) ──
-    // 그라데이션 (원통형 입체감) - 매트하고 고급스러운 무광 느낌
+    // 그라데이션 - 평면적이고 끝에만 살짝 어두운 느낌 (레퍼런스 스타일)
     final spineGradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        Color.lerp(color, Colors.black, 0.1)!,  // Top Edge (Shadow)
-        Color.lerp(color, Colors.white, 0.1)!,  // Upper Highlight
+        Color.lerp(color, Colors.black, 0.3)!,  // Top Edge (Shadow)
+        Color.lerp(color, Colors.white, 0.05)!, // Upper slight highlight
         color,                                  // Base
-        Color.lerp(color, Colors.black, 0.1)!,  // Lower Base
-        Color.lerp(color, Colors.black, 0.4)!,  // Bottom Edge (Deep Shadow)
+        Color.lerp(color, Colors.black, 0.05)!, // Lower Base
+        Color.lerp(color, Colors.black, 0.45)!, // Bottom Edge (Deep Shadow)
       ],
-      stops: const [0.0, 0.15, 0.5, 0.85, 1.0],
+      stops: const [0.0, 0.08, 0.5, 0.9, 1.0],
     );
 
     final Paint spinePaint = Paint()
@@ -291,60 +298,79 @@ class BookSpinePainter extends CustomPainter {
     }
   }
 
-  // 노이즈 & 질감 텍스처 그리기
+  // 노이즈 & 질감 텍스처 그리기 (레퍼런스 이미지의 3가지 질감 구현)
   void _drawTexture(Canvas canvas, double width, double height) {
-    final random = Random(12345);
+    final random = Random((width * height).toInt());
     
-    // 1. 노이즈 (기본 거친 느낌)
-    final Paint noisePaint = Paint()
-      ..color = Colors.black.withOpacity(0.05)
-      ..style = PaintingStyle.fill;
-      
-    final int density = (width * height * 0.15).toInt().clamp(100, 3000);
-    for (int i = 0; i < density; i++) {
-      double x = random.nextDouble() * width;
-      double y = random.nextDouble() * height;
-      canvas.drawRect(Rect.fromLTWH(x, y, 1, 1), noisePaint);
-    }
+    if (textureStyle == 0) {
+      // 1. 거친 패브릭/천 질감 (맨 위 갈색 책 느낌)
+      final Paint darkHatch = Paint()
+        ..color = Colors.black.withOpacity(0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+      final Paint lightHatch = Paint()
+        ..color = Colors.white.withOpacity(0.04)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
 
-    // 2. 패브릭/천 질감 (Cross-hatch pattern)
-    // 실제 양장본의 천 느낌을 내기 위해 가로/세로 미세한 선을 교차
-    final Paint fabricPaint = Paint()
-      ..color = Colors.black.withOpacity(0.03) // 아주 은은하게
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.5;
-
-    // 가로선 (Horizontal grain)
-    for (double y = 0; y < height; y += 1.5) {
-      if (random.nextDouble() > 0.3) { // 불규칙하게 끊김
-        canvas.drawLine(
-          Offset(0, y + random.nextDouble()), 
-          Offset(width, y + random.nextDouble()), 
-          fabricPaint
-        );
+      for (double y = 0; y < height; y += 2.0) {
+        canvas.drawLine(Offset(0, y), Offset(width, y), random.nextBool() ? darkHatch : lightHatch);
       }
-    }
-
-    // 세로선 (Vertical grain) - 천 질감 강화
-    for (double x = 0; x < width; x += 1.5) {
-      if (random.nextDouble() > 0.3) {
-        canvas.drawLine(
-          Offset(x + random.nextDouble(), 0), 
-          Offset(x + random.nextDouble(), height), 
-          fabricPaint
-        );
+      for (double x = 0; x < width; x += 2.0) {
+        canvas.drawLine(Offset(x, 0), Offset(x, height), random.nextBool() ? darkHatch : lightHatch);
       }
-    }
-    
-    // 3. 밝은 하이라이트 노이즈 (오돌토돌한 입체감)
-    final Paint highlightDotPaint = Paint()
-      ..color = Colors.white.withOpacity(0.05)
-      ..style = PaintingStyle.fill;
       
-    for (int i = 0; i < density / 2; i++) {
-        double x = random.nextDouble() * width;
-        double y = random.nextDouble() * height;
-        canvas.drawRect(Rect.fromLTWH(x, y, 1, 1), highlightDotPaint);
+      final Paint bumpPaint = Paint()
+        ..color = Colors.black.withOpacity(0.06)
+        ..style = PaintingStyle.fill;
+      int bumpCount = (width * height * 0.15).toInt();
+      for (int i = 0; i < bumpCount; i++) {
+         canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.5, 1.5), bumpPaint);
+      }
+    } else if (textureStyle == 1) {
+      // 2. 크라프트지/재생지 질감 (두번째 베이지색 책 느낌)
+      final Paint noisePaint = Paint()
+        ..color = Colors.black.withOpacity(0.04)
+        ..style = PaintingStyle.fill;
+      
+      int density = (width * height * 0.4).toInt();
+      for (int i = 0; i < density; i++) {
+        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.0, 1.0), noisePaint);
+      }
+
+      final Paint darkFleck = Paint()
+        ..color = Colors.black.withOpacity(0.12)
+        ..style = PaintingStyle.fill;
+      int fleckCount = (width * height * 0.005).toInt();
+      for (int i = 0; i < fleckCount; i++) {
+        double size = 1.0 + random.nextDouble() * 1.5;
+        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, size, size), darkFleck);
+      }
+      
+      final Paint grain = Paint()
+        ..color = Colors.black.withOpacity(0.02)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5;
+      for (double y = 0; y < height; y += 3.0) {
+        if(random.nextBool()) canvas.drawLine(Offset(0, y), Offset(width, y), grain);
+      }
+    } else {
+      // 3. 매끄러운 무광 질감 (아래쪽 초록/검정 책 느낌)
+      final Paint smoothNoise = Paint()
+        ..color = Colors.black.withOpacity(0.03)
+        ..style = PaintingStyle.fill;
+        
+      int density = (width * height * 0.2).toInt();
+      for (int i = 0; i < density; i++) {
+        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.0, 1.0), smoothNoise);
+      }
+      
+      final Paint whiteNoise = Paint()
+        ..color = Colors.white.withOpacity(0.03)
+        ..style = PaintingStyle.fill;
+      for (int i = 0; i < density / 2; i++) {
+        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.0, 1.0), whiteNoise);
+      }
     }
   }
 
@@ -352,6 +378,7 @@ class BookSpinePainter extends CustomPainter {
   bool shouldRepaint(covariant BookSpinePainter oldDelegate) {
     return oldDelegate.color != color || 
            oldDelegate.thickness != thickness ||
-           oldDelegate.showSpineOnRight != showSpineOnRight;
+           oldDelegate.showSpineOnRight != showSpineOnRight ||
+           oldDelegate.textureStyle != textureStyle;
   }
 }
