@@ -67,14 +67,11 @@ class BookSpineWidget extends ConsumerWidget {
     const isDark = false; 
     const textColor = AppColors.burgundy;
 
-    // 2. 너비 다양성 (55% ~ 65%)
-    final double widthFactor = 0.55 + random.nextDouble() * 0.10;
+    // 2. 세로 책 높이 (150px ~ 170px 사이에서 약간 불규칙하게)
+    final double bookHeight = 150.0 + (random.nextDouble() * 20.0);
     
-    // 3. 오프셋 (좌우 -10px ~ +10px)
-    final double offsetX = (random.nextDouble() - 0.5) * 20.0;
-
-    // 4. 회전 방향
-    final bool showSpineOnRight = random.nextBool();
+    // 3. 텍스트 방향 (세로 책의 표지도 위/아래 방향이 살짝 랜덤인 느낌)
+    final bool textTopToBottom = random.nextBool();
 
     return GestureDetector(
       onTap: () {
@@ -111,39 +108,35 @@ class BookSpineWidget extends ConsumerWidget {
           }
         });
       },
-      child: Transform.translate(
-        offset: Offset(offsetX, 0),
-        child: Center(
-          child: FractionallySizedBox(
-            widthFactor: widthFactor,
-            child: SizedBox(
-              height: thickness,
-              child: CustomPaint(
-                painter: BookSpinePainter(
-                  color: bookColor,
-                  thickness: thickness,
-                  showSpineOnRight: showSpineOnRight,
-                  readCount: readCount,
-                  textureStyle: userBook.isbn.hashCode.abs() % 3,
-                ),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Text(
-                      userBook.book.title,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: textColor,
-                        fontFamily: 'Pretendard',
-                        fontWeight: FontWeight.w600,
-                        fontSize: thickness > 40 ? 12 : 10,
-                        height: 1.1,
-                        letterSpacing: -0.2,
-                      ),
-                      maxLines: thickness > 45 ? 2 : 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+      child: SizedBox(
+        width: thickness, // 두께가 곧 너비가 됨
+        height: bookHeight, // 약간 랜덤한 세로 높이
+        child: CustomPaint(
+          painter: BookSpinePainter(
+            color: bookColor,
+            thickness: thickness,
+            readCount: readCount,
+            textureStyle: userBook.isbn.hashCode.abs() % 3,
+          ),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 2.0),
+              child: RotatedBox(
+                // 90도 회전하여 텍스트 세로로 렌더링
+                quarterTurns: textTopToBottom ? 1 : 3,
+                child: Text(
+                  userBook.book.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: textColor,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    fontSize: thickness > 30 ? 11 : 9, // 두께에 비례해서 폰트 크기 미세 조정
+                    height: 1.1,
+                    letterSpacing: -0.2,
                   ),
+                  maxLines: thickness > 45 ? 2 : 1, // 엄청 두꺼운 책은 2줄 허용
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
@@ -157,29 +150,19 @@ class BookSpineWidget extends ConsumerWidget {
 class BookSpinePainter extends CustomPainter {
   final Color color;
   final double thickness;
-  final bool showSpineOnRight;
   final int readCount;
   final int textureStyle;
 
   BookSpinePainter({
     required this.color,
     required this.thickness,
-    required this.showSpineOnRight,
     this.readCount = 1,
     this.textureStyle = 0,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (showSpineOnRight) {
-      canvas.save();
-      canvas.translate(size.width, 0);
-      canvas.scale(-1, 1);
-      _drawBook3D(canvas, size);
-      canvas.restore();
-    } else {
-      _drawBook3D(canvas, size);
-    }
+    _drawBook3D(canvas, size);
   }
 
   void _drawBook3D(Canvas canvas, Size size) {
@@ -203,16 +186,16 @@ class BookSpinePainter extends CustomPainter {
     );
 
     // ── 2. 책등 앞면 (Spine Face) ──
-    // 그라데이션 - 평면적이고 끝에만 살짝 어두운 느낌 (레퍼런스 스타일)
+    // 세로로 서 있는 책이므로 그라데이션은 왼쪽 힌지에서 오른쪽으로 자연스럽게
     final spineGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
       colors: [
-        Color.lerp(color, Colors.black, 0.3)!,  // Top Edge (Shadow)
-        Color.lerp(color, Colors.white, 0.05)!, // Upper slight highlight
+        Color.lerp(color, Colors.black, 0.3)!,  // Left Edge (Shadow, Hinge point)
+        Color.lerp(color, Colors.white, 0.05)!, // Left slight highlight
         color,                                  // Base
-        Color.lerp(color, Colors.black, 0.05)!, // Lower Base
-        Color.lerp(color, Colors.black, 0.45)!, // Bottom Edge (Deep Shadow)
+        Color.lerp(color, Colors.black, 0.05)!, // Right Base
+        Color.lerp(color, Colors.black, 0.45)!, // Right Edge (Deep Shadow)
       ],
       stops: const [0.0, 0.08, 0.5, 0.9, 1.0],
     );
@@ -230,27 +213,29 @@ class BookSpinePainter extends CustomPainter {
     _drawTexture(canvas, w, h);
     canvas.restore();
 
-    // ── 4. 힌지 (홈) 디테일 - 더 깊이감 있게 ──
-    final double hingeOffset = 14.0;
+    // ── 4. 힌지 (홈) 디테일 - 왼쪽(책등 접히는 곳)에 세로줄 형태로 추가 ──
+    final double hingeOffset = 8.0; // 너무 안쪽으로 들어오지 않게
     
-    // Groove Shadow
-    canvas.drawLine(
-      Offset(hingeOffset, 0),
-      Offset(hingeOffset, h),
-      Paint()
-        ..color = Colors.black.withOpacity(0.2)
-        ..strokeWidth = 1.5
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.5),
-    );
+    if (w > hingeOffset + 4.0) { // 책이 너무 얇으면 힌지를 안그림
+       // Groove Shadow
+       canvas.drawLine(
+         Offset(hingeOffset, 0),
+         Offset(hingeOffset, h),
+         Paint()
+           ..color = Colors.black.withOpacity(0.2)
+           ..strokeWidth = 1.5
+           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.5),
+       );
 
-    // Groove Highlight
-    canvas.drawLine(
-      Offset(hingeOffset + 1.5, 0),
-      Offset(hingeOffset + 1.5, h),
-      Paint()
-        ..color = Colors.white.withOpacity(0.15)
-        ..strokeWidth = 0.5,
-    );
+       // Groove Highlight
+       canvas.drawLine(
+         Offset(hingeOffset + 1.5, 0),
+         Offset(hingeOffset + 1.5, h),
+         Paint()
+           ..color = Colors.white.withOpacity(0.15)
+           ..strokeWidth = 0.5,
+       );
+    }
 
     // ── 5. N-th Reading Marker ──
     if (readCount > 1) {
@@ -258,26 +243,24 @@ class BookSpinePainter extends CustomPainter {
         ..color = AppColors.burgundy.withOpacity(0.7)
         ..style = PaintingStyle.fill;
         
-      // Draw small diamond or dot at the top/bottom 
-      final double markerY = h - 16.0; // Draw near the bottom of the spine
+      // 마커를 위에서 아래로 떨어지게 세팅 (상단에 점 표시)
       final double markerX = w / 2;
+      final double markerY = 16.0; 
       
       canvas.save();
       canvas.translate(markerX, markerY);
       
-      // Draw a small decorative stack of dots based on readCount
-      // Max out at 5 dots so it doesn't look messy
       int dotsToDraw = readCount > 5 ? 5 : readCount;
       for (int i = 0; i < dotsToDraw; i++) {
-        canvas.drawCircle(Offset(0, -i * 6.0), 1.5, markerPaint);
+        // 아래 방향으로 점을 그림
+        canvas.drawCircle(Offset(0, i * 6.0), 1.5, markerPaint);
       }
       
-      // If read > 5, draw a small '+' at the top
       if (readCount > 5) {
         final Paint plusPaint = Paint()
           ..color = AppColors.burgundy.withOpacity(0.7)
           ..strokeWidth = 1.0;
-        double lineY = -dotsToDraw * 6.0;
+        double lineY = dotsToDraw * 6.0;
         canvas.drawLine(Offset(-2, lineY), Offset(2, lineY), plusPaint);
         canvas.drawLine(Offset(0, lineY - 2), Offset(0, lineY + 2), plusPaint);
       }
@@ -366,7 +349,6 @@ class BookSpinePainter extends CustomPainter {
   bool shouldRepaint(covariant BookSpinePainter oldDelegate) {
     return oldDelegate.color != color || 
            oldDelegate.thickness != thickness ||
-           oldDelegate.showSpineOnRight != showSpineOnRight ||
            oldDelegate.textureStyle != textureStyle;
   }
 }

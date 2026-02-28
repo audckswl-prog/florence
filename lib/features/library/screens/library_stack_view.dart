@@ -7,6 +7,7 @@ import '../../../core/widgets/florence_loader.dart';
 import '../providers/library_providers.dart';
 import '../widgets/book_spine_widget.dart';
 import '../screens/book_search_delegate.dart';
+import '../../../data/models/user_book_model.dart';
 
 class LibraryStackView extends ConsumerWidget {
   const LibraryStackView({super.key});
@@ -54,10 +55,71 @@ class LibraryStackView extends ConsumerWidget {
         });
 
       body = Column(
-        // mainAxisAlignment.end → 내용물이 아래에서부터 채워짐
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // 스크롤 가능한 책장 영역 (위쪽 스크롤)
+          Flexible(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 최대 가용 너비 (양옆 패딩 24 * 2 = 48 제외)
+                final double maxShelfWidth = constraints.maxWidth - 48.0;
+                
+                // 책들을 선반 단위로 묶기 (아래 선반부터 윗 선반으로)
+                // 현재 코드로는 Oldest부터 순서대로 묶음
+                final List<List<UserBook>> shelves = [];
+                List<UserBook> currentRow = [];
+                double currentRowWidth = 0.0;
+                
+                // 책과 책 사이의 간격
+                const double spacing = 1.0; 
+
+                for (var book in displayBooks) {
+                  // _calculateBookWidth 호출 대신 여기서 대략 너비 추정 방식을 쓰거나
+                  // BookSpineWidget 내부의 두께 계산식(페이지 기반)을 동일하게 써야 함.
+                  // (book_spine_widget 쪽 두께와 완전히 일치해야 잘림 현상 방지)
+                  double bookWidth = 0.0;
+                  int pages = book.book.pageCount;
+                  if (pages == 0) {
+                     final random = Random(book.isbn.hashCode);
+                     pages = 200 + random.nextInt(400);
+                  }
+                  final int readPages = book.readPages;
+                  final int totalPages = book.totalPages ?? pages;
+                  double thicknessRatio = 1.0;
+                  if (readPages > 0 && totalPages > 0 && readPages <= totalPages) {
+                    thicknessRatio = readPages / totalPages;
+                  }
+                  bookWidth = ((15.0 + (pages * 0.07)) * thicknessRatio).clamp(12.0, 64.0);
+
+                  if (currentRowWidth + bookWidth + spacing > maxShelfWidth && currentRow.isNotEmpty) {
+                    shelves.add(currentRow);
+                    currentRow = [];
+                    currentRowWidth = 0.0;
+                  }
+                  currentRow.add(book);
+                  currentRowWidth += bookWidth + spacing;
+                }
+                if (currentRow.isNotEmpty) {
+                  shelves.add(currentRow);
+                }
+
+                // shelves는 [0번째 줄(가장오래된책들), 1번째 줄, ... , 마지막 줄(최신책들)]
+                // 아래부터 채울 것이므로 ListView를 reverse 처리하고, 역순으로 그려집니다.
+
+                return ListView.builder(
+                  reverse: true, // 아래쪽부터 아이템(선반) 시작
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  itemCount: shelves.length,
+                  itemBuilder: (context, index) {
+                    // reverse: true 이므로 index 0이 바텀(맨 아래)입니다.
+                    // 스크롤 시작 화면의 맨 아래 선반 = shelves[0] (가장 오래된 책 모음)
+                    final shelfBooks = shelves[index];
+                    
+                    return _buildShelfRow(shelfBooks);
+                  },
+                );
+              }
+            ),
+          ),
           // 책 권수 표시 (Shelf Header Style)
           Container(
             width: double.infinity,
@@ -95,48 +157,40 @@ class LibraryStackView extends ConsumerWidget {
             ),
           ),
 
-          // 스크롤 가능한 책 스택 영역
-          Flexible(
-            child: ListView.builder(
-              // reverse: true → 스크롤 시작점이 아래
-              // ListView에서 reverse:true일 때, index 0이 맨 아래에 위치함
-              // displayBooks는 [Oldest, ..., Newest] 순서이므로
-              // index 0 (Oldest)가 맨 아래에 위치하게 됨.
-              reverse: true,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              itemCount: displayBooks.length,
-              itemBuilder: (context, index) {
-                final book = displayBooks[index];
-                return BookSpineWidget(
-                  key: ValueKey(book.isbn),
-                  userBook: book,
-                );
-              },
+          // 책 권수 표시 (하단 네비바 바로 위쪽 고정)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              border: Border.symmetric(
+                horizontal: BorderSide(
+                  color: AppColors.burgundy.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
             ),
-          ),
-
-          // 바닥 받침선 (네비바 바로 위)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-            child: Column(
-              children: [
-                Container(
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: AppColors.charcoal.withOpacity(0.20),
-                    borderRadius: BorderRadius.circular(3),
+            child: Center(
+              child: Text.rich(
+                TextSpan(
+                  style: const TextStyle(
+                    color: AppColors.burgundy,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Pretendard',
                   ),
+                  children: [
+                    const TextSpan(
+                      text: '총 ',
+                      style: TextStyle(letterSpacing: 4.0),
+                    ),
+                    TextSpan(
+                      text: '${books.length}권',
+                      style: const TextStyle(letterSpacing: 2.0),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Container(
-                  height: 2,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: AppColors.charcoal.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
@@ -148,6 +202,46 @@ class LibraryStackView extends ConsumerWidget {
     return FlorenceLoadingOverlay(
       isLoading: isLoading,
       child: body,
+    );
+  }
+
+  // 선반 한 칸(Row)을 그리는 헬퍼 위젯
+  Widget _buildShelfRow(List<UserBook> shelfBooks) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1) 책들이 서 있는 메인 공간
+        // 바닥(선반 위)에 딱 맞닿게 정렬 -> crossAxisAlignment.end
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center, 
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: shelfBooks.map((b) => BookSpineWidget(
+              key: ValueKey(b.isbn),
+              userBook: b,
+            )).toList(),
+          ),
+        ),
+        
+        // 2) 묵직한 나무 느낌의 선반 받침대
+        Container(
+          width: double.infinity,
+          height: 12, // 선반 두께
+          decoration: BoxDecoration(
+            color: const Color(0xFF5A1E1E), // 어두운 버건디/우드 색감
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 4,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          margin: const EdgeInsets.only(bottom: 32), // 선반 사이 세로 갭 (위쪽 선반 책들이 숨쉴 공간)
+        ),
+      ],
     );
   }
 }
