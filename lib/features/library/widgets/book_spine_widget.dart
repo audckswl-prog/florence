@@ -116,16 +116,15 @@ class BookSpineWidget extends ConsumerWidget {
             textureStyle: userBook.isbn.hashCode.abs() % 3,
           ),
           child: Align(
-            alignment: Alignment.topCenter, // 상단부터 텍스트 배치
+            alignment: Alignment.center, // 중앙에서부터 텍스트 배치
             child: Padding(
-              // 힌지 그림자가 사라졌으므로, 너무 많이 띄울 필요 없이 적절한 여백(16.0)만 남김
-              padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left: 2.0, right: 2.0),
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
               child: RotatedBox(
                 // 시계방향 90도 회전
                 quarterTurns: 1,
                 child: Text(
                   userBook.book.title,
-                  textAlign: TextAlign.left, // 시작점이 위쪽이 되도록 좌측 정렬
+                  textAlign: TextAlign.center, // 텍스트 자체가 가운데 정렬되도록 변경
                   style: TextStyle(
                     color: textColor,
                     fontFamily: 'Pretendard',
