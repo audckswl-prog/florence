@@ -116,10 +116,10 @@ class BookSpineWidget extends ConsumerWidget {
             textureStyle: userBook.isbn.hashCode.abs() % 3,
           ),
           child: Align(
-            alignment: Alignment.topCenter, // 상단(힌지 아래 약간의 간격)부터 텍스트 배치
+            alignment: Alignment.topCenter, // 상단부터 텍스트 배치
             child: Padding(
-              // 빨간 동그라미친 힌지(약 30~36px) 아래부터 텍스트가 시작되도록 top padding 부여
-              padding: const EdgeInsets.only(top: 36.0, bottom: 8.0, left: 2.0, right: 2.0),
+              // 힌지 그림자가 사라졌으므로, 너무 많이 띄울 필요 없이 적절한 여백(16.0)만 남김
+              padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left: 2.0, right: 2.0),
               child: RotatedBox(
                 // 시계방향 90도 회전
                 quarterTurns: 1,
@@ -203,50 +203,13 @@ class BookSpinePainter extends CustomPainter {
 
     canvas.drawRRect(rrect, spinePaint);
 
-    // ── 3. 상단 힌지(Top Hinge) 음영 ──
-    // 빨간 동그라미 부분(가로 책에서 왼쪽 홈이었던 부분)의 입체적인 어두운 그라데이션을 윗부분에 적용
-    final Paint topShadowPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color.lerp(color, Colors.black, 0.3)!, // Top Edge (Hinge point)
-          color.withOpacity(0.0),                // Transparent below hinge
-        ],
-        stops: const [0.0, 0.15],
-      ).createShader(rect);
-    
-    canvas.drawRRect(rrect, topShadowPaint);
-
-    // ── 4. 텍스처 (Texture) - 종이/천 질감 추가 ──
+    // ── 3. 텍스처 (Texture) - 종이/천 질감 추가 ──
     canvas.save();
     canvas.clipRRect(rrect);
     _drawTexture(canvas, w, h);
     canvas.restore();
 
-    // ── 5. 힌지 (홈) 디테일 선 - '위쪽(Top)'에 가로줄 형태로 선명한 힌지(접히는 선) 추가 ──
-    final double hingeOffsetY = 12.0; // 상단 모서리에서 살짝 떨어진 위치
-    
-    if (h > hingeOffsetY + 4.0) { 
-       // Groove Shadow (선)
-       canvas.drawLine(
-         Offset(0, hingeOffsetY),
-         Offset(w, hingeOffsetY),
-         Paint()
-           ..color = Colors.black.withOpacity(0.2)
-           ..strokeWidth = 1.5
-           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.5),
-       );
-
-       // Groove Highlight (선)
-       canvas.drawLine(
-         Offset(0, hingeOffsetY + 1.5),
-         Offset(w, hingeOffsetY + 1.5),
-         Paint()
-           ..color = Colors.white.withOpacity(0.15)
-           ..strokeWidth = 0.5,
-       );
-    }
+    // 힌지 및 마커 관련 코드는 사용자 요청으로 모두 제거됨
   }
 
   // 노이즈 & 질감 텍스처 그리기 (레퍼런스 이미지의 3가지 질감 구현)
