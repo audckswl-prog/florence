@@ -115,24 +115,26 @@ class BookSpineWidget extends ConsumerWidget {
             readCount: readCount,
             textureStyle: userBook.isbn.hashCode.abs() % 3,
           ),
-          child: Center(
+          child: Align(
+            alignment: Alignment.topCenter, // 상단(힌지 아래 약간의 간격)부터 텍스트 배치
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 2.0),
+              // 빨간 동그라미친 힌지(약 30~36px) 아래부터 텍스트가 시작되도록 top padding 부여
+              padding: const EdgeInsets.only(top: 36.0, bottom: 8.0, left: 2.0, right: 2.0),
               child: RotatedBox(
-                // 90도 회전하여 텍스트를 위에서 아래로 읽도록 고정 (quarterTurns: 1)
+                // 시계방향 90도 회전
                 quarterTurns: 1,
                 child: Text(
                   userBook.book.title,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.left, // 시작점이 위쪽이 되도록 좌측 정렬
                   style: TextStyle(
                     color: textColor,
                     fontFamily: 'Pretendard',
                     fontWeight: FontWeight.w600,
-                    fontSize: thickness > 30 ? 11 : 9, // 두께에 비례해서 폰트 크기 미세 조정
+                    fontSize: thickness > 30 ? 11 : 9,
                     height: 1.1,
                     letterSpacing: -0.2,
                   ),
-                  maxLines: thickness > 45 ? 2 : 1, // 엄청 두꺼운 책은 2줄 허용
+                  maxLines: thickness > 45 ? 2 : 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -183,97 +185,67 @@ class BookSpinePainter extends CustomPainter {
     );
 
     // ── 2. 책등 앞면 (Spine Face) ──
-    // 세로로 서 있는 책이므로 그라데이션은 왼쪽 힌지에서 오른쪽으로 자연스럽게
+    // 세로로 섰을 때의 바탕 면 (입체감을 위한 좌우 약간의 음영)
     final spineGradient = LinearGradient(
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
       colors: [
-        Color.lerp(color, Colors.black, 0.3)!,  // Left Edge (Shadow, Hinge point)
         Color.lerp(color, Colors.white, 0.05)!, // Left slight highlight
         color,                                  // Base
         Color.lerp(color, Colors.black, 0.05)!, // Right Base
         Color.lerp(color, Colors.black, 0.45)!, // Right Edge (Deep Shadow)
       ],
-      stops: const [0.0, 0.08, 0.5, 0.9, 1.0],
+      stops: const [0.0, 0.3, 0.8, 1.0],
     );
 
     final Paint spinePaint = Paint()
       ..shader = spineGradient.createShader(rect);
 
-    // 둥근 사각형으로 그림
     canvas.drawRRect(rrect, spinePaint);
 
-    // ── 2.5 텍스처 (Texture) - 종이/천 질감 추가 ──
-    // 텍스처가 둥근 모서리를 넘지 않도록 클리핑 적용
+    // ── 3. 상단 힌지(Top Hinge) 음영 ──
+    // 빨간 동그라미 부분(가로 책에서 왼쪽 홈이었던 부분)의 입체적인 어두운 그라데이션을 윗부분에 적용
+    final Paint topShadowPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color.lerp(color, Colors.black, 0.3)!, // Top Edge (Hinge point)
+          color.withOpacity(0.0),                // Transparent below hinge
+        ],
+        stops: const [0.0, 0.15],
+      ).createShader(rect);
+    
+    canvas.drawRRect(rrect, topShadowPaint);
+
+    // ── 4. 텍스처 (Texture) - 종이/천 질감 추가 ──
     canvas.save();
     canvas.clipRRect(rrect);
     _drawTexture(canvas, w, h);
     canvas.restore();
 
-    // ── 4. 힌지 (홈) 디테일 - 왼쪽(책등 접히는 곳)에 세로줄 형태로 추가 ──
-    final double hingeOffset = 8.0; // 너무 안쪽으로 들어오지 않게
+    // ── 5. 힌지 (홈) 디테일 선 - '위쪽(Top)'에 가로줄 형태로 선명한 힌지(접히는 선) 추가 ──
+    final double hingeOffsetY = 12.0; // 상단 모서리에서 살짝 떨어진 위치
     
-    if (w > hingeOffset + 4.0) { // 책이 너무 얇으면 힌지를 안그림
-       // Groove Shadow
+    if (h > hingeOffsetY + 4.0) { 
+       // Groove Shadow (선)
        canvas.drawLine(
-         Offset(hingeOffset, 0),
-         Offset(hingeOffset, h),
+         Offset(0, hingeOffsetY),
+         Offset(w, hingeOffsetY),
          Paint()
            ..color = Colors.black.withOpacity(0.2)
            ..strokeWidth = 1.5
            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 0.5),
        );
 
-       // Groove Highlight
+       // Groove Highlight (선)
        canvas.drawLine(
-         Offset(hingeOffset + 1.5, 0),
-         Offset(hingeOffset + 1.5, h),
+         Offset(0, hingeOffsetY + 1.5),
+         Offset(w, hingeOffsetY + 1.5),
          Paint()
            ..color = Colors.white.withOpacity(0.15)
            ..strokeWidth = 0.5,
        );
-    }
-
-    // ── 5. N-th Reading Marker ──
-    // 질감(Texture) 위에 그려져야 하므로 맨 마지막에 그림 (수평선 형태)
-    if (readCount > 1) {
-      final Paint markerPaint = Paint()
-        ..color = AppColors.charcoal.withOpacity(0.4) // 약간 어두운 색으로 은은하게
-        ..strokeWidth = 1.0
-        ..style = PaintingStyle.stroke;
-        
-      // 맨 위에 수평선 형태로 그리기
-      final double startY = 12.0; 
-      
-      canvas.save();
-      // 책 너비(두께)를 가로지르는 선을 그리기 위해 padding을 줍니다.
-      final double linePaddingX = w * 0.15; // 좌우 여백
-      
-      int linesToDraw = readCount > 5 ? 5 : readCount;
-      for (int i = 0; i < linesToDraw; i++) {
-        // 수평선 (가로줄)을 아래로 내려가면서 그립니다.
-        double currentY = startY + (i * 4.0);
-        canvas.drawLine(
-          Offset(linePaddingX, currentY), 
-          Offset(w - linePaddingX, currentY), 
-          markerPaint
-        );
-      }
-      
-      // 5회 이상인 경우 마지막 선 아래에 작은 '+' 표시 추가
-      if (readCount > 5) {
-        final Paint plusPaint = Paint()
-          ..color = AppColors.charcoal.withOpacity(0.4)
-          ..strokeWidth = 1.0;
-          
-        double plusY = startY + (5 * 4.0);
-        double centerX = w / 2;
-        
-        canvas.drawLine(Offset(centerX - 2, plusY), Offset(centerX + 2, plusY), plusPaint);
-        canvas.drawLine(Offset(centerX, plusY - 2), Offset(centerX, plusY + 2), plusPaint);
-      }
-      
-      canvas.restore();
     }
   }
 
