@@ -139,6 +139,7 @@ class BookSpineWidget extends ConsumerWidget {
                         fontSize: thickness > 40 ? 12 : 10,
                         height: 1.1,
                         letterSpacing: -0.2,
+                        shadows: [
                           // Debossed (음각) text effect
                           Shadow(
                             color: Colors.white.withOpacity(0.5),
