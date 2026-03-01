@@ -200,6 +200,7 @@ class LibraryStackView extends ConsumerWidget {
           margin: const EdgeInsets.only(bottom: 24), // 선반 사이 세로 갭 (위쪽 선반 책들이 숨쉴 공간)
         ),
       ],
-    );
+    ),
+   );
   }
 }
