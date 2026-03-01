@@ -133,19 +133,34 @@ class LibraryStackView extends ConsumerWidget {
                   shelves.add(currentRow);
                 }
 
-                // shelves는 [1선반(가장 오래된 책들), 2선반, ... , 가장 최근 선반]
-                // 앱에 진입 시 가장 최근 선반(예: 6선반)이 최상단에 보여야 하므로 배열을 뒤집습니다.
+                // shelves는 [1선반(가장 오래된 책들), 2선반, ... , 6선반(가장 최근 선반)]
+                // 사용자가 앱에 들어왔을 때, "리스트의 맨 처음 보이는 화면" 즉, 스크롤의 시작점이
+                // 가장 최신 선반(예: 6, 5선반)이어야 하고, 이들이 화면 하단바(네비바)에 예쁘게 착 붙어있어야 합니다.
+                //
+                // 방법: ListView를 reverse: false (정방향)로 두되, 
+                // 전체 스크롤 영역이 화면보다 작을 때(선반이 몇 개 없을 때) 위로 들러붙는 것을 막고 
+                // 최신 선반들이 화면 아래(하단바 쪽)로 가라앉도록 
+                // **전체 아이템들을 거꾸로 뒤집고(최신이 맨 아래로 오게) reverse: true**를 주는 방식을 씁니다.
+
+                // 최신 선반이 맨 첫 화면(바닥)에 오도록 배열을 뒤집습니다. (예: 6선반, 5선반, 4선반...)
                 final reversedShelves = shelves.reversed.toList();
 
                 return ListView.builder(
-                  reverse: false, // 위에서부터 아래로 순차적으로 스크롤 (최신 선반이 맨 위)
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0), // 상하 여백 완전히 제거
+                  // reverse: true 속성은 스크롤의 시작점을 화면 '바닥'으로 만듭니다.
+                  // 즉, 배열의 0번째 요소(가장 최신인 6선반)가 하단바 바로 위에 렌더링됩니다.
+                  reverse: true, 
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0), 
                   itemCount: reversedShelves.length,
                   itemBuilder: (context, index) {
                     final shelfBooks = reversedShelves[index];
-                    // 가장 밑바닥(1선반)은 뒤집힌 배열의 맨 마지막 원소입니다.
-                    final isBottomMostShelf = index == reversedShelves.length - 1;
-                    return _buildShelfRow(shelfBooks, isLastShelf: isBottomMostShelf);
+                    
+                    // index == 0 : 현재 화면 하단바에 완전히 맞닿아 있는 가장 최신 층 (예: 6선반)
+                    // 앱 디자인상 "화면 맨 바닥에 닿는 선반"은 항상 12px 여백을 가져야 하므로 isLastShelf를 true로 줍니다.
+                    // 스크롤을 끝까지 올려서 도달하는 "진짜 1선반(가장 오래된 선반)"은 reversedShelves.length - 1 입니다.
+                    // 위쪽으로 스크롤해서 올라오는 5선반, 4선반 등은 자연스럽게 24px 여백을 가집니다.
+                    final isTouchingBottomNav = index == 0;
+                    
+                    return _buildShelfRow(shelfBooks, isLastShelf: isTouchingBottomNav);
                   },
                 );
               }
