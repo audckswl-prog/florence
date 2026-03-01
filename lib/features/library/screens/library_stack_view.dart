@@ -134,22 +134,13 @@ class LibraryStackView extends ConsumerWidget {
                 }
 
                 // shelves는 [0번째 줄(가장오래된책들), 1번째 줄, ... , 마지막 줄(최신책들)]
-                // 맨 아래쪽 파란 기준선(네비바)에 선반 바닥이 정확히 오도록 하단 투명 여백을 추가
+                // 아랫부분 여백을 모두 없애고 맨 밑바닥 선이 네비바 라인에 완벽히 닿도록 수정
                 return ListView.builder(
                   reverse: true, // 아래쪽부터 아이템(선반) 시작
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  // 아이템 개수를 +1 하여 맨 처음 렌더링(맨 아랫줄) 장소에 투명 스페이서를 끼워 넣음
-                  itemCount: shelves.length + 1,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0), // 상하 여백 완전히 제거
+                  itemCount: shelves.length,
                   itemBuilder: (context, index) {
-                    if (index == 0) {
-                       // 0번째 인덱스 = 화면의 가장 밑바닥 (네비바 바로 위 파란선 공간)
-                       // 네비바랑 선반이 겹치거나 너무 뜨지 않게 사진에 맞춰 8.0 정도 띄움
-                       return const SizedBox(height: 8.0);
-                    }
-                    
-                    // 스페이서를 제외한 실제 선반 데이터
-                    final shelfBooks = shelves[index - 1];
-                    
+                    final shelfBooks = shelves[index];
                     return _buildShelfRow(shelfBooks);
                   },
                 );
