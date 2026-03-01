@@ -59,16 +59,16 @@ class BookSpineWidget extends ConsumerWidget {
       thicknessRatio = readPages / totalPages;
     }
 
-    // 최소 두께: 10.0 (얇은 책), 최대 55.0 (적당히 두꺼운 책)
-    final double thickness = ((12.5 + (pages * 0.06)) * thicknessRatio).clamp(10.0, 55.0);
+    // 최소 두께: 14.0 (얇은 책), 최대 70.0 (적당히 두꺼운 책)
+    final double thickness = ((18.0 + (pages * 0.08)) * thicknessRatio).clamp(14.0, 70.0);
     final int readCount = userBook.readCount;
 
     // 텍스트 색상: 항상 버건디 (브랜드 아이덴티티)
     const isDark = false; 
     const textColor = AppColors.burgundy;
 
-    // 2. 세로 책 높이 (125px ~ 142px 사이에서 약간 불규칙하게 - 중간 스케일)
-    final double bookHeight = 125.0 + (random.nextDouble() * 17.0);
+    // 2. 세로 책 높이 (150px ~ 170px 사이에서 약간 불규칙하게 - 원래의 큼직한 스케일)
+    final double bookHeight = 150.0 + (random.nextDouble() * 20.0);
 
     return GestureDetector(
       onTap: () {
@@ -118,8 +118,8 @@ class BookSpineWidget extends ConsumerWidget {
           child: Align(
             alignment: Alignment.center, // 중앙에서부터 텍스트 배치
             child: Padding(
-              // 크기를 줄였으므로 상하 여백도 살짝 줄임 (6.0)
-              padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 2.0),
+              // 다시 큰 스케일로 돌아왔으므로 기본 패딩 복구
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
               child: RotatedBox(
                 // 시계방향 90도 회전
                 quarterTurns: 1,
@@ -130,12 +130,12 @@ class BookSpineWidget extends ConsumerWidget {
                     color: textColor,
                     fontFamily: 'Pretendard',
                     fontWeight: FontWeight.w600,
-                    // 크기가 줄어든 만큼 텍스트 폰트 사이즈도 미세하게 하향 조정
-                    fontSize: thickness > 26 ? 10.5 : 8.5,
+                    // 폰트 크기 역시 원래처럼 큼직하게 복구
+                    fontSize: thickness > 34 ? 12.0 : 9.5,
                     height: 1.1,
                     letterSpacing: -0.2,
                   ),
-                  maxLines: thickness > 36 ? 2 : 1,
+                  maxLines: thickness > 48 ? 2 : 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

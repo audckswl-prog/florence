@@ -60,8 +60,9 @@ class LibraryStackView extends ConsumerWidget {
           Flexible(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // 최대 가용 너비 (양옆 패딩 24 * 2 = 48 제외)
-                final double maxShelfWidth = constraints.maxWidth - 48.0;
+                // 최대 가용 너비 (양옆 패딩 24 * 2 = 48 제외한 공간에서 75%만 책장으로 사용)
+                // 이렇게 함으로써 오른쪽에 자연스러운 여백이 남게 만듭니다.
+                final double maxShelfWidth = (constraints.maxWidth - 48.0) * 0.75;
                 
                 // 책들을 선반 단위로 묶기 (아래 선반부터 윗 선반으로)
                 // 현재 코드로는 Oldest부터 순서대로 묶음
@@ -73,9 +74,6 @@ class LibraryStackView extends ConsumerWidget {
                 const double spacing = 1.0; 
 
                 for (var book in displayBooks) {
-                  // _calculateBookWidth 호출 대신 여기서 대략 너비 추정 방식을 쓰거나
-                  // BookSpineWidget 내부의 두께 계산식(페이지 기반)을 동일하게 써야 함.
-                  // (book_spine_widget 쪽 두께와 완전히 일치해야 잘림 현상 방지)
                   double bookWidth = 0.0;
                   int pages = book.book.pageCount;
                   if (pages == 0) {
@@ -88,7 +86,9 @@ class LibraryStackView extends ConsumerWidget {
                   if (readPages > 0 && totalPages > 0 && readPages <= totalPages) {
                     thicknessRatio = readPages / totalPages;
                   }
-                  bookWidth = ((12.5 + (pages * 0.06)) * thicknessRatio).clamp(10.0, 55.0);
+                  
+                  // 방금 스케일을 복구한 가장 큰 사이즈 비율로 다시 맞춤
+                  bookWidth = ((18.0 + (pages * 0.08)) * thicknessRatio).clamp(14.0, 70.0);
 
                   if (currentRowWidth + bookWidth + spacing > maxShelfWidth && currentRow.isNotEmpty) {
                     shelves.add(currentRow);
