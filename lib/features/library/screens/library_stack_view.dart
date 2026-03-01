@@ -56,6 +56,37 @@ class LibraryStackView extends ConsumerWidget {
 
       body = Column(
         children: [
+          // 상단 총 권수 헤더 (사진 비율 참고 적용)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 24.0, bottom: 0.0), // 책 윗부분에 거의 닿도록 아래 마진 제거
+            child: Column(
+              children: [
+                // 1. 숫자 텍스트 (총 글자 빼고 숫자+권 만, 가운데 정렬)
+                Text(
+                  '${books.length}권',
+                  style: const TextStyle(
+                    color: AppColors.burgundy,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Pretendard',
+                    letterSpacing: 2.0,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16.0), // 숫자와 라인 사이의 간격
+                // 2. 2px 가로선 (아래쪽 선반 받침대와 길이가 똑같이 일치하도록 패딩 8.0 적용)
+                Padding(
+                  // _buildShelfRow 쪽의 shelf 메인 공간 좌우 패딩이 8.0이므로 동일하게 맞춤
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    height: 2.0, // 2px 두께
+                    color: AppColors.burgundy, // 선반과 똑같은(혹은 텍스트와 똑같은) 버건디 라인
+                  ),
+                ),
+              ],
+            ),
+          ),
           // 스크롤 가능한 책장 영역 (위쪽 스크롤)
           Flexible(
             child: LayoutBuilder(
