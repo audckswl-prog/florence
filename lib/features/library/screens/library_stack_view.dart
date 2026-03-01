@@ -133,16 +133,19 @@ class LibraryStackView extends ConsumerWidget {
                   shelves.add(currentRow);
                 }
 
-                // shelves는 [0번째 줄(가장오래된책들), 1번째 줄, ... , 마지막 줄(최신책들)]
-                // 아랫부분 여백을 모두 없애고 맨 밑바닥 선이 네비바 라인에 완벽히 닿도록 수정
+                // shelves는 [1선반(가장 오래된 책들), 2선반, ... , 가장 최근 선반]
+                // 앱에 진입 시 가장 최근 선반(예: 6선반)이 최상단에 보여야 하므로 배열을 뒤집습니다.
+                final reversedShelves = shelves.reversed.toList();
+
                 return ListView.builder(
-                  reverse: true, // 아래쪽부터 아이템(선반) 시작
+                  reverse: false, // 위에서부터 아래로 순차적으로 스크롤 (최신 선반이 맨 위)
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0), // 상하 여백 완전히 제거
-                  itemCount: shelves.length,
+                  itemCount: reversedShelves.length,
                   itemBuilder: (context, index) {
-                    final shelfBooks = shelves[index];
-                    // reverse: true 이므로 index == 0 인 항목이 화면의 맨 밑바닥 선반
-                    return _buildShelfRow(shelfBooks, isLastShelf: index == 0);
+                    final shelfBooks = reversedShelves[index];
+                    // 가장 밑바닥(1선반)은 뒤집힌 배열의 맨 마지막 원소입니다.
+                    final isBottomMostShelf = index == reversedShelves.length - 1;
+                    return _buildShelfRow(shelfBooks, isLastShelf: isBottomMostShelf);
                   },
                 );
               }
