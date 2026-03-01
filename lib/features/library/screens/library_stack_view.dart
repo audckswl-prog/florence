@@ -62,9 +62,9 @@ class LibraryStackView extends ConsumerWidget {
             margin: const EdgeInsets.only(top: 24.0, bottom: 0.0), // 책 윗부분에 거의 닿도록 아래 마진 제거
             child: Column(
               children: [
-                // 1. 숫자 텍스트 (총 글자 빼고 숫자+권 만, 가운데 정렬)
+                // 1. 숫자 텍스트 (총 글자 추가, 가운데 정렬)
                 Text(
-                  '${books.length}권',
+                  '총 ${books.length}권',
                   style: const TextStyle(
                     color: AppColors.burgundy,
                     fontSize: 16,
@@ -75,13 +75,13 @@ class LibraryStackView extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16.0), // 숫자와 라인 사이의 간격
-                // 2. 2px 가로선 (아래쪽 선반 받침대와 길이가 똑같이 일치하도록 패딩 8.0 적용)
+                // 2. 1px 가로선 (양옆 패딩 24.0을 주어 아래쪽 붉은 선반과 가로 너비를 100% 동일하게 일치)
                 Padding(
-                  // _buildShelfRow 쪽의 shelf 메인 공간 좌우 패딩이 8.0이므로 동일하게 맞춤
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  // 선반이 화면 양끝에서 24만큼 떨어져서 시작하므로 패딩 24.0 적용
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Container(
-                    height: 2.0, // 2px 두께
-                    color: AppColors.burgundy, // 선반과 똑같은(혹은 텍스트와 똑같은) 버건디 라인
+                    height: 1.0, // 1px 두께
+                    color: AppColors.burgundy, // 선반과 똑같은 버건디 라인
                   ),
                 ),
               ],
@@ -134,16 +134,21 @@ class LibraryStackView extends ConsumerWidget {
                 }
 
                 // shelves는 [0번째 줄(가장오래된책들), 1번째 줄, ... , 마지막 줄(최신책들)]
-                // 아래부터 채울 것이므로 ListView를 reverse 처리하고, 역순으로 그려집니다.
-
+                // 맨 아래쪽 파란 기준선(네비바)에 선반 바닥이 정확히 오도록 하단 투명 여백을 추가
                 return ListView.builder(
                   reverse: true, // 아래쪽부터 아이템(선반) 시작
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  itemCount: shelves.length,
+                  // 아이템 개수를 +1 하여 맨 처음 렌더링(맨 아랫줄) 장소에 투명 스페이서를 끼워 넣음
+                  itemCount: shelves.length + 1,
                   itemBuilder: (context, index) {
-                    // reverse: true 이므로 index 0이 바텀(맨 아래)입니다.
-                    // 스크롤 시작 화면의 맨 아래 선반 = shelves[0] (가장 오래된 책 모음)
-                    final shelfBooks = shelves[index];
+                    if (index == 0) {
+                       // 0번째 인덱스 = 화면의 가장 밑바닥 (네비바 바로 위 파란선 공간)
+                       // 네비바랑 선반이 겹치거나 너무 뜨지 않게 사진에 맞춰 8.0 정도 띄움
+                       return const SizedBox(height: 8.0);
+                    }
+                    
+                    // 스페이서를 제외한 실제 선반 데이터
+                    final shelfBooks = shelves[index - 1];
                     
                     return _buildShelfRow(shelfBooks);
                   },
