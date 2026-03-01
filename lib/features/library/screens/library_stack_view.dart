@@ -88,7 +88,7 @@ class LibraryStackView extends ConsumerWidget {
                   if (readPages > 0 && totalPages > 0 && readPages <= totalPages) {
                     thicknessRatio = readPages / totalPages;
                   }
-                  bookWidth = ((10.0 + (pages * 0.05)) * thicknessRatio).clamp(8.0, 46.0);
+                  bookWidth = ((12.5 + (pages * 0.06)) * thicknessRatio).clamp(10.0, 55.0);
 
                   if (currentRowWidth + bookWidth + spacing > maxShelfWidth && currentRow.isNotEmpty) {
                     shelves.add(currentRow);
@@ -167,7 +167,7 @@ class LibraryStackView extends ConsumerWidget {
               ),
             ],
           ),
-          margin: const EdgeInsets.only(bottom: 32), // 선반 사이 세로 갭 (위쪽 선반 책들이 숨쉴 공간)
+          margin: const EdgeInsets.only(bottom: 24), // 선반 사이 세로 갭 (위쪽 선반 책들이 숨쉴 공간)
         ),
       ],
     );

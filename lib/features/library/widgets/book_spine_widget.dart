@@ -59,16 +59,16 @@ class BookSpineWidget extends ConsumerWidget {
       thicknessRatio = readPages / totalPages;
     }
 
-    // 최소 두께: 8.0 (얇은 책), 최대 46.0 (적당히 두꺼운 책)
-    final double thickness = ((10.0 + (pages * 0.05)) * thicknessRatio).clamp(8.0, 46.0);
+    // 최소 두께: 10.0 (얇은 책), 최대 55.0 (적당히 두꺼운 책)
+    final double thickness = ((12.5 + (pages * 0.06)) * thicknessRatio).clamp(10.0, 55.0);
     final int readCount = userBook.readCount;
 
     // 텍스트 색상: 항상 버건디 (브랜드 아이덴티티)
     const isDark = false; 
     const textColor = AppColors.burgundy;
 
-    // 2. 세로 책 높이 (100px ~ 115px 사이에서 약간 불규칙하게 - 스케일 축소)
-    final double bookHeight = 100.0 + (random.nextDouble() * 15.0);
+    // 2. 세로 책 높이 (125px ~ 142px 사이에서 약간 불규칙하게 - 중간 스케일)
+    final double bookHeight = 125.0 + (random.nextDouble() * 17.0);
 
     return GestureDetector(
       onTap: () {
@@ -131,11 +131,11 @@ class BookSpineWidget extends ConsumerWidget {
                     fontFamily: 'Pretendard',
                     fontWeight: FontWeight.w600,
                     // 크기가 줄어든 만큼 텍스트 폰트 사이즈도 미세하게 하향 조정
-                    fontSize: thickness > 22 ? 9.5 : 8,
+                    fontSize: thickness > 26 ? 10.5 : 8.5,
                     height: 1.1,
                     letterSpacing: -0.2,
                   ),
-                  maxLines: thickness > 30 ? 2 : 1,
+                  maxLines: thickness > 36 ? 2 : 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
