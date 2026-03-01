@@ -88,7 +88,7 @@ class LibraryStackView extends ConsumerWidget {
                   if (readPages > 0 && totalPages > 0 && readPages <= totalPages) {
                     thicknessRatio = readPages / totalPages;
                   }
-                  bookWidth = ((15.0 + (pages * 0.07)) * thicknessRatio).clamp(12.0, 64.0);
+                  bookWidth = ((10.0 + (pages * 0.05)) * thicknessRatio).clamp(8.0, 46.0);
 
                   if (currentRowWidth + bookWidth + spacing > maxShelfWidth && currentRow.isNotEmpty) {
                     shelves.add(currentRow);

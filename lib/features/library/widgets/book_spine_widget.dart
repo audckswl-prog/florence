@@ -59,16 +59,16 @@ class BookSpineWidget extends ConsumerWidget {
       thicknessRatio = readPages / totalPages;
     }
 
-    // 최소 두께: 12.0 (너무 얇아지면 안 보이므로), 최대 64.0
-    final double thickness = ((15.0 + (pages * 0.07)) * thicknessRatio).clamp(12.0, 64.0);
+    // 최소 두께: 8.0 (얇은 책), 최대 46.0 (적당히 두꺼운 책)
+    final double thickness = ((10.0 + (pages * 0.05)) * thicknessRatio).clamp(8.0, 46.0);
     final int readCount = userBook.readCount;
 
     // 텍스트 색상: 항상 버건디 (브랜드 아이덴티티)
     const isDark = false; 
     const textColor = AppColors.burgundy;
 
-    // 2. 세로 책 높이 (150px ~ 170px 사이에서 약간 불규칙하게)
-    final double bookHeight = 150.0 + (random.nextDouble() * 20.0);
+    // 2. 세로 책 높이 (100px ~ 115px 사이에서 약간 불규칙하게 - 스케일 축소)
+    final double bookHeight = 100.0 + (random.nextDouble() * 15.0);
 
     return GestureDetector(
       onTap: () {
@@ -118,7 +118,8 @@ class BookSpineWidget extends ConsumerWidget {
           child: Align(
             alignment: Alignment.center, // 중앙에서부터 텍스트 배치
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
+              // 크기를 줄였으므로 상하 여백도 살짝 줄임 (6.0)
+              padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 2.0),
               child: RotatedBox(
                 // 시계방향 90도 회전
                 quarterTurns: 1,
@@ -129,11 +130,12 @@ class BookSpineWidget extends ConsumerWidget {
                     color: textColor,
                     fontFamily: 'Pretendard',
                     fontWeight: FontWeight.w600,
-                    fontSize: thickness > 30 ? 11 : 9,
+                    // 크기가 줄어든 만큼 텍스트 폰트 사이즈도 미세하게 하향 조정
+                    fontSize: thickness > 22 ? 9.5 : 8,
                     height: 1.1,
                     letterSpacing: -0.2,
                   ),
-                  maxLines: thickness > 45 ? 2 : 1,
+                  maxLines: thickness > 30 ? 2 : 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
