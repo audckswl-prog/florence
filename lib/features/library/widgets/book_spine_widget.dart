@@ -130,8 +130,9 @@ class BookSpineWidget extends ConsumerWidget {
                     color: textColor,
                     fontFamily: 'Pretendard',
                     fontWeight: FontWeight.w600,
-                    // 폰트 크기 역시 원래처럼 큼직하게 복구
-                    fontSize: thickness > 34 ? 12.0 : 9.5,
+                    // 두꺼운 책들은 모두 동일한 고정 폰트 크기(10.5)를 사용하도록 제한
+                    // 아주 얇은 책인 경우에만 글씨가 잘리지 않게 점진적으로 작아지게 처리
+                    fontSize: thickness > 28 ? 10.5 : (thickness > 20 ? 9.0 : 7.5),
                     height: 1.1,
                     letterSpacing: -0.2,
                   ),
