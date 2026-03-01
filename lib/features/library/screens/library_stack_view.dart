@@ -141,7 +141,8 @@ class LibraryStackView extends ConsumerWidget {
                   itemCount: shelves.length,
                   itemBuilder: (context, index) {
                     final shelfBooks = shelves[index];
-                    return _buildShelfRow(shelfBooks);
+                    // reverse: true 이므로 index == 0 인 항목이 화면의 맨 밑바닥 선반
+                    return _buildShelfRow(shelfBooks, isLastShelf: index == 0);
                   },
                 );
               }
@@ -161,10 +162,12 @@ class LibraryStackView extends ConsumerWidget {
   }
 
   // 선반 한 칸(Row)을 그리는 헬퍼 위젯
-  Widget _buildShelfRow(List<UserBook> shelfBooks) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+  Widget _buildShelfRow(List<UserBook> shelfBooks, {bool isLastShelf = false}) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isLastShelf ? 12.0 : 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
         // 1) 책들이 서 있는 메인 공간
         // 바닥(선반 위)에 딱 맞닿게 정렬 -> crossAxisAlignment.end
         Padding(
