@@ -161,13 +161,10 @@ class LibraryStackView extends ConsumerWidget {
     );
   }
 
-  // 선반 한 칸(Row)을 그리는 헬퍼 위젯
   Widget _buildShelfRow(List<UserBook> shelfBooks, {bool isLastShelf = false}) {
-    return Container(
-      margin: EdgeInsets.only(bottom: isLastShelf ? 12.0 : 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
         // 1) 책들이 서 있는 메인 공간
         // 바닥(선반 위)에 딱 맞닿게 정렬 -> crossAxisAlignment.end
         Padding(
@@ -197,10 +194,10 @@ class LibraryStackView extends ConsumerWidget {
               ),
             ],
           ),
-          margin: const EdgeInsets.only(bottom: 24), // 선반 사이 세로 갭 (위쪽 선반 책들이 숨쉴 공간)
+          // 다음 선반과의 기본 간격은 24, 다만 마지막(가장 아래) 선반만 네비바에 가깝게 12로 축소
+          margin: EdgeInsets.only(bottom: isLastShelf ? 12.0 : 24.0), 
         ),
       ],
-    ),
-   );
+    );
   }
 }
