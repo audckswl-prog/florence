@@ -14,24 +14,14 @@ class BookSpineWidget extends ConsumerWidget {
   const BookSpineWidget({super.key, required this.userBook});
 
   // 3가지 포인트 컬러 중 아이보리(베이지) 계열만 사용 (텍스트는 버건디)
+  // 사용자가 제공한 사진의 베이스(오트밀/밝은 아이보리)를 바탕으로 미세하게 변형한 4가지 색상
   Color _generateColor(String key) {
     final random = Random(key.hashCode);
     final palettes = [
-      // 1. Duomo Terracotta (The Dome Tiles) - Warm, Earthy Orange-Reds
-      const Color(0xFFD97C63), // Light Terracotta
-      const Color(0xFFC86B54), // Brick Red
-      const Color(0xFFE08E79), // Faded Roof Tile
-      const Color(0xFFCD5C5C), // Indian Red (Classic)
-      // 2. Marble White (The Ribs & Facade) - Warm Off-Whites
-      const Color(0xFFE8E2D2), // Marble White
-      const Color(0xFFDFD7C4), // Aged Marble
-      const Color(0xFFF0EBE0), // Clean Marble
-      const Color(0xFFE6DBC6), // Warm Stone
-      // 3. Florence Stone (The Lantern & Structure) - Greige/Sand
-      const Color(0xFFC7B9A5), // Sandstone
-      const Color(0xFFD4C9BD), // Greyish Beige
-      const Color(0xFFBDB298), // Old Stone
-      const Color(0xFFC0B296), // Khaki Stone
+      const Color(0xFFEFECE4), // 1. Base Ivory (사진과 가장 유사한 밝고 고운 기본 오트밀)
+      const Color(0xFFE8E5DA), // 2. Slightly Darker / Greyer (살짝 톤다운된 차분한 회갈색 빛)
+      const Color(0xFFF3EFEA), // 3. Slightly Lighter (밝은 느낌이 강한 화이트 아이보리)
+      const Color(0xFFEBE6D8), // 4. Slightly Warmer (빛바랜 느낌이 더해진 웜 샌드 빛)
     ];
     return palettes[random.nextInt(palettes.length)];
   }
