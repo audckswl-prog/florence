@@ -16,10 +16,9 @@ class LibraryArchiveScreen extends StatelessWidget {
   static const Color _woodMid = AppColors.burgundy;      // 기본 앱 버건디 (#751013)
   static const Color _woodLight = Color(0xFF8B181C);     // 활기가 도는 밝은 버건디
   static const Color _woodHighlight = Color(0xFF9A2024); // AppColors.burgundyLight (빛망울)
-  static const Color _woodGrain = Color(0xFF5A0C0E);     // 중간 어두운 톤 (나무결 음영)
   // 책장 내부 벽면 (책장 프레임과 이어지는 깊고 어두운 톤)
-  static const Color _innerWall = Color(0xFF160203); // 버건디보다 명확하게 어두운 딥다크 컬러
-  
+  static const Color _innerWall = AppColors.ivory; // 배경과 동일한 밝은 단색 적용
+
   static const double _frameSide = 12.0; // 프레임 약간 두껍게 안정감 부여
   static const double _shelfThickness = 12.0;
   static const double _headerHeight = 50.0;
@@ -74,21 +73,13 @@ class LibraryArchiveScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── 배경: 독서티켓과 동일한 피렌체 배경 이미지 + 블러 ──
-          Image.asset(
-            'assets/images/florence_bg.jpg',
-            fit: BoxFit.cover,
-            alignment: Alignment.center, // 책장에서는 배경 이동 없이 고정
+          // ── 배경: 가장 뒷 배경을 화면 전체 AppColors.ivory 단색으로 설정 ──
+          Container(
             width: double.infinity,
             height: double.infinity,
+            color: AppColors.ivory,
           ),
-          // Blur layer
-          BackdropFilter(
-            filter: dart_ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(color: Colors.transparent),
-          ),
-          // 틴트 효과 없이 원본+블러만 유지 (너무 화려해지지 않도록 책장에 집중)
-
+          
           // ── 책장 몸체 (Scrollable) ──
           SafeArea(
             child: LayoutBuilder(
@@ -246,16 +237,16 @@ class LibraryArchiveScreen extends StatelessWidget {
                                       'Firenze',
                                       style: GoogleFonts.greatVibes(
                                         fontSize: 28,
-                                        color: AppColors.ivory, // 텍스트를 흰색(상아색)으로 변경
+                                        color: AppColors.charcoal, // 텍스트를 검정 계열(Charcoal)으로 변경
                                         shadows: [
                                           Shadow(
-                                            color: Colors.black.withOpacity(0.8), // 글씨 안쪽으로 깊게 파인 그림자
-                                            offset: const Offset(1.0, 1.5),
+                                            color: Colors.white.withOpacity(0.5), // 양각 느낌의 밝은 하이라이트 투명하게
+                                            offset: const Offset(1.0, 1.0),
                                             blurRadius: 1.0,
                                           ),
                                           Shadow(
-                                            color: _woodDark.withOpacity(0.9),
-                                            offset: const Offset(-1.0, -1.0),
+                                            color: Colors.black.withOpacity(0.3), // 약간의 그림자 추가
+                                            offset: const Offset(-0.5, -0.5),
                                             blurRadius: 1.0,
                                           ),
                                         ],
@@ -283,8 +274,8 @@ class LibraryArchiveScreen extends StatelessWidget {
         }, // LayoutBuilder builder
       ), // LayoutBuilder
     ), // SafeArea
-          ], // Stack children
-        ), // body: Stack
+        ], // Stack children
+      ), // body: Stack
     ); // Scaffold
   } // build method
 
