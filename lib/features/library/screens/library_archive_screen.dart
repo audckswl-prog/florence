@@ -17,7 +17,7 @@ class LibraryArchiveScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.primaryText),
+        iconTheme: const IconThemeData(color: AppColors.charcoal),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
