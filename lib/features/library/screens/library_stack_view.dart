@@ -255,11 +255,11 @@ class LibraryStackView extends ConsumerWidget {
           ),
         ),
 
-        // 2) 묵직한 고동색 느낌의 플로팅 선반 받침대
+        // 2) 원래 색상의 플로팅 선반 받침대 (버건디 톤)
         Container(
           height: 12, // 선반 두께
           decoration: BoxDecoration(
-            color: const Color(0xFF3F1D16), // 깊은 고동색(Dark Brown)
+            color: const Color(0xFF5A1E1E), // 원래 색상 복구
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
