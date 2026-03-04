@@ -255,12 +255,11 @@ class LibraryStackView extends ConsumerWidget {
           ),
         ),
 
-        // 2) 묵직한 나무 느낌의 선반 받침대
+        // 2) 묵직한 고동색 느낌의 플로팅 선반 받침대
         Container(
-          width: double.infinity,
           height: 12, // 선반 두께
           decoration: BoxDecoration(
-            color: const Color(0xFF5A1E1E), // 어두운 버건디/우드 색감
+            color: const Color(0xFF3F1D16), // 깊은 고동색(Dark Brown)
             borderRadius: BorderRadius.circular(4),
             boxShadow: [
               BoxShadow(
@@ -270,8 +269,8 @@ class LibraryStackView extends ConsumerWidget {
               ),
             ],
           ),
-          // 동적으로 계산된 간격(Margin) 적용
-          margin: EdgeInsets.only(bottom: bottomMargin),
+          // 원래 width: double.infinity 였으나, 양 옆을 가로선과 똑같이 비우기 위해 24 마진을 추가
+          margin: EdgeInsets.only(left: 24.0, right: 24.0, bottom: bottomMargin),
         ),
       ],
     );
