@@ -17,8 +17,8 @@ class LibraryArchiveScreen extends StatelessWidget {
   static const Color _woodHighlight = Color(0xFF553B2C);
   static const Color _woodGrain = Color(0xFF332219);
   
-  // 책장 내부 벽면 (깊이감을 위해 약간 어둡게)
-  static const Color _innerWall = Color(0xFFE8E2DA);
+  // 책장 내부 벽면 (책장 프레임과 이어지는 깊은 원목 색상)
+  static const Color _innerWall = Color(0xFF241811); // _woodDark보다 살짝 더 어두워 안쪽으로 들어간 느낌
   
   static const double _frameSide = 12.0; // 프레임 약간 두껍게 안정감 부여
   static const double _shelfThickness = 12.0;
