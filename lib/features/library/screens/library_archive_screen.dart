@@ -49,14 +49,26 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.charcoal),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF140F0D), // 어두운 방 배경색
+        gradient: RadialGradient(
+          center: Alignment(0, -0.2), // 살짝 위쪽을 비추는 조명
+          radius: 0.8,
+          colors: [
+            Color(0xFF3A2920), // 백열등이 비추는 따뜻한 중심부
+            Color(0xFF140F0D), // 어두운 주변부
+          ],
+        ),
       ),
-      body: SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white70),
+        ),
+        body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double screenW = constraints.maxWidth;
@@ -132,12 +144,24 @@ class LibraryArchiveScreen extends StatelessWidget {
                   vertical: verticalMargin,
                 ),
                 // ─── 책장 가구 본체 ───
-                child: SizedBox(
+                child: Container(
                   width: shelfOuterW,
                   height: actualOuterH,
-                  child: Stack(
-                    children: [
-                      // 상단 프레임
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.6), // 어두운 방에 어울리는 깊은 그림자
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5.0),
+                    child: Stack(
+                      children: [
+                        // 상단 프레임
                       Positioned(
                         top: 0, left: 0, right: 0,
                         height: _frameSide,
@@ -212,15 +236,17 @@ class LibraryArchiveScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
+                  ), // Stack
+                ), // ClipRRect
+              ), // Container (formerly SizedBox)
+            ), // Padding
+          ); // SingleChildScrollView
+        }, // LayoutBuilder builder
+      ), // LayoutBuilder
+    ), // SafeArea
+  ), // Scaffold
+); // Container
+} // build method
 
   List<List<int>> _arrangeBooksOnShelves(
     List<double> widths, double availableW, double scale,
