@@ -11,9 +11,15 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    body:
-    SafeArea(
-      child: Container(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF5A1E1E), // 프레임과 같은 원목 색상으로 상단바 통일
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white), // 뒤로가기 버튼 하얗게
+      ),
+      body: SafeArea(
+        child: Container(
         width: double.infinity,
         height: double.infinity,
         color: const Color(0xFFF7F4F0), // 벽지 색상
