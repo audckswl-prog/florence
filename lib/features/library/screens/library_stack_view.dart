@@ -12,17 +12,6 @@ import '../../../data/models/user_book_model.dart';
 class LibraryStackView extends ConsumerWidget {
   const LibraryStackView({super.key});
 
-  double _calcShelfPhysicalHeight(List<UserBook> books) {
-    if (books.isEmpty) return 0.0;
-    double maxH = 0.0;
-    for (var b in books) {
-      final r = Random(b.isbn.hashCode);
-      final double h = 150.0 + (r.nextDouble() * 20.0);
-      if (h > maxH) maxH = h;
-    }
-    return maxH + 12.0; // max book height + wood shelf base
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final booksAsync = ref.watch(readBooksProvider);
@@ -149,45 +138,31 @@ class LibraryStackView extends ConsumerWidget {
                 // 즉, [6선반, 5선반, 4선반...] 순서
                 final reversedShelves = shelves.reversed.toList();
 
-                // 사용자가 지정한 완벽한 스냅(Snap) 위치 계산:
-                // 앱 진입 시 최신의 2개 선반(인덱스 0, 1)이 화면에 보일 때
-                // 5선반(인덱스 1)의 밑바닥이 정확히 하단바와 12px 간격을 이루게 합니다.
-                double topPadding = 0.0;
-                if (reversedShelves.isNotEmpty) {
-                  double h0 = _calcShelfPhysicalHeight(reversedShelves[0]);
-                  double h1 = reversedShelves.length > 1 ? _calcShelfPhysicalHeight(reversedShelves[1]) : 0.0;
-                  
-                  // index 0의 기본 마진은 24 (선반 간격)
-                  // targetHeight = 0선반높이 + 24 + 1선반높이 + 시각적여백(12)
-                  double targetHeight = reversedShelves.length == 1 ? (h0 + 12.0) : (h0 + 24.0 + h1 + 12.0);
-                  
-                  if (constraints.maxHeight > targetHeight) {
-                    topPadding = constraints.maxHeight - targetHeight;
-                  }
+                // 고정된 선반 컴포넌트의 총 높이 (책을 담는 최대 공간 170 + 나무 바닥 12 = 182)
+                const double shelfHeight = 182.0;
+                // 리스트 최상단(가로선 바로 아래)과 첫 번째 선반 사이의 고정 시작 여백
+                const double topPadding = 24.0; 
+                // 화면 가장 밑바닥(하단바)과 두 번째 선반의 바닥이 띄워져야 할 최종 목표 여백
+                const double bottomTargetGap = 12.0;
+
+                // 기기 화면 높이(constraints.maxHeight) 내에서 2개의 선반이 완벽하게 12px 간격으로 하단에 배치되기 위한 동적 간격(황금비율)을 계산합니다.
+                double dynamicGap = constraints.maxHeight - topPadding - (shelfHeight * 2) - bottomTargetGap;
+                if (dynamicGap < 24.0) {
+                  dynamicGap = 24.0; // 세로로 매우 짧은 화면일 경우 아이템이 겹치지 않도록 최소 24px 간격을 보장합니다.
                 }
 
-                return SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight, // 화면 높이보다 내용이 적어도 꽉 채움
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start, // 상단부터 배치하며 계산된 패딩으로 밀어냅니다.
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (topPadding > 0) SizedBox(height: topPadding),
-                        ...List.generate(reversedShelves.length, (index) {
-                          final shelfBooks = reversedShelves[index];
-                          // 뒤집힌 배열이므로 마지막 인덱스(length - 1)가 가장 오래된 1선반(진짜 맨 밑바닥)입니다.
-                          final isBottomMostShelf = index == reversedShelves.length - 1;
-                          
-                          return _buildShelfRow(shelfBooks, isLastShelf: isBottomMostShelf);
-                        }),
-                      ],
-                    ),
-                  ),
+                return ListView.builder(
+                  padding: const EdgeInsets.only(top: topPadding, bottom: 0, left: 24, right: 24),
+                  itemCount: reversedShelves.length,
+                  itemBuilder: (context, index) {
+                    final shelfBooks = reversedShelves[index];
+                    final isBottomMostShelf = index == reversedShelves.length - 1;
+                    
+                    // 마지막(가장 오래된 맨 밑바닥) 선반은 네비바와 12px, 그 외 모든 일반 선반들은 기기 화면비율에 맞춘 간격(dynamicGap) 적용
+                    final margin = isBottomMostShelf ? 12.0 : dynamicGap;
+                    
+                    return _buildShelfRow(shelfBooks, bottomMargin: margin);
+                  },
                 );
               }
             ),
@@ -205,21 +180,24 @@ class LibraryStackView extends ConsumerWidget {
     );
   }
 
-  Widget _buildShelfRow(List<UserBook> shelfBooks, {bool isLastShelf = false}) {
+  Widget _buildShelfRow(List<UserBook> shelfBooks, {double bottomMargin = 24.0}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 1) 책들이 서 있는 메인 공간
-        // 바닥(선반 위)에 딱 맞닿게 정렬 -> crossAxisAlignment.end
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center, 
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: shelfBooks.map((b) => BookSpineWidget(
-              key: ValueKey(b.isbn),
-              userBook: b,
-            )).toList(),
+        // 1) 책들이 서 있는 메인 공간 (높이 170px 고정)
+        // 최대 170px 높이의 틀 안에서 어떤 높이의 책(150~170)이 오든 바닥(목재 선반 위)에 닿게 정렬
+        SizedBox(
+          height: 170.0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center, 
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: shelfBooks.map((b) => BookSpineWidget(
+                key: ValueKey(b.isbn),
+                userBook: b,
+              )).toList(),
+            ),
           ),
         ),
         
@@ -238,8 +216,8 @@ class LibraryStackView extends ConsumerWidget {
               ),
             ],
           ),
-          // 다음 선반과의 기본 간격은 24, 다만 마지막(가장 아래) 선반만 네비바에 가깝게 12로 축소
-          margin: EdgeInsets.only(bottom: isLastShelf ? 12.0 : 24.0), 
+          // 동적으로 계산된 간격(Margin) 적용
+          margin: EdgeInsets.only(bottom: bottomMargin), 
         ),
       ],
     );
