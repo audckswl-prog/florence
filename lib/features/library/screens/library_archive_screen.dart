@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
@@ -16,9 +17,8 @@ class LibraryArchiveScreen extends StatelessWidget {
   static const Color _woodLight = Color(0xFF8B181C);     // 활기가 도는 밝은 버건디
   static const Color _woodHighlight = Color(0xFF9A2024); // AppColors.burgundyLight (빛망울)
   static const Color _woodGrain = Color(0xFF5A0C0E);     // 중간 어두운 톤 (나무결 음영)
-  
   // 책장 내부 벽면 (책장 프레임과 이어지는 깊고 어두운 톤)
-  static const Color _innerWall = Color(0xFF2A0507); // _woodDark보다 비어보이는 공간 느낌
+  static const Color _innerWall = Color(0xFF160203); // 버건디보다 명확하게 어두운 딥다크 컬러
   
   static const double _frameSide = 12.0; // 프레임 약간 두껍게 안정감 부여
   static const double _shelfThickness = 12.0;
@@ -63,27 +63,35 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF140F0D), // 어두운 방 배경색
-        gradient: RadialGradient(
-          center: Alignment(0, -0.2), // 살짝 위쪽을 비추는 조명
-          radius: 0.8,
-          colors: [
-            Color(0xFF3A2920), // 백열등이 비추는 따뜻한 중심부
-            Color(0xFF140F0D), // 어두운 주변부
-          ],
-        ),
-      ),
-      child: Scaffold(
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: Colors.white70),
-        ),
-        body: SafeArea(
-        child: LayoutBuilder(
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white70),
+      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ── 배경: 독서티켓과 동일한 피렌체 배경 이미지 + 블러 ──
+          Image.asset(
+            'assets/images/florence_bg.jpg',
+            fit: BoxFit.cover,
+            alignment: Alignment.center, // 책장에서는 배경 이동 없이 고정
+            width: double.infinity,
+            height: double.infinity,
+          ),
+          // Blur layer
+          BackdropFilter(
+            filter: dart_ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(color: Colors.transparent),
+          ),
+          // 틴트 효과 없이 원본+블러만 유지 (너무 화려해지지 않도록 책장에 집중)
+
+          // ── 책장 몸체 (Scrollable) ──
+          SafeArea(
+            child: LayoutBuilder(
           builder: (context, constraints) {
             final double screenW = constraints.maxWidth;
             final double screenH = constraints.maxHeight;
@@ -275,8 +283,8 @@ class LibraryArchiveScreen extends StatelessWidget {
         }, // LayoutBuilder builder
       ), // LayoutBuilder
     ), // SafeArea
-  ), // Scaffold
-); // Container
+  ], // Stack children
+); // Stack
 } // build method
 
   List<List<int>> _arrangeBooksOnShelves(
