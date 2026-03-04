@@ -22,14 +22,14 @@ class AiChatScreen extends ConsumerStatefulWidget {
 class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   final List<Map<String, String>> _messages = [
     {
       'role': 'ai',
       'text': '안녕하세요! ${'이 책'}에 대해 어떤 점이 궁금하신가요? 발제문이 필요하시다면 말씀해주세요.',
-    }
+    },
   ];
-  
+
   bool _isLoading = false;
 
   Future<void> _sendMessage() async {
@@ -46,17 +46,15 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     try {
       // 1. Send to Gemini (Mocked for now)
       await Future.delayed(const Duration(seconds: 2));
-      final aiResponse = "좋은 질문이네요! 그 부분에 대해서는 이렇게 생각해 볼 수 있습니다... (AI 답변 시뮬레이션)";
+      final aiResponse =
+          "좋은 질문이네요! 그 부분에 대해서는 이렇게 생각해 볼 수 있습니다... (AI 답변 시뮬레이션)";
 
       // 2. Save QnA Log to Supabase using Provider
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId != null) {
-        await ref.read(supabaseRepositoryProvider).saveAiQnaLog(
-          widget.project.id, 
-          userId, 
-          text, 
-          aiResponse
-        );
+        await ref
+            .read(supabaseRepositoryProvider)
+            .saveAiQnaLog(widget.project.id, userId, text, aiResponse);
         // Refresh project members to update the question count UI
         ref.invalidate(projectMembersProvider(widget.project.id));
       }
@@ -66,7 +64,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         _isLoading = false;
       });
       _scrollToBottom();
-      
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -106,11 +103,18 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           children: [
             const Text(
               'AI 도슨트',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
             Text(
               widget.project.name,
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12),
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 12,
+              ),
             ),
           ],
         ),
@@ -134,7 +138,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text('AI가 답변을 작성하고 있습니다...', style: TextStyle(color: AppColors.greyLight, fontSize: 12)),
+                child: Text(
+                  'AI가 답변을 작성하고 있습니다...',
+                  style: TextStyle(color: AppColors.greyLight, fontSize: 12),
+                ),
               ),
             ),
           _buildMessageInput(),
@@ -164,8 +171,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
-              )
-          ]
+              ),
+          ],
         ),
         child: Text(
           text,
@@ -193,8 +200,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
-          )
-        ]
+          ),
+        ],
       ),
       child: Row(
         children: [

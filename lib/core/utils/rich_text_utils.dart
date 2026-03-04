@@ -7,7 +7,7 @@ class RichTextUtils {
     try {
       final List<dynamic> jsonList = jsonDecode(jsonStr);
       final buffer = StringBuffer();
-      
+
       for (var element in jsonList) {
         if (element is Map<String, dynamic> && element.containsKey('insert')) {
           final insert = element['insert'];

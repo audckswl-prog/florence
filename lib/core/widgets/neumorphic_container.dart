@@ -8,11 +8,12 @@ class NeumorphicContainer extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final double borderRadius;
-  final double depth; // Positive for convex/elevated, Negative for concave/inset (future use)
+  final double
+  depth; // Positive for convex/elevated, Negative for concave/inset (future use)
   final Color? color;
   final BoxShape shape;
   final Border? border;
-  
+
   const NeumorphicContainer({
     super.key,
     this.child,
@@ -30,7 +31,7 @@ class NeumorphicContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final baseColor = color ?? AppColors.ivory;
-    
+
     return Container(
       width: width,
       height: height,
@@ -38,7 +39,9 @@ class NeumorphicContainer extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
         color: baseColor,
-        borderRadius: shape == BoxShape.circle ? null : BorderRadius.circular(borderRadius),
+        borderRadius: shape == BoxShape.circle
+            ? null
+            : BorderRadius.circular(borderRadius),
         shape: shape,
         border: border,
         boxShadow: depth != 0

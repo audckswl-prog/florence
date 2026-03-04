@@ -11,8 +11,9 @@ class AladinService {
   AladinService({required this.ttbKey});
 
   Future<List<Book>> searchBook(String query) async {
-    String urlStr = '$baseUrl/ItemSearch.aspx?ttbkey=$ttbKey&Query=$query&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&Output=js&Version=20131101';
-    
+    String urlStr =
+        '$baseUrl/ItemSearch.aspx?ttbkey=$ttbKey&Query=$query&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&Output=js&Version=20131101';
+
     if (kIsWeb) {
       // Use corsproxy.io for better stability
       urlStr = 'https://corsproxy.io/?${Uri.encodeComponent(urlStr)}';
@@ -36,13 +37,14 @@ class AladinService {
   }
 
   Future<Book?> getBookDetail(String isbn) async {
-     String urlStr = '$baseUrl/ItemLookUp.aspx?ttbkey=$ttbKey&ItemId=$isbn&ItemIdType=ISBN13&Output=js&Version=20131101';
+    String urlStr =
+        '$baseUrl/ItemLookUp.aspx?ttbkey=$ttbKey&ItemId=$isbn&ItemIdType=ISBN13&Output=js&Version=20131101';
 
-     if (kIsWeb) {
-       urlStr = 'https://corsproxy.io/?${Uri.encodeComponent(urlStr)}';
-     }
+    if (kIsWeb) {
+      urlStr = 'https://corsproxy.io/?${Uri.encodeComponent(urlStr)}';
+    }
 
-     final url = Uri.parse(urlStr);
+    final url = Uri.parse(urlStr);
 
     try {
       final response = await http.get(url);
@@ -51,12 +53,11 @@ class AladinService {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
         final List<dynamic> items = data['item'] ?? [];
         if (items.isNotEmpty) {
-           return Book.fromJson(items.first);
+          return Book.fromJson(items.first);
         }
         return null;
-        
       } else {
-         throw Exception('Failed to load book detail');
+        throw Exception('Failed to load book detail');
       }
     } catch (e) {
       throw Exception('Error getting book details: $e');

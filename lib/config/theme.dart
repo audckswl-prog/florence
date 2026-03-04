@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 // import 'package:google_fonts/google_fonts.dart'; // Removed as we use custom asset font
 import '../core/constants/app_colors.dart';
@@ -6,7 +5,8 @@ import '../core/constants/app_colors.dart';
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
-      useMaterial3: false, // Disabled to fix shader compilation error on Windows Web build
+      useMaterial3:
+          false, // Disabled to fix shader compilation error on Windows Web build
       scaffoldBackgroundColor: AppColors.ivory,
       primaryColor: AppColors.burgundy,
       colorScheme: ColorScheme.fromSeed(
@@ -19,7 +19,7 @@ class AppTheme {
         onSurface: AppColors.charcoal,
         onBackground: AppColors.charcoal,
       ),
-      
+
       // Typography
       fontFamily: 'Pretendard', // Set default font family
       textTheme: const TextTheme(
@@ -39,7 +39,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: AppColors.black,
         ),
-        
+
         // Titles
         titleLarge: TextStyle(
           fontSize: 22,
@@ -88,7 +88,7 @@ class AppTheme {
           color: AppColors.charcoal,
         ),
       ),
-      
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.burgundy,
@@ -112,9 +112,7 @@ class AppTheme {
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         behavior: SnackBarBehavior.floating,
         elevation: 10,
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),

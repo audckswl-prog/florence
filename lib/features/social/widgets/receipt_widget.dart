@@ -11,11 +11,14 @@ class ReceiptWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      // Use ClipPath for Zigzag edges if we want extreme detail, 
+      // Use ClipPath for Zigzag edges if we want extreme detail,
       // but for now, let's use a decorating container with a custom painter or just a simple look.
       // Let's implement a custom painter for Zigzag edges.
       child: CustomPaint(
-        painter: ZigZagPainter(color: const Color(0xFFFDFCF0), shadowColor: Colors.black26),
+        painter: ZigZagPainter(
+          color: const Color(0xFFFDFCF0),
+          shadowColor: Colors.black26,
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           width: double.infinity,
@@ -35,7 +38,9 @@ class ZigZagPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = color;
-    final shadowPaint = Paint()..color = shadowColor..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+    final shadowPaint = Paint()
+      ..color = shadowColor
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
     const double spikeSize = 10.0;
     final double width = size.width;
@@ -49,7 +54,7 @@ class ZigZagPainter extends CustomPainter {
       path.lineTo(x + spikeSize, spikeSize);
       path.lineTo(x + spikeSize * 2, 0);
     }
-    
+
     // Right side
     path.lineTo(width, height);
 

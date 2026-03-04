@@ -11,10 +11,7 @@ import '../screens/reading_ticket_screen.dart';
 class BookSpineWidget extends ConsumerWidget {
   final UserBook userBook;
 
-  const BookSpineWidget({
-    super.key,
-    required this.userBook,
-  });
+  const BookSpineWidget({super.key, required this.userBook});
 
   // 3가지 포인트 컬러 중 아이보리(베이지) 계열만 사용 (텍스트는 버건디)
   Color _generateColor(String key) {
@@ -25,13 +22,11 @@ class BookSpineWidget extends ConsumerWidget {
       const Color(0xFFC86B54), // Brick Red
       const Color(0xFFE08E79), // Faded Roof Tile
       const Color(0xFFCD5C5C), // Indian Red (Classic)
-
       // 2. Marble White (The Ribs & Facade) - Warm Off-Whites
       const Color(0xFFE8E2D2), // Marble White
       const Color(0xFFDFD7C4), // Aged Marble
       const Color(0xFFF0EBE0), // Clean Marble
       const Color(0xFFE6DBC6), // Warm Stone
-
       // 3. Florence Stone (The Lantern & Structure) - Greige/Sand
       const Color(0xFFC7B9A5), // Sandstone
       const Color(0xFFD4C9BD), // Greyish Beige
@@ -48,23 +43,26 @@ class BookSpineWidget extends ConsumerWidget {
 
     // 1. 두께 계산 (기본 두께)
     int pages = userBook.book.pageCount;
-    if (pages == 0) pages = 200 + random.nextInt(400); 
-    
+    if (pages == 0) pages = 200 + random.nextInt(400);
+
     // N회독, 부분 독서 반영
     final int readPages = userBook.readPages;
     final int totalPages = userBook.totalPages ?? pages;
-    
+
     double thicknessRatio = 1.0;
     if (readPages > 0 && totalPages > 0 && readPages <= totalPages) {
       thicknessRatio = readPages / totalPages;
     }
 
     // 최소 두께: 14.0 (얇은 책), 최대 70.0 (적당히 두꺼운 책)
-    final double thickness = ((18.0 + (pages * 0.08)) * thicknessRatio).clamp(14.0, 70.0);
+    final double thickness = ((18.0 + (pages * 0.08)) * thicknessRatio).clamp(
+      14.0,
+      70.0,
+    );
     final int readCount = userBook.readCount;
 
     // 텍스트 색상: 항상 버건디 (브랜드 아이덴티티)
-    const isDark = false; 
+    const isDark = false;
     const textColor = AppColors.burgundy;
 
     // 2. 세로 책 높이 (150px ~ 170px 사이에서 약간 불규칙하게 - 원래의 큼직한 스케일)
@@ -76,29 +74,27 @@ class BookSpineWidget extends ConsumerWidget {
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
-          builder: (context) => BookDetailModal(
-            book: userBook.book,
-            userBook: userBook,
-          ),
+          builder: (context) =>
+              BookDetailModal(book: userBook.book, userBook: userBook),
         ).then((result) async {
           if (result == true) {
             ref.invalidate(userBooksProvider);
-          } else if (result is Map<String, dynamic> && result['action'] == 'read_completed') {
+          } else if (result is Map<String, dynamic> &&
+              result['action'] == 'read_completed') {
             final nav = Navigator.of(context);
             ref.invalidate(userBooksProvider);
             final mockUserBook = result['book'];
             final quote = await showDialog<String>(
               context: context,
-              builder: (context) => ReadingCompletionDialog(userBook: mockUserBook),
+              builder: (context) =>
+                  ReadingCompletionDialog(userBook: mockUserBook),
             );
-            
+
             if (quote != null) {
               nav.push(
                 MaterialPageRoute(
-                   builder: (context) => ReadingTicketScreen(
-                     userBook: mockUserBook,
-                     quote: quote,
-                   ),
+                  builder: (context) =>
+                      ReadingTicketScreen(userBook: mockUserBook, quote: quote),
                 ),
               );
             }
@@ -119,7 +115,10 @@ class BookSpineWidget extends ConsumerWidget {
             alignment: Alignment.center, // 중앙에서부터 텍스트 배치
             child: Padding(
               // 다시 큰 스케일로 돌아왔으므로 기본 패딩 복구
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 2.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 2.0,
+              ),
               child: RotatedBox(
                 // 시계방향 90도 회전
                 quarterTurns: 1,
@@ -132,7 +131,9 @@ class BookSpineWidget extends ConsumerWidget {
                     fontWeight: FontWeight.w600,
                     // 두꺼운 책들은 모두 동일한 고정 폰트 크기(10.5)를 사용하도록 제한
                     // 아주 얇은 책인 경우에만 글씨가 잘리지 않게 점진적으로 작아지게 처리
-                    fontSize: thickness > 28 ? 10.5 : (thickness > 20 ? 9.0 : 7.5),
+                    fontSize: thickness > 28
+                        ? 10.5
+                        : (thickness > 20 ? 9.0 : 7.5),
                     height: 1.1,
                     letterSpacing: -0.2,
                   ),
@@ -193,15 +194,14 @@ class BookSpinePainter extends CustomPainter {
       end: Alignment.centerRight,
       colors: [
         Color.lerp(color, Colors.white, 0.05)!, // Left slight highlight
-        color,                                  // Base
+        color, // Base
         Color.lerp(color, Colors.black, 0.05)!, // Right Base
         Color.lerp(color, Colors.black, 0.45)!, // Right Edge (Deep Shadow)
       ],
       stops: const [0.0, 0.3, 0.8, 1.0],
     );
 
-    final Paint spinePaint = Paint()
-      ..shader = spineGradient.createShader(rect);
+    final Paint spinePaint = Paint()..shader = spineGradient.createShader(rect);
 
     canvas.drawRRect(rrect, spinePaint);
 
@@ -217,7 +217,7 @@ class BookSpinePainter extends CustomPainter {
   // 노이즈 & 질감 텍스처 그리기 (레퍼런스 이미지의 3가지 질감 구현)
   void _drawTexture(Canvas canvas, double width, double height) {
     final random = Random((width * height).toInt());
-    
+
     if (textureStyle == 0) {
       // 1. 거친 패브릭/천 질감 (맨 위 갈색 책 느낌)
       final Paint darkHatch = Paint()
@@ -230,28 +230,52 @@ class BookSpinePainter extends CustomPainter {
         ..strokeWidth = 1.0;
 
       for (double y = 0; y < height; y += 2.0) {
-        canvas.drawLine(Offset(0, y), Offset(width, y), random.nextBool() ? darkHatch : lightHatch);
+        canvas.drawLine(
+          Offset(0, y),
+          Offset(width, y),
+          random.nextBool() ? darkHatch : lightHatch,
+        );
       }
       for (double x = 0; x < width; x += 2.0) {
-        canvas.drawLine(Offset(x, 0), Offset(x, height), random.nextBool() ? darkHatch : lightHatch);
+        canvas.drawLine(
+          Offset(x, 0),
+          Offset(x, height),
+          random.nextBool() ? darkHatch : lightHatch,
+        );
       }
-      
+
       final Paint bumpPaint = Paint()
         ..color = Colors.black.withOpacity(0.06)
         ..style = PaintingStyle.fill;
       int bumpCount = (width * height * 0.15).toInt();
       for (int i = 0; i < bumpCount; i++) {
-         canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.5, 1.5), bumpPaint);
+        canvas.drawRect(
+          Rect.fromLTWH(
+            random.nextDouble() * width,
+            random.nextDouble() * height,
+            1.5,
+            1.5,
+          ),
+          bumpPaint,
+        );
       }
     } else if (textureStyle == 1) {
       // 2. 크라프트지/재생지 질감 (두번째 베이지색 책 느낌)
       final Paint noisePaint = Paint()
         ..color = Colors.black.withOpacity(0.04)
         ..style = PaintingStyle.fill;
-      
+
       int density = (width * height * 0.4).toInt();
       for (int i = 0; i < density; i++) {
-        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.0, 1.0), noisePaint);
+        canvas.drawRect(
+          Rect.fromLTWH(
+            random.nextDouble() * width,
+            random.nextDouble() * height,
+            1.0,
+            1.0,
+          ),
+          noisePaint,
+        );
       }
 
       final Paint darkFleck = Paint()
@@ -260,40 +284,65 @@ class BookSpinePainter extends CustomPainter {
       int fleckCount = (width * height * 0.005).toInt();
       for (int i = 0; i < fleckCount; i++) {
         double size = 1.0 + random.nextDouble() * 1.5;
-        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, size, size), darkFleck);
+        canvas.drawRect(
+          Rect.fromLTWH(
+            random.nextDouble() * width,
+            random.nextDouble() * height,
+            size,
+            size,
+          ),
+          darkFleck,
+        );
       }
-      
+
       final Paint grain = Paint()
         ..color = Colors.black.withOpacity(0.02)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.5;
       for (double y = 0; y < height; y += 3.0) {
-        if(random.nextBool()) canvas.drawLine(Offset(0, y), Offset(width, y), grain);
+        if (random.nextBool())
+          canvas.drawLine(Offset(0, y), Offset(width, y), grain);
       }
     } else {
       // 3. 매끄러운 무광 질감 (아래쪽 초록/검정 책 느낌)
       final Paint smoothNoise = Paint()
         ..color = Colors.black.withOpacity(0.03)
         ..style = PaintingStyle.fill;
-        
+
       int density = (width * height * 0.2).toInt();
       for (int i = 0; i < density; i++) {
-        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.0, 1.0), smoothNoise);
+        canvas.drawRect(
+          Rect.fromLTWH(
+            random.nextDouble() * width,
+            random.nextDouble() * height,
+            1.0,
+            1.0,
+          ),
+          smoothNoise,
+        );
       }
-      
+
       final Paint whiteNoise = Paint()
         ..color = Colors.white.withOpacity(0.03)
         ..style = PaintingStyle.fill;
       for (int i = 0; i < density / 2; i++) {
-        canvas.drawRect(Rect.fromLTWH(random.nextDouble() * width, random.nextDouble() * height, 1.0, 1.0), whiteNoise);
+        canvas.drawRect(
+          Rect.fromLTWH(
+            random.nextDouble() * width,
+            random.nextDouble() * height,
+            1.0,
+            1.0,
+          ),
+          whiteNoise,
+        );
       }
     }
   }
 
   @override
   bool shouldRepaint(covariant BookSpinePainter oldDelegate) {
-    return oldDelegate.color != color || 
-           oldDelegate.thickness != thickness ||
-           oldDelegate.textureStyle != textureStyle;
+    return oldDelegate.color != color ||
+        oldDelegate.thickness != thickness ||
+        oldDelegate.textureStyle != textureStyle;
   }
 }

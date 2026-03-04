@@ -18,7 +18,8 @@ class FlorenceLoader extends StatefulWidget {
   State<FlorenceLoader> createState() => _FlorenceLoaderState();
 }
 
-class _FlorenceLoaderState extends State<FlorenceLoader> with SingleTickerProviderStateMixin {
+class _FlorenceLoaderState extends State<FlorenceLoader>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -74,7 +75,8 @@ class FlorenceLoadingOverlay extends StatefulWidget {
   State<FlorenceLoadingOverlay> createState() => _FlorenceLoadingOverlayState();
 }
 
-class _FlorenceLoadingOverlayState extends State<FlorenceLoadingOverlay> with SingleTickerProviderStateMixin {
+class _FlorenceLoadingOverlayState extends State<FlorenceLoadingOverlay>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _showLoader = false;
 
@@ -145,16 +147,17 @@ class _FlorenceLoadingOverlayState extends State<FlorenceLoadingOverlay> with Si
               color: widget.backgroundColor,
               child: Center(
                 child: SizedBox(
-                   width: 60, height: 60,
-                   child: AnimatedBuilder(
-                     animation: _controller,
-                     builder: (context, _) => CustomPaint(
-                       painter: FlorenceDomePainter(
-                         progress: _controller.value,
-                         color: AppColors.burgundy,
-                       ),
-                     ),
-                   ),
+                  width: 60,
+                  height: 60,
+                  child: AnimatedBuilder(
+                    animation: _controller,
+                    builder: (context, _) => CustomPaint(
+                      painter: FlorenceDomePainter(
+                        progress: _controller.value,
+                        color: AppColors.burgundy,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -168,10 +171,7 @@ class FlorenceDomePainter extends CustomPainter {
   final double progress;
   final Color color;
 
-  FlorenceDomePainter({
-    required this.progress,
-    required this.color,
-  });
+  FlorenceDomePainter({required this.progress, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -182,50 +182,61 @@ class FlorenceDomePainter extends CustomPainter {
     // Define the standardized path for the Duomo
     // Proportions roughly based on Brunelleschi's Dome
     final path = Path();
-    
+
     // Base width factors
     final double baseWidth = w * 0.8;
     final double startX = (w - baseWidth) / 2;
     final double endX = w - startX;
-    
+
     // Heights
     final double baseY = h * 0.9;
     final double drumY = h * 0.65; // The octagonal drum top
     final double lanternY = h * 0.25; // Top of the dome curve (base of lantern)
-    
+
     // 1. The Drum (Base walls)
     path.moveTo(startX, baseY);
     path.lineTo(startX, drumY);
-    
+
     // 2. The Dome Curves (Gothic Arch - Pointed)
     // Left curve
     path.quadraticBezierTo(
-      startX, lanternY * 1.5, // Control point
-      centerX, lanternY       // End point (Apex)
+      startX,
+      lanternY * 1.5, // Control point
+      centerX,
+      lanternY, // End point (Apex)
     );
-    
+
     // Right curve
     path.quadraticBezierTo(
-      endX, lanternY * 1.5,   // Control point matching left
-      endX, drumY             // End point
+      endX,
+      lanternY * 1.5, // Control point matching left
+      endX,
+      drumY, // End point
     );
-    
+
     path.lineTo(endX, baseY);
     path.close();
 
     // Ribs (Internal lines)
     final ribPath = Path();
     // Left rib
-    ribPath.moveTo(startX + (baseWidth * 0.25), drumY * 1.02); // Slightly lower than drum line
+    ribPath.moveTo(
+      startX + (baseWidth * 0.25),
+      drumY * 1.02,
+    ); // Slightly lower than drum line
     ribPath.quadraticBezierTo(
-      startX + (baseWidth * 0.28), lanternY * 1.5,
-      centerX, lanternY
+      startX + (baseWidth * 0.28),
+      lanternY * 1.5,
+      centerX,
+      lanternY,
     );
     // Right rib
     ribPath.moveTo(endX - (baseWidth * 0.25), drumY * 1.02);
     ribPath.quadraticBezierTo(
-      endX - (baseWidth * 0.28), lanternY * 1.5,
-      centerX, lanternY
+      endX - (baseWidth * 0.28),
+      lanternY * 1.5,
+      centerX,
+      lanternY,
     );
 
     // Lantern (Cupola)
@@ -233,12 +244,12 @@ class FlorenceDomePainter extends CustomPainter {
     final double lanternW = baseWidth * 0.15;
     final double lanternH = (drumY - lanternY) * 0.4;
     final double lanternTop = lanternY - lanternH;
-    
-    lanternPath.moveTo(centerX - lanternW/2, lanternY);
-    lanternPath.lineTo(centerX - lanternW/2, lanternTop);
-    lanternPath.lineTo(centerX + lanternW/2, lanternTop);
-    lanternPath.lineTo(centerX + lanternW/2, lanternY);
-    
+
+    lanternPath.moveTo(centerX - lanternW / 2, lanternY);
+    lanternPath.lineTo(centerX - lanternW / 2, lanternTop);
+    lanternPath.lineTo(centerX + lanternW / 2, lanternTop);
+    lanternPath.lineTo(centerX + lanternW / 2, lanternY);
+
     // Cross
     final crossPath = Path();
     final double crossH = lanternH * 0.6;
@@ -248,10 +259,10 @@ class FlorenceDomePainter extends CustomPainter {
     crossPath.lineTo(centerX + lanternW * 0.4, lanternTop - crossH * 0.6);
 
     // --- Animation Logic ---
-    
+
     // Phase 1: Drawing Outlines (0.0 - 0.5)
     final double drawProgress = (progress / 0.5).clamp(0.0, 1.0);
-    
+
     if (drawProgress > 0) {
       final outlinePaint = Paint()
         ..color = color
@@ -268,30 +279,36 @@ class FlorenceDomePainter extends CustomPainter {
 
     // Phase 2: Filling (0.5 - 0.8)
     final double fillProgress = ((progress - 0.5) / 0.3).clamp(0.0, 1.0);
-    
+
     if (fillProgress > 0) {
       final fillPaint = Paint()
         ..color = color.withOpacity(fillProgress)
         ..style = PaintingStyle.fill;
-        
+
       canvas.drawPath(path, fillPaint);
       canvas.drawPath(lanternPath, fillPaint);
-      
+
       // When filled, we might want to draw ribs in white/background color to make them visible
       if (fillProgress > 0.5) {
         final ribOverlayPaint = Paint()
-          ..color = Colors.white.withOpacity(fillProgress * 0.7) // Semi-transparent white
+          ..color = Colors.white
+              .withOpacity(fillProgress * 0.7) // Semi-transparent white
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5;
-          
+
         canvas.drawPath(ribPath, ribOverlayPaint);
       }
     }
   }
-  
-  void _drawAnimatedPath(Canvas canvas, Path path, double progress, Paint paint) {
+
+  void _drawAnimatedPath(
+    Canvas canvas,
+    Path path,
+    double progress,
+    Paint paint,
+  ) {
     if (progress <= 0) return;
-    
+
     final pathMetrics = path.computeMetrics();
     for (final metric in pathMetrics) {
       final extractPath = metric.extractPath(0.0, metric.length * progress);

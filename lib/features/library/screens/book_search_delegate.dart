@@ -20,10 +20,8 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
   String get searchFieldLabel => '책 제목, 저자 등으로 검색';
 
   @override
-  TextStyle? get searchFieldStyle => const TextStyle(
-        color: AppColors.black,
-        fontSize: 16,
-      );
+  TextStyle? get searchFieldStyle =>
+      const TextStyle(color: AppColors.black, fontSize: 16);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -59,9 +57,7 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
         }
 
         if (snapshot.hasError) {
-          return Center(
-            child: Text('오류가 발생했습니다: ${snapshot.error}'),
-          );
+          return Center(child: Text('오류가 발생했습니다: ${snapshot.error}'));
         }
 
         final books = snapshot.data ?? [];
@@ -89,22 +85,24 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
                   ).then((result) async {
                     if (result == true) {
                       ref.invalidate(userBooksProvider);
-                    } else if (result is Map<String, dynamic> && result['action'] == 'read_completed') {
+                    } else if (result is Map<String, dynamic> &&
+                        result['action'] == 'read_completed') {
                       final nav = Navigator.of(context);
                       ref.invalidate(userBooksProvider);
                       final mockUserBook = result['book'];
                       final quote = await showDialog<String>(
                         context: context,
-                        builder: (context) => ReadingCompletionDialog(userBook: mockUserBook),
+                        builder: (context) =>
+                            ReadingCompletionDialog(userBook: mockUserBook),
                       );
-                      
+
                       if (quote != null) {
                         nav.push(
                           MaterialPageRoute(
-                             builder: (context) => ReadingTicketScreen(
-                               userBook: mockUserBook,
-                               quote: quote,
-                             ),
+                            builder: (context) => ReadingTicketScreen(
+                              userBook: mockUserBook,
+                              quote: quote,
+                            ),
                           ),
                         );
                       }
@@ -123,7 +121,7 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
   Widget buildSuggestions(BuildContext context) {
     return Container(); // No suggestions for now
   }
-  
+
   @override
   ThemeData appBarTheme(BuildContext context) {
     final theme = Theme.of(context);

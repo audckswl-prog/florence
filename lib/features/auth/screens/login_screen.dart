@@ -21,16 +21,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('이메일과 비밀번호를 입력해주세요.')));
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authRepositoryProvider).signIn(
+      await ref
+          .read(authRepositoryProvider)
+          .signIn(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
@@ -38,7 +40,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인 실패: ${_translateAuthError(e.toString())}')),
+          SnackBar(
+            content: Text('로그인 실패: ${_translateAuthError(e.toString())}'),
+          ),
         );
       }
     } finally {
@@ -47,16 +51,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   String _translateAuthError(String error) {
-    if (error.contains('invalid_credentials') || error.contains('Invalid login credentials')) {
+    if (error.contains('invalid_credentials') ||
+        error.contains('Invalid login credentials')) {
       return '이메일 또는 비밀번호가 올바르지 않습니다.';
     }
-    if (error.contains('over_email_send_rate_limit') || error.contains('rate limit')) {
+    if (error.contains('over_email_send_rate_limit') ||
+        error.contains('rate limit')) {
       return '요청 횟수가 초과되었습니다. 잠시 후 다시 시도해주세요.';
     }
     if (error.contains('Email not confirmed')) {
       return '이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.';
     }
-    return error.replaceAll('Exception: Login failed: ', '').replaceAll('AuthApiException(message: ', '').replaceAll(')', '');
+    return error
+        .replaceAll('Exception: Login failed: ', '')
+        .replaceAll('AuthApiException(message: ', '')
+        .replaceAll(')', '');
   }
 
   @override
@@ -75,18 +84,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 'Florence',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      fontFamily: 'Serif', // Use a serif font if available
-                      color: AppColors.burgundy,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontFamily: 'Serif', // Use a serif font if available
+                  color: AppColors.burgundy,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 '나만의 독서 기록, 피렌체',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.grey,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppColors.grey),
               ),
               const SizedBox(height: 48),
 

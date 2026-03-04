@@ -18,8 +18,10 @@ class EmptyStateWidget extends StatelessWidget {
     this.subtitle,
     this.actionLabel,
     this.onAction,
-  }) : assert(icon != null || illustration != null,
-            'Either icon or illustration must be provided');
+  }) : assert(
+         icon != null || illustration != null,
+         'Either icon or illustration must be provided',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -34,21 +36,17 @@ class EmptyStateWidget extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               shape: BoxShape.circle,
               depth: -4.0, // Inset effect for the icon container
-              child: illustration ??
-                  Icon(
-                    icon,
-                    size: 48,
-                    color: AppColors.grey,
-                  ),
+              child:
+                  illustration ?? Icon(icon, size: 48, color: AppColors.grey),
             ),
             const SizedBox(height: 32),
             // Title
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: AppColors.burgundy,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: AppColors.burgundy,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
@@ -57,9 +55,9 @@ class EmptyStateWidget extends StatelessWidget {
               Text(
                 subtitle!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.grey,
-                      height: 1.5,
-                    ),
+                  color: AppColors.grey,
+                  height: 1.5,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -69,17 +67,19 @@ class EmptyStateWidget extends StatelessWidget {
               GestureDetector(
                 onTap: onAction,
                 child: NeumorphicContainer(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                   borderRadius: 30,
                   depth: 4.0,
                   color: AppColors.ivory,
                   child: Text(
                     actionLabel!,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: AppColors.burgundy,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: AppColors.burgundy,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),

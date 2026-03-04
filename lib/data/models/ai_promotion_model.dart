@@ -19,7 +19,9 @@ class AIPromotionModel {
       hookTitle: json['hook_title'] as String? ?? '',
       historicalBackground: json['historical_background'] as String? ?? '',
       closingQuestion: json['closing_question'] as String? ?? '',
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : null,
     );
   }
 

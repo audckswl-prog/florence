@@ -11,7 +11,9 @@ final sharedReadingSearchFocusNodeProvider = Provider<FocusNode>((ref) {
   return node;
 });
 
-final myProjectsProvider = FutureProvider.autoDispose<List<Project>>((ref) async {
+final myProjectsProvider = FutureProvider.autoDispose<List<Project>>((
+  ref,
+) async {
   final repository = ref.watch(supabaseRepositoryProvider);
   final userId = Supabase.instance.client.auth.currentUser?.id;
 
@@ -27,13 +29,17 @@ final myProjectsProvider = FutureProvider.autoDispose<List<Project>>((ref) async
   }).toList();
 });
 
-final projectMembersProvider = FutureProvider.family<List<ProjectMember>, String>((ref, projectId) async {
-  final repository = ref.watch(supabaseRepositoryProvider);
-  final data = await repository.getProjectMembers(projectId);
-  return data.map((json) => ProjectMember.fromJson(json)).toList();
-});
+final projectMembersProvider =
+    FutureProvider.family<List<ProjectMember>, String>((ref, projectId) async {
+      final repository = ref.watch(supabaseRepositoryProvider);
+      final data = await repository.getProjectMembers(projectId);
+      return data.map((json) => ProjectMember.fromJson(json)).toList();
+    });
 
-final projectBooksProvider = FutureProvider.family<List<ProjectBook>, String>((ref, projectId) async {
+final projectBooksProvider = FutureProvider.family<List<ProjectBook>, String>((
+  ref,
+  projectId,
+) async {
   final repository = ref.watch(supabaseRepositoryProvider);
   final data = await repository.getProjectBooks(projectId);
   return data.map((json) => ProjectBook.fromJson(json)).toList();
@@ -41,28 +47,36 @@ final projectBooksProvider = FutureProvider.family<List<ProjectBook>, String>((r
 
 // --- New Providers for Shared Reading Revamp ---
 
-final friendsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+final friendsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((
+  ref,
+) async {
   final repository = ref.watch(supabaseRepositoryProvider);
   final userId = Supabase.instance.client.auth.currentUser?.id;
   if (userId == null) return [];
   return await repository.getFriends(userId);
 });
 
-final pendingFriendRequestsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final repository = ref.watch(supabaseRepositoryProvider);
-  final userId = Supabase.instance.client.auth.currentUser?.id;
-  if (userId == null) return [];
-  return await repository.getPendingFriendRequests(userId);
-});
+final pendingFriendRequestsProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+      final repository = ref.watch(supabaseRepositoryProvider);
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return [];
+      return await repository.getPendingFriendRequests(userId);
+    });
 
-final notificationsProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+final notificationsProvider = FutureProvider.autoDispose<List<dynamic>>((
+  ref,
+) async {
   final repository = ref.watch(supabaseRepositoryProvider);
   final userId = Supabase.instance.client.auth.currentUser?.id;
   if (userId == null) return [];
   return await repository.getNotifications(userId);
 });
 
-final profileProvider = FutureProvider.family<Profile?, String>((ref, userId) async {
+final profileProvider = FutureProvider.family<Profile?, String>((
+  ref,
+  userId,
+) async {
   final repository = ref.watch(supabaseRepositoryProvider);
   return await repository.getProfile(userId);
 });
@@ -77,13 +91,13 @@ final myProfileProvider = FutureProvider.autoDispose<Profile?>((ref) async {
 class ProjectWithMembers {
   final Project project;
   final List<ProjectMember> members;
-  
+
   ProjectWithMembers({required this.project, required this.members});
-  
+
   /// 현재 사용자의 멤버 정보
   ProjectMember? getMe(String userId) =>
       members.where((m) => m.userId == userId).firstOrNull;
-  
+
   /// 프로젝트에서 선택된 책 커버 중 첫 번째
   String? get firstBookCover {
     for (final m in members) {
@@ -93,7 +107,7 @@ class ProjectWithMembers {
     }
     return null;
   }
-  
+
   /// 프로젝트에서 선택된 책 제목 중 첫 번째
   String? get firstBookTitle {
     for (final m in members) {
@@ -105,22 +119,25 @@ class ProjectWithMembers {
   }
 }
 
-final myProjectsWithMembersProvider = FutureProvider.autoDispose<List<ProjectWithMembers>>((ref) async {
-  final repository = ref.watch(supabaseRepositoryProvider);
-  final userId = Supabase.instance.client.auth.currentUser?.id;
-  if (userId == null) return [];
+final myProjectsWithMembersProvider =
+    FutureProvider.autoDispose<List<ProjectWithMembers>>((ref) async {
+      final repository = ref.watch(supabaseRepositoryProvider);
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return [];
 
-  final projectData = await repository.getMyProjects(userId);
-  final projects = projectData.map((json) {
-    final projectJson = json['projects'] as Map<String, dynamic>;
-    return Project.fromJson(projectJson);
-  }).toList();
+      final projectData = await repository.getMyProjects(userId);
+      final projects = projectData.map((json) {
+        final projectJson = json['projects'] as Map<String, dynamic>;
+        return Project.fromJson(projectJson);
+      }).toList();
 
-  final result = <ProjectWithMembers>[];
-  for (final project in projects) {
-    final memberData = await repository.getProjectMembers(project.id);
-    final members = memberData.map((json) => ProjectMember.fromJson(json)).toList();
-    result.add(ProjectWithMembers(project: project, members: members));
-  }
-  return result;
-});
+      final result = <ProjectWithMembers>[];
+      for (final project in projects) {
+        final memberData = await repository.getProjectMembers(project.id);
+        final members = memberData
+            .map((json) => ProjectMember.fromJson(json))
+            .toList();
+        result.add(ProjectWithMembers(project: project, members: members));
+      }
+      return result;
+    });

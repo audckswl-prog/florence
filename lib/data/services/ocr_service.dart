@@ -7,7 +7,9 @@ class OcrService {
   Future<String?> extractText(String imagePath) async {
     try {
       final inputImage = InputImage.fromFilePath(imagePath);
-      final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
+      final RecognizedText recognizedText = await _textRecognizer.processImage(
+        inputImage,
+      );
       return recognizedText.text;
     } catch (e) {
       debugPrint('Error extracting text: $e');

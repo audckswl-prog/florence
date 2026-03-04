@@ -29,7 +29,7 @@ class ReadingCompletionDialog extends StatelessWidget {
               color: Colors.black.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -72,7 +72,7 @@ class ReadingCompletionDialog extends StatelessWidget {
                   context: context,
                   builder: (context) => const TicketQuoteInputDialog(),
                 );
-                
+
                 if (quote != null) {
                   // Pop this dialog and pass back the result to trigger ticket screen
                   nav.pop(quote);

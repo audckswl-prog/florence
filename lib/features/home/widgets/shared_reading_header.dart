@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,9 +10,13 @@ import '../../library/providers/book_providers.dart';
 
 // --- Shared Utility Functions for Social UI ---
 
-void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<String, dynamic>> friends) {
+void showSharedReadingFriendsList(
+  BuildContext context,
+  WidgetRef ref,
+  List<Map<String, dynamic>> friends,
+) {
   final searchFocusNode = ref.read(sharedReadingSearchFocusNodeProvider);
-  
+
   showModalBottomSheet(
     context: context,
     backgroundColor: AppColors.ivory,
@@ -26,7 +30,12 @@ void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<
           constraints: BoxConstraints(
             minHeight: MediaQuery.of(context).size.height * 0.6,
           ),
-          padding: const EdgeInsets.only(left: 24, right: 24, top: 32, bottom: 24),
+          padding: const EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 32,
+            bottom: 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,13 +60,24 @@ void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.burgundy,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       minimumSize: Size.zero,
                       elevation: 0,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Text('+친구 추가하기', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    child: const Text(
+                      '+친구 추가하기',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -66,7 +86,8 @@ void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 20),
                   child: Center(
-                    child: Text('아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
+                    child: Text(
+                      '아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: AppColors.grey),
                     ),
@@ -76,7 +97,9 @@ void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<
                 ...friends.map((friend) {
                   final myId = Supabase.instance.client.auth.currentUser!.id;
                   final isRequester = friend['requester_id'] == myId;
-                  final profile = isRequester ? friend['receiver'] : friend['requester'];
+                  final profile = isRequester
+                      ? friend['receiver']
+                      : friend['requester'];
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 20),
                     child: Row(
@@ -89,8 +112,17 @@ void showSharedReadingFriendsList(BuildContext context, WidgetRef ref, List<Map<
                             shape: BoxShape.circle,
                           ),
                           child: profile['profile_url'] != null
-                              ? ClipOval(child: Image.network(profile['profile_url'], fit: BoxFit.cover))
-                              : const Icon(Icons.person, color: AppColors.grey, size: 28),
+                              ? ClipOval(
+                                  child: Image.network(
+                                    profile['profile_url'],
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  color: AppColors.grey,
+                                  size: 28,
+                                ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -134,7 +166,7 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
             builder: (context, ref, child) {
               final reqAsync = ref.watch(pendingFriendRequestsProvider);
               final notiAsync = ref.watch(notificationsProvider);
-              
+
               return ListView(
                 controller: scrollController,
                 padding: const EdgeInsets.all(20),
@@ -156,21 +188,45 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('친구 요청', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.burgundy)),
+                          const Text(
+                            '친구 요청',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.burgundy,
+                            ),
+                          ),
                           ...reqs.map((req) {
                             final profile = req['requester'];
                             return ListTile(
-                              leading: const CircleAvatar(child: Icon(Icons.person)),
+                              leading: const CircleAvatar(
+                                child: Icon(Icons.person),
+                              ),
                               title: Text('${profile['nickname']} 님의 친구 요청'),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.check, color: AppColors.burgundy),
+                                    icon: const Icon(
+                                      Icons.check,
+                                      color: AppColors.burgundy,
+                                    ),
                                     onPressed: () async {
-                                      final myId = Supabase.instance.client.auth.currentUser!.id;
-                                      await ref.read(supabaseRepositoryProvider).acceptFriendRequest(req['id'], req['requester_id'], myId);
-                                      ref.invalidate(pendingFriendRequestsProvider);
+                                      final myId = Supabase
+                                          .instance
+                                          .client
+                                          .auth
+                                          .currentUser!
+                                          .id;
+                                      await ref
+                                          .read(supabaseRepositoryProvider)
+                                          .acceptFriendRequest(
+                                            req['id'],
+                                            req['requester_id'],
+                                            myId,
+                                          );
+                                      ref.invalidate(
+                                        pendingFriendRequestsProvider,
+                                      );
                                       ref.invalidate(friendsProvider);
                                     },
                                   ),
@@ -191,7 +247,13 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                       if (notis.isEmpty) {
                         return const Padding(
                           padding: EdgeInsets.all(20.0),
-                          child: Text('새로운 알림이 없습니다.', style: TextStyle(color: AppColors.grey, fontSize: 13)),
+                          child: Text(
+                            '새로운 알림이 없습니다.',
+                            style: TextStyle(
+                              color: AppColors.grey,
+                              fontSize: 13,
+                            ),
+                          ),
                         );
                       }
                       return Column(
@@ -209,7 +271,8 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                               displayMessage = '$nick님의 함께 읽기에 초대되었습니다!';
                               break;
                             case 'project_started':
-                              displayMessage = '함께 읽기가 시작되었습니다! 2주 안에 완독에 도전하세요.';
+                              displayMessage =
+                                  '함께 읽기가 시작되었습니다! 2주 안에 완독에 도전하세요.';
                               break;
                             case 'project_success':
                               displayMessage = '프로젝트 성공! 독서 티켓이 발급되었습니다.';
@@ -235,35 +298,60 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                           }
                           return ListTile(
                             dense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                            leading: Icon(icon, color: AppColors.burgundy, size: 22),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 2,
+                            ),
+                            leading: Icon(
+                              icon,
+                              color: AppColors.burgundy,
+                              size: 22,
+                            ),
                             title: Text(
                               displayMessage,
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: noti.isRead ? FontWeight.normal : FontWeight.w600,
+                                fontWeight: noti.isRead
+                                    ? FontWeight.normal
+                                    : FontWeight.w600,
                                 color: AppColors.charcoal,
                               ),
                             ),
                             subtitle: Text(
                               noti.createdAt.toString().split('.')[0],
-                              style: const TextStyle(color: AppColors.greyLight, fontSize: 11),
+                              style: const TextStyle(
+                                color: AppColors.greyLight,
+                                fontSize: 11,
+                              ),
                             ),
-                            tileColor: noti.isRead ? Colors.transparent : Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            tileColor: noti.isRead
+                                ? Colors.transparent
+                                : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             onTap: () {
-                              ref.read(supabaseRepositoryProvider).markNotificationAsRead(noti.id);
+                              ref
+                                  .read(supabaseRepositoryProvider)
+                                  .markNotificationAsRead(noti.id);
                               ref.invalidate(notificationsProvider);
                               Navigator.pop(context);
                               if ((noti.type == 'project_invite' ||
-                                   noti.type == 'project_started' ||
-                                   noti.type == 'project_success') &&
+                                      noti.type == 'project_started' ||
+                                      noti.type == 'project_success') &&
                                   noti.relatedId != null) {
-                                context.push('/home/social/detail/${noti.relatedId}');
+                                context.push(
+                                  '/home/social/detail/${noti.relatedId}',
+                                );
                               } else if (noti.type == 'friend_request' ||
-                                         noti.type == 'friend_accept') {
-                                final friends = ref.read(friendsProvider).value ?? [];
-                                showSharedReadingFriendsList(context, ref, friends);
+                                  noti.type == 'friend_accept') {
+                                final friends =
+                                    ref.read(friendsProvider).value ?? [];
+                                showSharedReadingFriendsList(
+                                  context,
+                                  ref,
+                                  friends,
+                                );
                               }
                             },
                           );
@@ -277,7 +365,7 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
               );
             },
           );
-        }
+        },
       );
     },
   );
@@ -285,7 +373,7 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
 
 void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
   final friends = ref.read(friendsProvider).value ?? [];
-  
+
   if (friends.isEmpty) {
     showSharedReadingFriendsList(context, ref, friends);
     FlorenceToast.show(context, '친구를 추가하고 이용할 수 있습니다.');
@@ -306,7 +394,9 @@ void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
           return SafeArea(
             child: Padding(
               padding: EdgeInsets.only(
-                left: 24, right: 24, top: 24,
+                left: 24,
+                right: 24,
+                top: 24,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
               child: Column(
@@ -328,7 +418,7 @@ void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
                     style: TextStyle(color: AppColors.grey, fontSize: 14),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   Container(
                     constraints: BoxConstraints(
                       maxHeight: MediaQuery.of(context).size.height * 0.3,
@@ -338,35 +428,56 @@ void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
                       itemCount: friends.length,
                       itemBuilder: (context, index) {
                         final friend = friends[index];
-                        final myId = Supabase.instance.client.auth.currentUser!.id;
+                        final myId =
+                            Supabase.instance.client.auth.currentUser!.id;
                         final isRequester = friend['requester_id'] == myId;
-                        final profile = isRequester ? friend['receiver'] : friend['requester'];
-                        final friendId = isRequester ? friend['receiver_id'] : friend['requester_id'];
+                        final profile = isRequester
+                            ? friend['receiver']
+                            : friend['requester'];
+                        final friendId = isRequester
+                            ? friend['receiver_id']
+                            : friend['requester_id'];
                         final isSelected = selectedFriendIds.contains(friendId);
-                        
+
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           leading: CircleAvatar(
                             backgroundColor: Colors.white,
-                            backgroundImage: profile['profile_url'] != null ? NetworkImage(profile['profile_url']) : null,
-                            child: profile['profile_url'] == null ? const Icon(Icons.person, color: AppColors.grey) : null,
+                            backgroundImage: profile['profile_url'] != null
+                                ? NetworkImage(profile['profile_url'])
+                                : null,
+                            child: profile['profile_url'] == null
+                                ? const Icon(
+                                    Icons.person,
+                                    color: AppColors.grey,
+                                  )
+                                : null,
                           ),
-                          title: Text(profile['nickname'] ?? '이름 없음', style: const TextStyle(fontWeight: FontWeight.w500)),
+                          title: Text(
+                            profile['nickname'] ?? '이름 없음',
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
                           trailing: Checkbox(
                             value: isSelected,
                             activeColor: AppColors.burgundy,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
                             onChanged: (val) {
                               setModalState(() {
-                                if (val == true) selectedFriendIds.add(friendId);
-                                else selectedFriendIds.remove(friendId);
+                                if (val == true)
+                                  selectedFriendIds.add(friendId);
+                                else
+                                  selectedFriendIds.remove(friendId);
                               });
                             },
                           ),
                           onTap: () {
                             setModalState(() {
-                              if (isSelected) selectedFriendIds.remove(friendId);
-                              else selectedFriendIds.add(friendId);
+                              if (isSelected)
+                                selectedFriendIds.remove(friendId);
+                              else
+                                selectedFriendIds.add(friendId);
                             });
                           },
                         );
@@ -378,46 +489,68 @@ void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: selectedFriendIds.isEmpty ? null : () async {
-                        try {
-                          final repository = ref.read(supabaseRepositoryProvider);
-                          final myId = Supabase.instance.client.auth.currentUser!.id;
-                          
-                          await repository.createProject(
-                            name: '함께 읽기',
-                            ownerId: myId,
-                            friendIds: selectedFriendIds.toList(),
-                          );
-                          
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('함께 읽기 초대권을 보냈습니다!')),
-                            );
-                            ref.invalidate(myProjectsProvider);
-                            ref.invalidate(myProjectsWithMembersProvider);
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('오류: $e')));
-                          }
-                        }
-                      },
+                      onPressed: selectedFriendIds.isEmpty
+                          ? null
+                          : () async {
+                              try {
+                                final repository = ref.read(
+                                  supabaseRepositoryProvider,
+                                );
+                                final myId = Supabase
+                                    .instance
+                                    .client
+                                    .auth
+                                    .currentUser!
+                                    .id;
+
+                                await repository.createProject(
+                                  name: '함께 읽기',
+                                  ownerId: myId,
+                                  friendIds: selectedFriendIds.toList(),
+                                );
+
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('함께 읽기 초대권을 보냈습니다!'),
+                                    ),
+                                  );
+                                  ref.invalidate(myProjectsProvider);
+                                  ref.invalidate(myProjectsWithMembersProvider);
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('오류: $e')),
+                                  );
+                                }
+                              }
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.burgundy,
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor: AppColors.greyLight.withOpacity(0.3),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        disabledBackgroundColor: AppColors.greyLight
+                            .withOpacity(0.3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 0,
                       ),
-                      child: const Text('초대장 보내기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        '초대장 보내기',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           );
-        }
+        },
       );
     },
   );
@@ -429,10 +562,12 @@ class SharedReadingAppBarTitle extends ConsumerStatefulWidget {
   const SharedReadingAppBarTitle({super.key});
 
   @override
-  ConsumerState<SharedReadingAppBarTitle> createState() => _SharedReadingAppBarTitleState();
+  ConsumerState<SharedReadingAppBarTitle> createState() =>
+      _SharedReadingAppBarTitleState();
 }
 
-class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTitle> {
+class _SharedReadingAppBarTitleState
+    extends ConsumerState<SharedReadingAppBarTitle> {
   final TextEditingController _searchController = TextEditingController();
 
   void _searchFriend() async {
@@ -442,7 +577,7 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
     try {
       final repository = ref.read(supabaseRepositoryProvider);
       final results = await repository.searchProfilesByNickname(query);
-      
+
       if (!mounted) return;
 
       showModalBottomSheet(
@@ -484,14 +619,22 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: Colors.white,
-                          backgroundImage: profile.profileUrl != null ? NetworkImage(profile.profileUrl!) : null,
-                          child: profile.profileUrl == null ? const Icon(Icons.person, color: AppColors.grey) : null,
+                          backgroundImage: profile.profileUrl != null
+                              ? NetworkImage(profile.profileUrl!)
+                              : null,
+                          child: profile.profileUrl == null
+                              ? const Icon(Icons.person, color: AppColors.grey)
+                              : null,
                         ),
                         title: Text(profile.nickname ?? '알 수 없음'),
                         trailing: ElevatedButton(
                           onPressed: () async {
-                            final myId = Supabase.instance.client.auth.currentUser!.id;
-                            await repository.sendFriendRequest(myId, profile.id);
+                            final myId =
+                                Supabase.instance.client.auth.currentUser!.id;
+                            await repository.sendFriendRequest(
+                              myId,
+                              profile.id,
+                            );
                             if (mounted) {
                               Navigator.pop(ctx);
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -502,7 +645,9 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.burgundy,
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                           child: const Text('친구 요청'),
                         ),
@@ -516,7 +661,9 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('검색 오류: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('검색 오류: $e')));
       }
     }
   }
@@ -526,10 +673,12 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
     final pendingReqsAsync = ref.watch(pendingFriendRequestsProvider);
     final notisAsync = ref.watch(notificationsProvider);
     final searchFocusNode = ref.watch(sharedReadingSearchFocusNodeProvider);
-    
+
     int badgeCount = 0;
     pendingReqsAsync.whenData((reqs) => badgeCount += reqs.length);
-    notisAsync.whenData((notis) => badgeCount += notis.where((n) => !n.isRead).length);
+    notisAsync.whenData(
+      (notis) => badgeCount += notis.where((n) => !n.isRead).length,
+    );
 
     return Row(
       children: [
@@ -541,7 +690,10 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.burgundy.withOpacity(0.1), width: 1.0),
+              border: Border.all(
+                color: AppColors.burgundy.withOpacity(0.1),
+                width: 1.0,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.burgundy.withOpacity(0.05),
@@ -560,7 +712,8 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
                     focusNode: searchFocusNode,
                     decoration: InputDecoration(
                       hintText: '닉네임으로 친구 추가',
-                      hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      hintStyle: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(
                             color: AppColors.grey.withOpacity(0.7),
                             fontSize: 14,
                           ),
@@ -576,21 +729,29 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
           ),
         ),
         const SizedBox(width: 8),
-        
+
         // Friends List Icon
         IconButton(
-          icon: const Icon(Icons.people_alt_outlined, color: AppColors.charcoal, size: 26),
+          icon: const Icon(
+            Icons.people_alt_outlined,
+            color: AppColors.charcoal,
+            size: 26,
+          ),
           onPressed: () {
             final friends = ref.read(friendsProvider).value ?? [];
             showSharedReadingFriendsList(context, ref, friends);
           },
         ),
-        
+
         // Notification Bell
         Stack(
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_none, color: AppColors.charcoal, size: 28),
+              icon: const Icon(
+                Icons.notifications_none,
+                color: AppColors.charcoal,
+                size: 28,
+              ),
               onPressed: () => showSharedReadingNotifications(context, ref),
             ),
             if (badgeCount > 0)
@@ -605,7 +766,11 @@ class _SharedReadingAppBarTitleState extends ConsumerState<SharedReadingAppBarTi
                   ),
                   child: Text(
                     badgeCount.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -620,7 +785,8 @@ class SharedReadingHeader extends ConsumerStatefulWidget {
   const SharedReadingHeader({super.key});
 
   @override
-  ConsumerState<SharedReadingHeader> createState() => _SharedReadingHeaderState();
+  ConsumerState<SharedReadingHeader> createState() =>
+      _SharedReadingHeaderState();
 }
 
 class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
@@ -635,13 +801,13 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
     try {
       final repository = ref.read(supabaseRepositoryProvider);
       final myId = Supabase.instance.client.auth.currentUser!.id;
-      
+
       final existing = await repository.getProfileByNickname(nickname);
       if (existing != null) {
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('이미 사용 중인 닉네임입니다.')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('이미 사용 중인 닉네임입니다.')));
         }
         return;
       }
@@ -649,11 +815,11 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
       await repository.createOrUpdateProfile(myId, nickname);
       ref.invalidate(profileProvider(myId));
       ref.invalidate(myProfileProvider);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('닉네임이 설정되었습니다!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('닉네임이 설정되었습니다!')));
       }
     } catch (e) {
       if (mounted) {}
@@ -665,7 +831,7 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(myProfileProvider);
-    
+
     return profileAsync.when(
       data: (profile) {
         if (profile == null || (profile.nickname?.isEmpty ?? true)) {
@@ -687,10 +853,17 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
               children: [
                 const Text(
                   '반가워요! 닉네임을 정해주세요',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.charcoal),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.charcoal,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text('친구들이 사용자님을 찾을 때 사용됩니다.', style: TextStyle(fontSize: 13, color: AppColors.grey)),
+                const Text(
+                  '친구들이 사용자님을 찾을 때 사용됩니다.',
+                  style: TextStyle(fontSize: 13, color: AppColors.grey),
+                ),
                 const SizedBox(height: 24),
                 TextField(
                   controller: _nicknameController,
@@ -698,13 +871,26 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                     hintText: '닉네임 입력 (예: 독서왕)',
                     filled: true,
                     fillColor: AppColors.ivory,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    suffixIcon: _isSavingNickname 
-                        ? const SizedBox(width: 20, height: 20, child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator(strokeWidth: 2)))
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    suffixIcon: _isSavingNickname
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: Padding(
+                              padding: EdgeInsets.all(12),
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
                         : IconButton(
-                          icon: const Icon(Icons.check_circle, color: AppColors.burgundy),
-                          onPressed: _saveNickname,
-                        ),
+                            icon: const Icon(
+                              Icons.check_circle,
+                              color: AppColors.burgundy,
+                            ),
+                            onPressed: _saveNickname,
+                          ),
                   ),
                   onSubmitted: (_) => _saveNickname(),
                 ),
@@ -721,7 +907,10 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.burgundy, AppColors.burgundy.withOpacity(0.85)],
+                  colors: [
+                    AppColors.burgundy,
+                    AppColors.burgundy.withOpacity(0.85),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -749,7 +938,11 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
                     ),
                   ),
                   SizedBox(width: 4),
-                  Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 14),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white70,
+                    size: 14,
+                  ),
                 ],
               ),
             ),

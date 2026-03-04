@@ -19,7 +19,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -64,7 +65,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: AppColors.burgundy.withOpacity(0.1), width: 1.0),
+                      border: Border.all(
+                        color: AppColors.burgundy.withOpacity(0.1),
+                        width: 1.0,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.burgundy.withOpacity(0.05),
@@ -75,11 +79,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search, color: AppColors.burgundy, size: 20),
+                        const Icon(
+                          Icons.search,
+                          color: AppColors.burgundy,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           '제목, 저자 또는 ISBN으로 검색',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
                                 color: AppColors.grey.withOpacity(0.7),
                                 fontSize: 14,
                               ),
@@ -99,14 +108,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               controller: _tabController,
               tabAlignment: TabAlignment.center,
               isScrollable: true,
-              indicator: const CircleTabIndicator(color: AppColors.burgundy, radius: 4),
+              indicator: const CircleTabIndicator(
+                color: AppColors.burgundy,
+                radius: 4,
+              ),
               indicatorSize: TabBarIndicatorSize.label,
               indicatorPadding: const EdgeInsets.only(bottom: -4),
               dividerColor: Colors.transparent,
               labelColor: AppColors.black,
               unselectedLabelColor: AppColors.grey,
               labelPadding: const EdgeInsets.symmetric(horizontal: 24),
-              
+
               labelStyle: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -128,10 +140,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          _MyLibraryTab(),
-          _SharedReadingTab(),
-        ],
+        children: const [_MyLibraryTab(), _SharedReadingTab()],
       ),
     );
   }
@@ -147,14 +156,11 @@ class _MyLibraryTab extends ConsumerWidget {
         // ── 상단: 검색바 제거됨 (AppBar로 이동) ──
 
         // ── 하단: 책 스택 (아래에서 위로 쌓임) ──
-        const Expanded(
-          child: LibraryStackView(),
-        ),
+        const Expanded(child: LibraryStackView()),
       ],
     );
   }
 }
-
 
 class _SharedReadingTab extends ConsumerWidget {
   const _SharedReadingTab();
@@ -180,15 +186,17 @@ class _SharedReadingTab extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.people_alt_outlined, size: 64, color: AppColors.greyLight),
+                        const Icon(
+                          Icons.people_alt_outlined,
+                          size: 64,
+                          color: AppColors.greyLight,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           '참여 중인 모임이 없습니다.\n새로운 독서 모임을 만들어보세요!',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.grey,
-                                height: 1.5,
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.grey, height: 1.5),
                         ),
                       ],
                     ),
@@ -196,11 +204,19 @@ class _SharedReadingTab extends ConsumerWidget {
                 }
 
                 // 완료된 프로젝트를 상단, 진행 중을 하단에 표시
-                final completed = projectsWithMembers.where((p) => p.project.status == 'completed').toList();
-                final active = projectsWithMembers.where((p) => p.project.status != 'completed').toList();
+                final completed = projectsWithMembers
+                    .where((p) => p.project.status == 'completed')
+                    .toList();
+                final active = projectsWithMembers
+                    .where((p) => p.project.status != 'completed')
+                    .toList();
 
                 return ListView(
-                  padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: 20,
+                  ),
                   children: [
                     // ── 진행 중인 프로젝트 ──
                     if (active.isNotEmpty) ...[
@@ -216,13 +232,18 @@ class _SharedReadingTab extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      ...active.map((pw) => _buildActiveProjectCard(context, pw)),
+                      ...active.map(
+                        (pw) => _buildActiveProjectCard(context, pw),
+                      ),
                     ],
 
                     // ── 완료된 프로젝트 ──
                     if (completed.isNotEmpty) ...[
                       Padding(
-                        padding: EdgeInsets.only(top: active.isNotEmpty ? 24 : 0, bottom: 12),
+                        padding: EdgeInsets.only(
+                          top: active.isNotEmpty ? 24 : 0,
+                          bottom: 12,
+                        ),
                         child: const Text(
                           '완독',
                           style: TextStyle(
@@ -233,7 +254,9 @@ class _SharedReadingTab extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      ...completed.map((pw) => _buildActiveProjectCard(context, pw)),
+                      ...completed.map(
+                        (pw) => _buildActiveProjectCard(context, pw),
+                      ),
                     ],
                   ],
                 );
@@ -297,15 +320,23 @@ class _SharedReadingTab extends ConsumerWidget {
                           coverUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => const Center(
-                            child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
+                            child: Icon(
+                              Icons.menu_book,
+                              color: AppColors.greyLight,
+                              size: 28,
+                            ),
                           ),
                         )
                       : const Center(
-                          child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 28),
+                          child: Icon(
+                            Icons.menu_book,
+                            color: AppColors.greyLight,
+                            size: 28,
+                          ),
                         ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Right: Info
                 Expanded(
                   child: Column(
@@ -336,26 +367,41 @@ class _SharedReadingTab extends ConsumerWidget {
                         ),
                       ],
                       const SizedBox(height: 12),
-                      
+
                       // Status badge
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.ivory,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.people_alt, size: 12, color: AppColors.burgundy),
+                                const Icon(
+                                  Icons.people_alt,
+                                  size: 12,
+                                  color: AppColors.burgundy,
+                                ),
                                 const SizedBox(width: 4),
-                                  Text(
-                                    project.status == 'in_progress' ? '진행 중' :
-                                    project.status == 'pending_books' ? '책 선택 중' :
-                                    project.status == 'completed' ? '완독' : '진행 중',
-                                    style: const TextStyle(fontSize: 10, color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                                Text(
+                                  project.status == 'in_progress'
+                                      ? '진행 중'
+                                      : project.status == 'pending_books'
+                                      ? '책 선택 중'
+                                      : project.status == 'completed'
+                                      ? '완독'
+                                      : '진행 중',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.burgundy,
+                                    fontWeight: FontWeight.bold,
                                   ),
+                                ),
                               ],
                             ),
                           ),
@@ -379,7 +425,6 @@ class _SharedReadingTab extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 class CircleTabIndicator extends Decoration {
@@ -406,8 +451,9 @@ class _CirclePainter extends BoxPainter {
     _paint.color = color;
     _paint.isAntiAlias = true;
     final Offset circleOffset = Offset(
-        configuration.size!.width / 2 - radius / 2,
-        configuration.size!.height - radius);
+      configuration.size!.width / 2 - radius / 2,
+      configuration.size!.height - radius,
+    );
     canvas.drawCircle(offset + circleOffset, radius, _paint);
   }
 }

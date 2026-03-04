@@ -7,14 +7,23 @@ final aiPromotionRepositoryProvider = Provider<AIPromotionRepository>((ref) {
   return AIPromotionRepository(SupabaseService().client);
 });
 
-typedef PromotionParams = ({String isbn, String title, String author, String description});
-
-final aiPromotionFutureProvider = FutureProvider.family<AIPromotionModel?, PromotionParams>((ref, params) async {
-  final repository = ref.read(aiPromotionRepositoryProvider);
-  return repository.getPromotion(
-    params.isbn,
-    params.title,
-    params.author,
-    params.description,
-  );
+typedef PromotionParams = ({
+  String isbn,
+  String title,
+  String author,
+  String description,
 });
+
+final aiPromotionFutureProvider =
+    FutureProvider.family<AIPromotionModel?, PromotionParams>((
+      ref,
+      params,
+    ) async {
+      final repository = ref.read(aiPromotionRepositoryProvider);
+      return repository.getPromotion(
+        params.isbn,
+        params.title,
+        params.author,
+        params.description,
+      );
+    });

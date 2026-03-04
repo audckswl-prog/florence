@@ -9,7 +9,7 @@ class Book {
   final String categoryName;
   final String link;
   final int pageCount;
-  
+
   String get publicationYear {
     if (pubDate.length >= 4) {
       return pubDate.substring(0, 4);
@@ -34,14 +34,21 @@ class Book {
     return Book(
       title: json['title'] ?? '',
       author: json['author'] ?? '',
-      pubDate: json['pubDate'] ?? json['pub_date'] ?? '', // Handle both camelCase (API) and snake_case (DB)
+      pubDate:
+          json['pubDate'] ??
+          json['pub_date'] ??
+          '', // Handle both camelCase (API) and snake_case (DB)
       description: json['description'] ?? '',
       isbn: json['isbn13'] ?? json['isbn'] ?? '',
       coverUrl: json['cover'] ?? json['cover_url'] ?? '',
       publisher: json['publisher'] ?? '',
       categoryName: json['categoryName'] ?? json['category_name'] ?? '',
       link: json['link'] ?? '',
-      pageCount: json['subInfo']?['itemPage'] ?? json['itemPage'] ?? json['page_count'] ?? 0,
+      pageCount:
+          json['subInfo']?['itemPage'] ??
+          json['itemPage'] ??
+          json['page_count'] ??
+          0,
     );
   }
 

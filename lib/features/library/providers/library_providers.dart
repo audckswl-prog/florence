@@ -3,7 +3,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/models/user_book_model.dart';
 import 'book_providers.dart';
 
-final userBooksProvider = FutureProvider.autoDispose<List<UserBook>>((ref) async {
+final userBooksProvider = FutureProvider.autoDispose<List<UserBook>>((
+  ref,
+) async {
   final repository = ref.watch(supabaseRepositoryProvider);
   final userId = Supabase.instance.client.auth.currentUser?.id;
 
@@ -18,20 +20,30 @@ final userBooksProvider = FutureProvider.autoDispose<List<UserBook>>((ref) async
   // Let's fetch all for now and filter in UI if needed, or just fetch reading+read.
   // For the "stacking" visualization, it usually represents read books or reading books.
   // Let's fetch all.
-  
+
   final data = await repository.getUserBooks(userId);
   return data.map((json) => UserBook.fromJson(json)).toList();
 });
 
-final readBooksProvider = Provider.autoDispose<AsyncValue<List<UserBook>>>((ref) {
-  return ref.watch(userBooksProvider).whenData(
+final readBooksProvider = Provider.autoDispose<AsyncValue<List<UserBook>>>((
+  ref,
+) {
+  return ref
+      .watch(userBooksProvider)
+      .whenData(
         (books) => books.where((book) => book.status == 'read').toList(),
       );
 });
 
-final readingListProvider = Provider.autoDispose<AsyncValue<List<UserBook>>>((ref) {
-  return ref.watch(userBooksProvider).whenData(
-        (books) => books.where((book) => book.status == 'reading' || book.status == 'wish').toList(),
+final readingListProvider = Provider.autoDispose<AsyncValue<List<UserBook>>>((
+  ref,
+) {
+  return ref
+      .watch(userBooksProvider)
+      .whenData(
+        (books) => books
+            .where((book) => book.status == 'reading' || book.status == 'wish')
+            .toList(),
       );
 });
 

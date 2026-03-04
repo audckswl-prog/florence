@@ -15,11 +15,7 @@ class BookDetailModal extends ConsumerStatefulWidget {
   final Book book;
   final UserBook? userBook;
 
-  const BookDetailModal({
-    super.key,
-    required this.book,
-    this.userBook,
-  });
+  const BookDetailModal({super.key, required this.book, this.userBook});
 
   @override
   ConsumerState<BookDetailModal> createState() => _BookDetailModalState();
@@ -41,14 +37,18 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
   Future<void> _fetchDetailedBook() async {
     try {
       // 1. Check DB first (books table) - no API call needed
-      final cachedBook = await ref.read(supabaseRepositoryProvider).getBookByIsbn(widget.book.isbn);
+      final cachedBook = await ref
+          .read(supabaseRepositoryProvider)
+          .getBookByIsbn(widget.book.isbn);
       if (cachedBook != null && cachedBook.pageCount > 0 && mounted) {
         setState(() => _detailedBook = cachedBook);
         return;
       }
 
       // 2. Not in DB → call Aladin API
-      final detailed = await ref.read(bookRepositoryProvider).getBookDetail(widget.book.isbn);
+      final detailed = await ref
+          .read(bookRepositoryProvider)
+          .getBookDetail(widget.book.isbn);
       if (detailed != null && mounted) {
         setState(() => _detailedBook = detailed);
         // Save to DB so next time we skip the API call
@@ -70,11 +70,9 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
     try {
       if (widget.userBook != null) {
         // Update existing book
-        await ref.read(supabaseRepositoryProvider).updateUserBookStatus(
-              userId,
-              _book.isbn,
-              status,
-            );
+        await ref
+            .read(supabaseRepositoryProvider)
+            .updateUserBookStatus(userId, _book.isbn, status);
         if (mounted) {
           FlorenceToast.show(context, '도서 상태가 수정되었습니다.');
         }
@@ -82,11 +80,9 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
         // Use _book which may have detailed info from async fetch
         final bookToAdd = _book;
 
-        await ref.read(supabaseRepositoryProvider).addUserBook(
-              userId: userId,
-              book: bookToAdd,
-              status: status,
-            );
+        await ref
+            .read(supabaseRepositoryProvider)
+            .addUserBook(userId: userId, book: bookToAdd, status: status);
         if (mounted) {
           FlorenceToast.show(context, '서재에 추가되었습니다.');
         }
@@ -96,23 +92,27 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
       ref.invalidate(userBooksProvider);
 
       if (status == 'read' && mounted) {
-        final mockUserBook = widget.userBook ?? UserBook(
-            id: 'temp',
-            userId: userId,
-            isbn: _book.isbn,
-            status: 'read',
-            book: _book,
-            readCount: 1, // default
-        );
-        
+        final mockUserBook =
+            widget.userBook ??
+            UserBook(
+              id: 'temp',
+              userId: userId,
+              isbn: _book.isbn,
+              status: 'read',
+              book: _book,
+              readCount: 1, // default
+            );
+
         // Pop the modal FIRST before showing the dialog, passing a flag so the parent can show the dialog
         // Or better yet, just show the dialog here, and THEN pop the modal but wait for the dialog to finish.
-        // Actually, if we pop the modal first, this widget is unmounted. 
+        // Actually, if we pop the modal first, this widget is unmounted.
         // Let's pop the modal first, then the parent screen (e.g. ReadingListScreen or Home) could handle it.
         // BUT wait, this is a bottom sheet/modal. If we push a new screen over it, then pop the modal underneath, it might pop the new screen!
         // We should pop the BookDetailModal FIRST to get back to the main screen context, then show the dialog.
-        
-        Navigator.of(context).pop({'action': 'read_completed', 'book': mockUserBook});
+
+        Navigator.of(
+          context,
+        ).pop({'action': 'read_completed', 'book': mockUserBook});
         return; // Exit early so we don't pop again below
       }
 
@@ -155,10 +155,9 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(supabaseRepositoryProvider).deleteUserBook(
-            userId,
-            widget.book.isbn,
-          );
+      await ref
+          .read(supabaseRepositoryProvider)
+          .deleteUserBook(userId, widget.book.isbn);
 
       ref.invalidate(userBooksProvider);
 
@@ -190,145 +189,148 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-          // Drag Handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.greyLight,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          // Book Info Row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              NeumorphicContainer(
-                depth: 2.0,
-                borderRadius: 8,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: _book.coverUrl,
-                    width: 100,
-                    height: 150,
-                    fit: BoxFit.cover,
-                  ),
+            // Drag Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.greyLight,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _book.title,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.black,
-                          ),
+            ),
+            const SizedBox(height: 24),
+            // Book Info Row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                NeumorphicContainer(
+                  depth: 2.0,
+                  borderRadius: 8,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: CachedNetworkImage(
+                      imageUrl: _book.coverUrl,
+                      width: 100,
+                      height: 150,
+                      fit: BoxFit.cover,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _book.author,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppColors.grey,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _book.publisher,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.grey,
-                          ),
-                    ),
-                    if (_book.pageCount > 0) ...[
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _book.title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _book.author,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: AppColors.grey),
+                      ),
                       const SizedBox(height: 4),
                       Text(
-                        '${_book.pageCount}쪽',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.grey,
-                            ),
+                        _book.publisher,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColors.grey),
                       ),
+                      if (_book.pageCount > 0) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_book.pageCount}쪽',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: AppColors.grey),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          AIPromotionCard(book: _book),
-          const SizedBox(height: 32),
-          // Action Buttons
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else
-            Column(
-              children: [
-                _buildActionButton(
-                  context,
-                  label: '읽고 있는 책',
-                  icon: Icons.auto_stories,
-                  color: currentStatus == 'reading'
-                      ? AppColors.burgundy
-                      : AppColors.ivory,
-                  textColor: currentStatus == 'reading'
-                      ? Colors.white
-                      : AppColors.burgundy,
-                  onTap: () => _saveOrUpdateBook('reading'),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildActionButton(
-                        context,
-                        label: '다 읽은 책',
-                        icon: Icons.check_circle_outline,
-                        color: currentStatus == 'read'
-                            ? AppColors.burgundy
-                            : AppColors.ivory,
-                        textColor: currentStatus == 'read'
-                            ? Colors.white
-                            : AppColors.burgundy,
-                        onTap: () => _saveOrUpdateBook('read'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildActionButton(
-                        context,
-                        label: '읽고 싶은 책',
-                        icon: Icons.bookmark_border,
-                        color: currentStatus == 'wish'
-                            ? AppColors.burgundy
-                            : AppColors.ivory,
-                        textColor: currentStatus == 'wish'
-                            ? Colors.white
-                            : AppColors.burgundy,
-                        onTap: () => _saveOrUpdateBook('wish'),
-                      ),
-                    ),
-                  ],
-                ),
-                if (widget.userBook != null) ...[
-                  const SizedBox(height: 24),
-                  TextButton.icon(
-                    onPressed: _deleteBook,
-                    icon: const Icon(Icons.delete_outline,
-                        color: Colors.red, size: 20),
-                    label: const Text('서재에서 삭제하기',
-                        style: TextStyle(color: Colors.red)),
                   ),
-                ],
+                ),
               ],
             ),
-          const SizedBox(height: 16),
-        ],
-      ),
+            const SizedBox(height: 24),
+            AIPromotionCard(book: _book),
+            const SizedBox(height: 32),
+            // Action Buttons
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else
+              Column(
+                children: [
+                  _buildActionButton(
+                    context,
+                    label: '읽고 있는 책',
+                    icon: Icons.auto_stories,
+                    color: currentStatus == 'reading'
+                        ? AppColors.burgundy
+                        : AppColors.ivory,
+                    textColor: currentStatus == 'reading'
+                        ? Colors.white
+                        : AppColors.burgundy,
+                    onTap: () => _saveOrUpdateBook('reading'),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          label: '다 읽은 책',
+                          icon: Icons.check_circle_outline,
+                          color: currentStatus == 'read'
+                              ? AppColors.burgundy
+                              : AppColors.ivory,
+                          textColor: currentStatus == 'read'
+                              ? Colors.white
+                              : AppColors.burgundy,
+                          onTap: () => _saveOrUpdateBook('read'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          label: '읽고 싶은 책',
+                          icon: Icons.bookmark_border,
+                          color: currentStatus == 'wish'
+                              ? AppColors.burgundy
+                              : AppColors.ivory,
+                          textColor: currentStatus == 'wish'
+                              ? Colors.white
+                              : AppColors.burgundy,
+                          onTap: () => _saveOrUpdateBook('wish'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (widget.userBook != null) ...[
+                    const SizedBox(height: 24),
+                    TextButton.icon(
+                      onPressed: _deleteBook,
+                      icon: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      label: const Text(
+                        '서재에서 삭제하기',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
@@ -357,9 +359,9 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
             Text(
               label,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

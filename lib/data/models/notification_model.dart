@@ -3,7 +3,8 @@ class NotificationModel {
   final String userId;
   final String? senderId;
   final String? senderNickname;
-  final String type; // 'friend_request', 'project_invite', 'project_started', 'page_milestone', 'project_success'
+  final String
+  type; // 'friend_request', 'project_invite', 'project_started', 'page_milestone', 'project_success'
   final String? message;
   final String? relatedId; // Project ID or Friendship ID
   final bool isRead;

@@ -10,7 +10,7 @@ class FlorenceToast {
 
     final overlayState = Overlay.maybeOf(context, rootOverlay: true);
     if (overlayState == null) return;
-    
+
     // Remove previous toast if still visible
     if (_currentOverlay != null && _currentOverlay!.mounted) {
       _currentOverlay!.remove();
@@ -51,7 +51,7 @@ class FlorenceToast {
                         color: Colors.black.withOpacity(0.15),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
-                      )
+                      ),
                     ],
                   ),
                   child: Stack(
@@ -69,7 +69,8 @@ class FlorenceToast {
                               child: CustomPaint(
                                 painter: FlorenceDomePainter(
                                   progress: 1.0, // Fully drawn
-                                  color: AppColors.charcoal, // Neutral base for watermark
+                                  color: AppColors
+                                      .charcoal, // Neutral base for watermark
                                 ),
                               ),
                             ),

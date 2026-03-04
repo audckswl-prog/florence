@@ -25,15 +25,24 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   // Use the repository stream directly
   final authStateStream = ref.watch(authRepositoryProvider).authStateChanges;
-  final authState = ref.watch(authStateProvider); // Keep watching state for redirect logic
-  
-  final rootNavigatorKey = GlobalKey<NavigatorState>();
-  final sectionHomeNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'sectionHomeNav');
-  final sectionMemoNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'sectionMemoNav');
-  final sectionReadingListNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'sectionReadingListNav');
-  final sectionMyPageNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'sectionMyPageNav');
+  final authState = ref.watch(
+    authStateProvider,
+  ); // Keep watching state for redirect logic
 
-  
+  final rootNavigatorKey = GlobalKey<NavigatorState>();
+  final sectionHomeNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'sectionHomeNav',
+  );
+  final sectionMemoNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'sectionMemoNav',
+  );
+  final sectionReadingListNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'sectionReadingListNav',
+  );
+  final sectionMyPageNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'sectionMyPageNav',
+  );
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
@@ -41,8 +50,9 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final session = Supabase.instance.client.auth.currentSession;
       final isLoggedIn = session != null;
-      
-      final isLoggingIn = state.uri.toString() == '/login' || state.uri.toString() == '/signup';
+
+      final isLoggingIn =
+          state.uri.toString() == '/login' || state.uri.toString() == '/signup';
       final isSplash = state.uri.toString() == '/splash';
 
       // 1. Force redirect from Splash
@@ -67,10 +77,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
@@ -97,7 +104,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) {
                       final id = state.pathParameters['id']!;
                       final project = state.extra as Project?;
-                      return ProjectDetailScreen(projectId: id, project: project);
+                      return ProjectDetailScreen(
+                        projectId: id,
+                        project: project,
+                      );
                     },
                     routes: [
                       GoRoute(
@@ -131,7 +141,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: '/memo',
                 builder: (context, state) => const MemoScreen(),
                 routes: [
-                   GoRoute(
+                  GoRoute(
                     path: 'list/:isbn',
                     builder: (context, state) {
                       final isbn = state.pathParameters['isbn']!;

@@ -8,11 +8,7 @@ class BookListTile extends StatelessWidget {
   final Book book;
   final VoidCallback onTap;
 
-  const BookListTile({
-    super.key,
-    required this.book,
-    required this.onTap,
-  });
+  const BookListTile({super.key, required this.book, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +32,9 @@ class BookListTile extends StatelessWidget {
                   width: 60,
                   height: 90,
                   color: AppColors.greyLight,
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   width: 60,
@@ -57,18 +55,18 @@ class BookListTile extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.black,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.black,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     book.author,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.grey,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: AppColors.grey),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -76,9 +74,9 @@ class BookListTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.grey,
-                          fontSize: 11,
-                        ),
+                      color: AppColors.grey,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ),

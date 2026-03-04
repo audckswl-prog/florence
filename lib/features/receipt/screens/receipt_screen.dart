@@ -10,10 +10,7 @@ import 'dart:math';
 class ReceiptScreen extends ConsumerWidget {
   final String period; // 'month', 'year', 'all'
 
-  const ReceiptScreen({
-    super.key,
-    required this.period,
-  });
+  const ReceiptScreen({super.key, required this.period});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -70,27 +67,42 @@ class ReceiptScreen extends ConsumerWidget {
                     Center(
                       child: Column(
                         children: [
-                          const Icon(Icons.bookmark_border, size: 32, color: Colors.black),
+                          const Icon(
+                            Icons.bookmark_border,
+                            size: 32,
+                            color: Colors.black,
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             'FLORENCE READING SHOP',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.2,
-                                  fontFamily: 'Courier', // Monospace if available
+                                  fontFamily:
+                                      'Courier', // Monospace if available
                                 ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Date: ${DateFormat('yyyy-MM-dd HH:mm').format(now)}',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
                                   fontFamily: 'Courier',
                                   color: Colors.grey[600],
                                 ),
                           ),
                           const SizedBox(height: 16),
-                          const Divider(color: Colors.black, thickness: 1, height: 1),
-                          const Divider(color: Colors.black, thickness: 1, height: 4),
+                          const Divider(
+                            color: Colors.black,
+                            thickness: 1,
+                            height: 1,
+                          ),
+                          const Divider(
+                            color: Colors.black,
+                            thickness: 1,
+                            height: 4,
+                          ),
                         ],
                       ),
                     ),
@@ -131,7 +143,10 @@ class ReceiptScreen extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 Text(
                                   '1', // Qty
-                                  style: const TextStyle(fontFamily: 'Courier', fontSize: 12),
+                                  style: const TextStyle(
+                                    fontFamily: 'Courier',
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
@@ -168,10 +183,13 @@ class ReceiptScreen extends ConsumerWidget {
                       height: 40,
                       color: Colors.black, // Placeholder for barcode
                       child: Center(
-                         child: Text(
-                           '|| ||| || ||||| || |||',
-                           style: TextStyle(color: Colors.white, letterSpacing: 4),
-                         ),
+                        child: Text(
+                          '|| ||| || ||||| || |||',
+                          style: TextStyle(
+                            color: Colors.white,
+                            letterSpacing: 4,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -218,20 +236,23 @@ class ZigZagPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = color;
     final path = Path();
-    
+
     // Zig-zag pattern
     double x = 0;
     double y = 0;
     double step = 10;
-    
+
     path.moveTo(0, 0);
     while (x < size.width) {
       path.lineTo(x + step / 2, size.height);
       path.lineTo(x + step, 0);
       x += step;
     }
-    
-    path.lineTo(size.width, size.height * 2); // Extend down to cover any gaps if needed
+
+    path.lineTo(
+      size.width,
+      size.height * 2,
+    ); // Extend down to cover any gaps if needed
     path.lineTo(0, size.height * 2);
     path.close();
 

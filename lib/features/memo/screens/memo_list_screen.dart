@@ -13,11 +13,7 @@ class MemoListScreen extends ConsumerWidget {
   final String isbn;
   final Book? book; // Passed via extra or fetched? For now let's pass it.
 
-  const MemoListScreen({
-    super.key,
-    required this.isbn,
-    this.book,
-  });
+  const MemoListScreen({super.key, required this.isbn, this.book});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,9 +31,9 @@ class MemoListScreen extends ConsumerWidget {
         title: Text(
           book?.title ?? '메모',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.black,
-              ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.black,
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -55,15 +51,18 @@ class MemoListScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.note_alt_outlined,
-                      size: 64, color: AppColors.greyLight),
+                  const Icon(
+                    Icons.note_alt_outlined,
+                    size: 64,
+                    color: AppColors.greyLight,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     '작성된 메모가 없습니다.\n첫 번째 메모를 남겨보세요!',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.grey,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: AppColors.grey),
                   ),
                 ],
               ),
@@ -98,9 +97,9 @@ class MemoListScreen extends ConsumerWidget {
                       ],
                       Text(
                         RichTextUtils.extractPlainText(memo.content),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              height: 1.5,
-                            ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(height: 1.5),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -109,16 +108,16 @@ class MemoListScreen extends ConsumerWidget {
                           if (memo.pageNumber != null)
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.burgundy.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 'p.${memo.pageNumber}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
+                                style: Theme.of(context).textTheme.labelSmall
                                     ?.copyWith(
                                       color: AppColors.burgundy,
                                       fontWeight: FontWeight.bold,
@@ -128,12 +127,11 @@ class MemoListScreen extends ConsumerWidget {
                           else
                             const SizedBox(),
                           Text(
-                            DateFormat('yyyy.MM.dd HH:mm')
-                                .format(memo.createdAt),
-                            style:
-                                Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: AppColors.grey,
-                                    ),
+                            DateFormat(
+                              'yyyy.MM.dd HH:mm',
+                            ).format(memo.createdAt),
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(color: AppColors.grey),
                           ),
                         ],
                       ),

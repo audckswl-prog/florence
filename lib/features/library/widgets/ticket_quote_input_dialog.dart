@@ -43,7 +43,7 @@ class _TicketQuoteInputDialogState extends State<TicketQuoteInputDialog> {
               color: Colors.black.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
         child: Column(

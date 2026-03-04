@@ -29,8 +29,12 @@ class Project {
       ownerId: json['owner_id'],
       isbn: json['isbn'],
       status: json['status'] ?? 'pending_books',
-      startDate: json['start_date'] != null ? DateTime.parse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
+      startDate: json['start_date'] != null
+          ? DateTime.parse(json['start_date'])
+          : null,
+      endDate: json['end_date'] != null
+          ? DateTime.parse(json['end_date'])
+          : null,
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -112,7 +116,9 @@ class ProjectBook {
       id: json['id'],
       projectId: json['project_id'],
       isbn: json['isbn'],
-      targetDate: json['target_date'] != null ? DateTime.parse(json['target_date']) : null,
+      targetDate: json['target_date'] != null
+          ? DateTime.parse(json['target_date'])
+          : null,
       createdAt: DateTime.parse(json['created_at']),
     );
   }

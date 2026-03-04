@@ -19,27 +19,26 @@ class ProjectDetailScreen extends ConsumerStatefulWidget {
   final String projectId;
   final Project? project;
 
-  const ProjectDetailScreen({
-    super.key,
-    required this.projectId,
-    this.project,
-  });
+  const ProjectDetailScreen({super.key, required this.projectId, this.project});
 
   @override
-  ConsumerState<ProjectDetailScreen> createState() => _ProjectDetailScreenState();
+  ConsumerState<ProjectDetailScreen> createState() =>
+      _ProjectDetailScreenState();
 }
 
 class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   // Local state for the slider to provide instant feedback
   double _currentSliderValue = 0;
   bool _isDragging = false;
-  
+
   @override
   Widget build(BuildContext context) {
     // We re-fetch projects to get the latest status
     final projectsAsync = ref.watch(myProjectsProvider);
     final membersAsync = ref.watch(projectMembersProvider(widget.projectId));
-    final booksAsync = ref.watch(projectBooksProvider(widget.projectId)); // Using this if project_books is still a thing
+    final booksAsync = ref.watch(
+      projectBooksProvider(widget.projectId),
+    ); // Using this if project_books is still a thing
     final myId = Supabase.instance.client.auth.currentUser?.id;
 
     return Scaffold(
@@ -54,22 +53,30 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         title: Text(
           widget.project?.name ?? '함께 읽기',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.black,
-              ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.black,
+          ),
         ),
       ),
       body: projectsAsync.when(
         data: (projects) {
           final project = projects.firstWhere(
-            (p) => p.id == widget.projectId, 
-            orElse: () => widget.project ?? Project(id: widget.projectId, name: '알 수 없음', ownerId: '', createdAt: DateTime.now())
+            (p) => p.id == widget.projectId,
+            orElse: () =>
+                widget.project ??
+                Project(
+                  id: widget.projectId,
+                  name: '알 수 없음',
+                  ownerId: '',
+                  createdAt: DateTime.now(),
+                ),
           );
-          
+
           return membersAsync.when(
             data: (members) {
-              if (members.isEmpty) return const Center(child: Text('멤버 정보를 불러올 수 없습니다.'));
-              
+              if (members.isEmpty)
+                return const Center(child: Text('멤버 정보를 불러올 수 없습니다.'));
+
               ProjectMember? me;
               final others = <ProjectMember>[];
               for (var m in members) {
@@ -79,8 +86,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   others.add(m);
                 }
               }
-              
-              if (me == null) return const Center(child: Text('멤버 정보를 불러올 수 없습니다.'));
+
+              if (me == null)
+                return const Center(child: Text('멤버 정보를 불러올 수 없습니다.'));
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
@@ -90,12 +98,12 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                     // Header Area
                     _buildHeader(project, me, others),
                     const SizedBox(height: 32),
-                    
-                    if (project.status == 'pending_books') 
+
+                    if (project.status == 'pending_books')
                       _buildBookSelectionPhase(project, me, others)
-                    else 
+                    else
                       _buildInProgressPhase(project, me, others),
-                      
+
                     const SizedBox(height: 32),
                     // Members Section & AI Chat
                     _buildAiChatStart(project),
@@ -113,15 +121,19 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildHeader(Project project, ProjectMember me, List<ProjectMember> others) {
+  Widget _buildHeader(
+    Project project,
+    ProjectMember me,
+    List<ProjectMember> others,
+  ) {
     String subtitle = '준비 중';
     if (project.status == 'in_progress') {
-       if (project.endDate != null) {
-          final daysLeft = project.endDate!.difference(DateTime.now()).inDays;
-          subtitle = daysLeft >= 0 ? 'D-$daysLeft' : '기한 초과';
-       }
+      if (project.endDate != null) {
+        final daysLeft = project.endDate!.difference(DateTime.now()).inDays;
+        subtitle = daysLeft >= 0 ? 'D-$daysLeft' : '기한 초과';
+      }
     } else if (project.status == 'completed') {
-       subtitle = '완수 됨!';
+      subtitle = '완수 됨!';
     }
 
     return Container(
@@ -143,7 +155,11 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           const SizedBox(height: 20),
           Text(
             project.name,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.charcoal),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: AppColors.charcoal,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -154,13 +170,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: project.status == 'in_progress' ? AppColors.burgundy : AppColors.greyLight.withOpacity(0.3),
+              color: project.status == 'in_progress'
+                  ? AppColors.burgundy
+                  : AppColors.greyLight.withOpacity(0.3),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               subtitle,
               style: TextStyle(
-                color: project.status == 'in_progress' ? Colors.white : AppColors.charcoal,
+                color: project.status == 'in_progress'
+                    ? Colors.white
+                    : AppColors.charcoal,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -175,8 +195,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     final displayCount = allMembers.length > 5 ? 5 : allMembers.length;
     final avatarRadius = displayCount <= 3 ? 24.0 : 20.0;
     final overlap = avatarRadius * 0.8;
-    final totalWidth = (avatarRadius * 2) * displayCount - overlap * (displayCount - 1);
-    
+    final totalWidth =
+        (avatarRadius * 2) * displayCount - overlap * (displayCount - 1);
+
     return SizedBox(
       width: totalWidth,
       height: avatarRadius * 2,
@@ -191,7 +212,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               ),
               child: CircleAvatar(
                 radius: avatarRadius,
-                backgroundColor: index == 0 ? AppColors.ivory : AppColors.greyLight,
+                backgroundColor: index == 0
+                    ? AppColors.ivory
+                    : AppColors.greyLight,
                 child: Icon(
                   Icons.person,
                   color: index == 0 ? AppColors.burgundy : Colors.white,
@@ -205,20 +228,30 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildBookSelectionPhase(Project project, ProjectMember me, List<ProjectMember> others) {
+  Widget _buildBookSelectionPhase(
+    Project project,
+    ProjectMember me,
+    List<ProjectMember> others,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           '읽을 책 선택하기',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.charcoal),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.charcoal,
+          ),
         ),
         const SizedBox(height: 16),
         _buildBookSelectionCard(me, isMe: true),
-        ...others.map((other) => Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: _buildBookSelectionCard(other, isMe: false),
-        )),
+        ...others.map(
+          (other) => Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: _buildBookSelectionCard(other, isMe: false),
+          ),
+        ),
         const SizedBox(height: 24),
         Text(
           '* 모든 참여자가 책을 선택하면 2주간의 독서 프로젝트가 자동으로 시작됩니다.',
@@ -238,7 +271,11 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isMe ? AppColors.burgundy.withOpacity(0.3) : const Color(0xFFEEEEEE)),
+        border: Border.all(
+          color: isMe
+              ? AppColors.burgundy.withOpacity(0.3)
+              : const Color(0xFFEEEEEE),
+        ),
       ),
       child: Row(
         children: [
@@ -247,7 +284,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             width: 50,
             height: 70,
             decoration: BoxDecoration(
-              color: hasSelected ? AppColors.burgundy.withOpacity(0.1) : AppColors.ivory,
+              color: hasSelected
+                  ? AppColors.burgundy.withOpacity(0.1)
+                  : AppColors.ivory,
               borderRadius: BorderRadius.circular(4),
             ),
             clipBehavior: Clip.antiAlias,
@@ -255,11 +294,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 ? Image.network(
                     coverUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.book, color: AppColors.burgundy),
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.book, color: AppColors.burgundy),
                   )
                 : Icon(
                     hasSelected ? Icons.book : Icons.help_outline,
-                    color: hasSelected ? AppColors.burgundy : AppColors.greyLight,
+                    color: hasSelected
+                        ? AppColors.burgundy
+                        : AppColors.greyLight,
                   ),
           ),
           const SizedBox(width: 16),
@@ -269,13 +311,19 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               children: [
                 Text(
                   isMe ? '나의 책' : '친구의 책',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.charcoal,
+                  ),
                 ),
                 if (hasSelected && bookTitle != null) ...[
                   const SizedBox(height: 4),
                   Text(
                     bookTitle,
-                    style: const TextStyle(color: AppColors.charcoal, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppColors.charcoal,
+                      fontSize: 13,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -283,7 +331,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   hasSelected ? '책을 선택했습니다!' : '아직 고르지 않았어요.',
-                  style: TextStyle(color: hasSelected ? AppColors.burgundy : AppColors.grey, fontSize: 12),
+                  style: TextStyle(
+                    color: hasSelected ? AppColors.burgundy : AppColors.grey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -294,7 +345,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.burgundy,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
               child: const Text('선택'),
             ),
@@ -308,18 +361,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       context: context,
       delegate: BookSearchDelegate(
         ref,
-        onBookSelected: (b) => b, // Return the book directly without opening details
+        onBookSelected: (b) =>
+            b, // Return the book directly without opening details
       ),
     );
 
     if (book != null && mounted) {
       try {
         final myId = Supabase.instance.client.auth.currentUser!.id;
-        final projectStarted = await ref.read(supabaseRepositoryProvider).selectProjectBook(
-          projectId: projectId,
-          userId: myId,
-          book: book,
-        );
+        final projectStarted = await ref
+            .read(supabaseRepositoryProvider)
+            .selectProjectBook(projectId: projectId, userId: myId, book: book);
         ref.invalidate(myProjectsProvider);
         ref.invalidate(projectMembersProvider(projectId));
 
@@ -331,7 +383,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             context: context,
             barrierDismissible: false,
             builder: (dialogCtx) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -356,7 +410,11 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   const SizedBox(height: 12),
                   Text(
                     '2주 안에 완독에 도전하세요!\n서로의 진도를 확인하며 함께 읽어봐요.',
-                    style: TextStyle(color: AppColors.grey, fontSize: 14, height: 1.5),
+                    style: TextStyle(
+                      color: AppColors.grey,
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
@@ -375,10 +433,18 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.burgundy,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
                     ),
-                    child: const Text('시작하기', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      '시작하기',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -397,7 +463,12 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             builder: (errCtx) => AlertDialog(
               title: const Text('책 선택 실패'),
               content: Text('$e'),
-              actions: [TextButton(onPressed: () => Navigator.pop(errCtx), child: const Text('확인'))],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(errCtx),
+                  child: const Text('확인'),
+                ),
+              ],
             ),
           );
         }
@@ -411,7 +482,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('총 페이지 수 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: const Text(
+          '총 페이지 수 수정',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
@@ -436,21 +510,29 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               if (newTotal == null || newTotal <= 0) return;
               Navigator.pop(dialogContext);
               try {
-                await ref.read(supabaseRepositoryProvider).updateUserBookStatus(
-                  member.userId, member.selectedIsbn!, 'reading',
-                  totalPages: newTotal,
-                );
+                await ref
+                    .read(supabaseRepositoryProvider)
+                    .updateUserBookStatus(
+                      member.userId,
+                      member.selectedIsbn!,
+                      'reading',
+                      totalPages: newTotal,
+                    );
                 setState(() {}); // Rebuild to refresh
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('수정 실패: $e')));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('수정 실패: $e')));
                 }
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.burgundy,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: const Text('저장'),
           ),
@@ -459,7 +541,11 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
   }
 
-  Widget _buildInProgressPhase(Project project, ProjectMember me, List<ProjectMember> others) {
+  Widget _buildInProgressPhase(
+    Project project,
+    ProjectMember me,
+    List<ProjectMember> others,
+  ) {
     if (project.status == 'completed') {
       return Column(
         children: [
@@ -467,22 +553,29 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           const SizedBox(height: 16),
           const Text(
             '프로젝트 성공!',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.charcoal),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.charcoal,
+            ),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
-             onPressed: () {
-               context.push(
-                  '/home/social/detail/${widget.projectId}/receipt',
-                  extra: {'project': project, 'rate': 1.0},
-               );
-             },
-             style: ElevatedButton.styleFrom(
-               backgroundColor: AppColors.burgundy,
-               foregroundColor: Colors.white,
-               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-             ),
-             child: const Text('독서 티켓 확인하기', style: TextStyle(fontWeight: FontWeight.bold)),
+            onPressed: () {
+              context.push(
+                '/home/social/detail/${widget.projectId}/receipt',
+                extra: {'project': project, 'rate': 1.0},
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.burgundy,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
+            child: const Text(
+              '독서 티켓 확인하기',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       );
@@ -493,14 +586,20 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       children: [
         const Text(
           '독서 진도',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.charcoal),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.charcoal,
+          ),
         ),
         const SizedBox(height: 16),
         _buildProgressCard(me, isMe: true),
-        ...others.map((other) => Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: _buildProgressCard(other, isMe: false),
-        )),
+        ...others.map(
+          (other) => Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: _buildProgressCard(other, isMe: false),
+          ),
+        ),
       ],
     );
   }
@@ -512,12 +611,15 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: ref.read(supabaseRepositoryProvider).getUserBooks(member.userId),
       builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-        
+        if (!snapshot.hasData)
+          return const Center(child: CircularProgressIndicator());
+
         final userBooks = snapshot.data!;
         Map<String, dynamic>? userBook;
         try {
-          userBook = userBooks.firstWhere((ub) => ub['isbn'] == member.selectedIsbn);
+          userBook = userBooks.firstWhere(
+            (ub) => ub['isbn'] == member.selectedIsbn,
+          );
         } catch (_) {
           userBook = null;
         }
@@ -534,15 +636,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           // Use member's selected book info
           total = 300; // Last resort fallback
         }
-        
+
         final double percent = total > 0 ? (read / total).clamp(0.0, 1.0) : 0.0;
-        
+
         if (isMe && !_isDragging) {
-           _currentSliderValue = read.toDouble();
+          _currentSliderValue = read.toDouble();
         }
 
         // Book title from member model
-        final bookTitle = isMe ? member.selectedBookTitle : member.selectedBookTitle;
+        final bookTitle = isMe
+            ? member.selectedBookTitle
+            : member.selectedBookTitle;
         final coverUrl = member.selectedBookCover;
 
         return Container(
@@ -551,7 +655,13 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFEEEEEE)),
-            boxShadow: const [BoxShadow(color: Color(0x05000000), blurRadius: 10, offset: Offset(0, 4))],
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x05000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -562,8 +672,14 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                   if (coverUrl != null && coverUrl.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: Image.network(coverUrl, width: 32, height: 44, fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox(width: 32, height: 44)),
+                      child: Image.network(
+                        coverUrl,
+                        width: 32,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            const SizedBox(width: 32, height: 44),
+                      ),
                     ),
                     const SizedBox(width: 12),
                   ],
@@ -573,11 +689,21 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       children: [
                         Text(
                           isMe ? '나의 진도' : '친구의 진도',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.charcoal,
+                          ),
                         ),
                         if (bookTitle != null)
-                          Text(bookTitle, style: const TextStyle(fontSize: 12, color: AppColors.grey),
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(
+                            bookTitle,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                       ],
                     ),
                   ),
@@ -589,17 +715,27 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                         children: [
                           Text(
                             '${_currentSliderValue.toInt()} / $total p',
-                            style: const TextStyle(color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: AppColors.burgundy,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.edit, size: 14, color: AppColors.grey),
+                          const Icon(
+                            Icons.edit,
+                            size: 14,
+                            color: AppColors.grey,
+                          ),
                         ],
                       ),
                     )
                   else
                     Text(
                       '$read / $total p',
-                      style: const TextStyle(color: AppColors.burgundy, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: AppColors.burgundy,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                 ],
               ),
@@ -620,76 +756,107 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                     onChangeStart: (_) => setState(() => _isDragging = true),
                     onChanged: (val) {
                       setState(() {
-                         _currentSliderValue = val;
+                        _currentSliderValue = val;
                       });
                     },
                     onChangeEnd: (val) async {
                       setState(() => _isDragging = false);
                       try {
-                        await ref.read(supabaseRepositoryProvider).syncProjectReadingProgress(
-                           projectId: member.projectId,
-                           userId: member.userId,
-                           isbn: member.selectedIsbn!,
-                           readPages: val.toInt(),
-                           totalPages: total,
-                        );
+                        await ref
+                            .read(supabaseRepositoryProvider)
+                            .syncProjectReadingProgress(
+                              projectId: member.projectId,
+                              userId: member.userId,
+                              isbn: member.selectedIsbn!,
+                              readPages: val.toInt(),
+                              totalPages: total,
+                            );
                         ref.invalidate(myProjectsProvider);
-                        ref.invalidate(projectMembersProvider(member.projectId));
+                        ref.invalidate(
+                          projectMembersProvider(member.projectId),
+                        );
                         if (mounted) {
-                           if (val >= total) {
-                              // 완독 시 서재/프로젝트 갤러리 provider 무효화
-                              ref.invalidate(userBooksProvider);
-                              
-                              // userBook 객체를 다시 가져와서 모달을 띄우기
-                              try {
-                                final ubs = await ref.read(supabaseRepositoryProvider).getUserBooks(member.userId);
-                                final uMap = ubs.firstWhere((element) => element['isbn'] == member.selectedIsbn);
-                                final uBook = UserBook.fromJson(uMap);
-                                
-                                if (mounted) {
-                                  final quote = await showDialog<String>(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (context) => ReadingCompletionDialog(
-                                      userBook: uBook,
-                                      isSharedReading: true,
-                                    ),
-                                  );
-                                  
-                                  if (quote != null) {
-                                    // Save quote to DB
-                                    await ref.read(supabaseRepositoryProvider).updateUserBookStatus(
-                                      member.userId,
-                                      member.selectedIsbn!,
-                                      'read',
-                                      quote: quote,
-                                    );
-                                    ref.invalidate(userBooksProvider);
-                                    
-                                    final currentProject = ref.read(myProjectsProvider).value?.firstWhere((element) => element.id == member.projectId);
-                                    if (currentProject != null) {
-                                      context.push(
-                                        '/home/social/detail/${member.projectId}/receipt',
-                                        extra: {'project': currentProject, 'rate': 1.0},
-                                      );
-                                    }
-                                  }
-                                }
-                              } catch (e) {
-                                debugPrint('Error loading user book for completion dialog: $e');
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('🎉 축하합니다! 완독하셨네요! 읽은 책이 서재에 자동으로 추가됩니다.'),
-                                    duration: Duration(seconds: 3),
+                          if (val >= total) {
+                            // 완독 시 서재/프로젝트 갤러리 provider 무효화
+                            ref.invalidate(userBooksProvider);
+
+                            // userBook 객체를 다시 가져와서 모달을 띄우기
+                            try {
+                              final ubs = await ref
+                                  .read(supabaseRepositoryProvider)
+                                  .getUserBooks(member.userId);
+                              final uMap = ubs.firstWhere(
+                                (element) =>
+                                    element['isbn'] == member.selectedIsbn,
+                              );
+                              final uBook = UserBook.fromJson(uMap);
+
+                              if (mounted) {
+                                final quote = await showDialog<String>(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => ReadingCompletionDialog(
+                                    userBook: uBook,
+                                    isSharedReading: true,
                                   ),
                                 );
+
+                                if (quote != null) {
+                                  // Save quote to DB
+                                  await ref
+                                      .read(supabaseRepositoryProvider)
+                                      .updateUserBookStatus(
+                                        member.userId,
+                                        member.selectedIsbn!,
+                                        'read',
+                                        quote: quote,
+                                      );
+                                  ref.invalidate(userBooksProvider);
+
+                                  final currentProject = ref
+                                      .read(myProjectsProvider)
+                                      .value
+                                      ?.firstWhere(
+                                        (element) =>
+                                            element.id == member.projectId,
+                                      );
+                                  if (currentProject != null) {
+                                    context.push(
+                                      '/home/social/detail/${member.projectId}/receipt',
+                                      extra: {
+                                        'project': currentProject,
+                                        'rate': 1.0,
+                                      },
+                                    );
+                                  }
+                                }
                               }
-                           } else {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('진도가 저장되었습니다. 화이팅!')));
-                           }
+                            } catch (e) {
+                              debugPrint(
+                                'Error loading user book for completion dialog: $e',
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    '🎉 축하합니다! 완독하셨네요! 읽은 책이 서재에 자동으로 추가됩니다.',
+                                  ),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('진도가 저장되었습니다. 화이팅!'),
+                              ),
+                            );
+                          }
                         }
                       } catch (e) {
-                         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+                        if (mounted)
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
                       }
                     },
                   ),
@@ -742,24 +909,39 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           const SizedBox(height: 12),
           Text(
             '책을 읽다가 생긴 궁금증, 혹은 발제문이 필요하다면 언제든 AI 도슨트에게 물어보세요.',
-            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13, height: 1.5),
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 13,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 20),
           Align(
             alignment: Alignment.centerRight,
             child: OutlinedButton(
               onPressed: () {
-                context.push('/home/social/detail/${project.id}/ai-chat', extra: project);
+                context.push(
+                  '/home/social/detail/${project.id}/ai-chat',
+                  extra: project,
+                );
               },
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Colors.white, width: 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
-              child: const Text('대화 시작', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                '대화 시작',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          )
+          ),
         ],
       ),
     );

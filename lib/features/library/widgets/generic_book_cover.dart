@@ -28,7 +28,10 @@ class GenericBookCover extends StatelessWidget {
     // Improve Aladin cover image quality (coversum / cover150 / cover200 -> cover500)
     String highQualityCoverUrl = book.coverUrl;
     if (highQualityCoverUrl.contains('aladin.co.kr')) {
-      highQualityCoverUrl = highQualityCoverUrl.replaceAll(RegExp(r'coversum|cover150|cover200'), 'cover500');
+      highQualityCoverUrl = highQualityCoverUrl.replaceAll(
+        RegExp(r'coversum|cover150|cover200'),
+        'cover500',
+      );
     }
 
     // Asymmetric border for physical book feel (spine vs open edge)
@@ -90,7 +93,9 @@ class GenericBookCover extends StatelessWidget {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    Colors.black.withOpacity(0.3), // Darker at the very edge (spine fold)
+                    Colors.black.withOpacity(
+                      0.3,
+                    ), // Darker at the very edge (spine fold)
                     Colors.black.withOpacity(0.0), // Fade out
                     Colors.black.withOpacity(0.15), // Slight dip for the hinge
                     Colors.black.withOpacity(0.0), // Flat cover
@@ -113,7 +118,9 @@ class GenericBookCover extends StatelessWidget {
                     Colors.white.withOpacity(0.2), // Highlight reflection
                     Colors.white.withOpacity(0.0),
                     Colors.black.withOpacity(0.0),
-                    Colors.black.withOpacity(0.1), // Slight shadow on bottom right
+                    Colors.black.withOpacity(
+                      0.1,
+                    ), // Slight shadow on bottom right
                   ],
                   stops: const [0.0, 0.4, 0.8, 1.0],
                 ),
@@ -143,17 +150,23 @@ class GenericBookCover extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             backgroundColor,
-            Color.lerp(backgroundColor, Colors.black, 0.2)!, // Slightly darker bottom-right
+            Color.lerp(
+              backgroundColor,
+              Colors.black,
+              0.2,
+            )!, // Slightly darker bottom-right
           ],
         ),
       ),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 10, 10, 10), // Left margin for spine area
+        margin: const EdgeInsets.fromLTRB(
+          16,
+          10,
+          10,
+          10,
+        ), // Left margin for spine area
         decoration: BoxDecoration(
-          border: Border.all(
-            color: textColor.withOpacity(0.4),
-            width: 0.5,
-          ),
+          border: Border.all(color: textColor.withOpacity(0.4), width: 0.5),
         ),
         padding: const EdgeInsets.all(4),
         alignment: Alignment.center,

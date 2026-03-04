@@ -54,41 +54,45 @@ class AIPromotionCard extends ConsumerWidget {
                 // Header Badge
                 Row(
                   children: [
-                    const FlorenceLoader(width: 18, height: 18, color: AppColors.burgundy),
+                    const FlorenceLoader(
+                      width: 18,
+                      height: 18,
+                      color: AppColors.burgundy,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       '피렌체 도슨트의 노트',
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: AppColors.burgundy,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: AppColors.burgundy,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Hook Title
                 Text(
                   promotion.hookTitle,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.charcoal,
-                        height: 1.4,
-                      ),
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.charcoal,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Historical Background
                 Text(
                   promotion.historicalBackground,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.charcoal.withValues(alpha: 0.9),
-                        height: 1.8,
-                        fontSize: 14.5,
-                      ),
+                    color: AppColors.charcoal.withValues(alpha: 0.9),
+                    height: 1.8,
+                    fontSize: 14.5,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Closing Question (Styled as a quote block)
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -102,12 +106,17 @@ class AIPromotionCard extends ConsumerWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.format_quote, color: AppColors.burgundy, size: 24),
+                      const Icon(
+                        Icons.format_quote,
+                        color: AppColors.burgundy,
+                        size: 24,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           promotion.closingQuestion,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
                                 color: AppColors.charcoal,
                                 fontWeight: FontWeight.w600,
                                 height: 1.6,
@@ -127,21 +136,25 @@ class AIPromotionCard extends ConsumerWidget {
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: [
-              const FlorenceLoader(width: 48, height: 48, color: AppColors.burgundy),
+              const FlorenceLoader(
+                width: 48,
+                height: 48,
+                color: AppColors.burgundy,
+              ),
               const SizedBox(height: 16),
               Text(
                 '피렌체의 도슨트가 당신을 위한 이야기를 고르고 있습니다...',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.charcoal,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.charcoal),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 '약 10초 이내에 완료됩니다.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.grey,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.grey),
                 textAlign: TextAlign.center,
               ),
             ],

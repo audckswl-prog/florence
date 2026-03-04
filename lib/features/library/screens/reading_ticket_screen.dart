@@ -22,7 +22,8 @@ class ReadingTicketScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ReadingTicketScreen> createState() => _ReadingTicketScreenState();
+  ConsumerState<ReadingTicketScreen> createState() =>
+      _ReadingTicketScreenState();
 }
 
 class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
@@ -79,7 +80,8 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
           Image.asset(
             'assets/images/florence_bg.jpg',
             fit: BoxFit.cover,
-            alignment: _bgAlignment, // Random pan — different every ticket session
+            alignment:
+                _bgAlignment, // Random pan — different every ticket session
             width: double.infinity,
             height: double.infinity,
           ),
@@ -102,34 +104,34 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Hero(
                       tag: 'ticket_${book.isbn}',
-                        child: aiDataAsync.when(
-                          data: (aiData) => ReadingTicketWidget(
-                            userBook: widget.userBook,
-                            quote: widget.quote,
-                            readCountThisYear: readCountThisYear,
-                            nationalityCode: aiData.nationalityCode,
-                            nationalityName: aiData.nationalityName,
-                            publicationYear: aiData.publicationYear != '연도 미상' 
-                                ? aiData.publicationYear 
-                                : book.publicationYear,
-                          ),
-                          loading: () => ReadingTicketWidget(
-                            userBook: widget.userBook,
-                            quote: widget.quote,
-                            readCountThisYear: readCountThisYear,
-                            nationalityCode: 'UN',
-                            nationalityName: '분석 중',
-                            publicationYear: book.publicationYear,
-                          ),
-                          error: (e, st) => ReadingTicketWidget(
-                            userBook: widget.userBook,
-                            quote: widget.quote,
-                            readCountThisYear: readCountThisYear,
-                            nationalityCode: 'UN',
-                            nationalityName: '알 수 없음',
-                            publicationYear: book.publicationYear,
-                          ),
+                      child: aiDataAsync.when(
+                        data: (aiData) => ReadingTicketWidget(
+                          userBook: widget.userBook,
+                          quote: widget.quote,
+                          readCountThisYear: readCountThisYear,
+                          nationalityCode: aiData.nationalityCode,
+                          nationalityName: aiData.nationalityName,
+                          publicationYear: aiData.publicationYear != '연도 미상'
+                              ? aiData.publicationYear
+                              : book.publicationYear,
                         ),
+                        loading: () => ReadingTicketWidget(
+                          userBook: widget.userBook,
+                          quote: widget.quote,
+                          readCountThisYear: readCountThisYear,
+                          nationalityCode: 'UN',
+                          nationalityName: '분석 중',
+                          publicationYear: book.publicationYear,
+                        ),
+                        error: (e, st) => ReadingTicketWidget(
+                          userBook: widget.userBook,
+                          quote: widget.quote,
+                          readCountThisYear: readCountThisYear,
+                          nationalityCode: 'UN',
+                          nationalityName: '알 수 없음',
+                          publicationYear: book.publicationYear,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -142,7 +144,10 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
   }
 }
 
-final aiTicketFutureProvider = FutureProvider.family.autoDispose((ref, Book book) {
+final aiTicketFutureProvider = FutureProvider.family.autoDispose((
+  ref,
+  Book book,
+) {
   final repo = ref.watch(aiTicketRepositoryProvider);
   return repo.getTicketMetadata(book.isbn, book.title, book.author);
 });
@@ -198,14 +203,21 @@ class ReadingTicketWidget extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 18, right: 18, bottom: 16),
+                        padding: const EdgeInsets.only(
+                          left: 18,
+                          right: 18,
+                          bottom: 16,
+                        ),
                         child: SizedBox(
                           height: 44,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: List.generate(36, (i) {
                               final w = Random(i).nextInt(4) + 1;
-                              return Container(width: w.toDouble(), color: AppColors.charcoal);
+                              return Container(
+                                width: w.toDouble(),
+                                color: AppColors.charcoal,
+                              );
                             }),
                           ),
                         ),
@@ -219,7 +231,10 @@ class ReadingTicketWidget extends StatelessWidget {
               // ── MIDDLE (content) ──────────────────────────────────
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 18,
+                    horizontal: 18,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -245,7 +260,11 @@ class ReadingTicketWidget extends StatelessWidget {
                             children: [
                               Transform.rotate(
                                 angle: pi / 4,
-                                child: const Icon(Icons.flight, size: 26, color: AppColors.black),
+                                child: const Icon(
+                                  Icons.flight,
+                                  size: 26,
+                                  color: AppColors.black,
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
@@ -273,15 +292,20 @@ class ReadingTicketWidget extends StatelessWidget {
                             children: [
                               Container(
                                 decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.black12, width: 0.5),
+                                  border: Border.all(
+                                    color: Colors.black12,
+                                    width: 0.5,
+                                  ),
                                 ),
                                 child: Image.network(
                                   'https://flagcdn.com/w80/${nationalityCode.toLowerCase()}.png',
                                   width: 40,
                                   height: 26,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      Text(_flagEmoji(nationalityCode), style: const TextStyle(fontSize: 24)),
+                                  errorBuilder: (_, __, ___) => Text(
+                                    _flagEmoji(nationalityCode),
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -307,7 +331,10 @@ class ReadingTicketWidget extends StatelessWidget {
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxHeight: 290, maxWidth: 190),
+                            constraints: const BoxConstraints(
+                              maxHeight: 290,
+                              maxWidth: 190,
+                            ),
                             child: AspectRatio(
                               aspectRatio: 1 / 1.45,
                               child: DecoratedBox(
@@ -388,7 +415,10 @@ class ReadingTicketWidget extends StatelessWidget {
                       const DashedLine(),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 12,
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -407,8 +437,13 @@ class ReadingTicketWidget extends StatelessWidget {
                                   backgroundColor: const Color(0xFFE0E0E0),
                                   foregroundColor: AppColors.black,
                                   elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
                                 ),
                                 child: const Text(
                                   '독서앱 설치하기',
@@ -482,22 +517,48 @@ class TicketClipper extends CustomClipper<Path> {
 
     // right top notch
     p.lineTo(size.width, topCutoutY - r);
-    p.arcTo(Rect.fromCircle(center: Offset(size.width, topCutoutY), radius: r), -pi / 2, -pi, false);
+    p.arcTo(
+      Rect.fromCircle(center: Offset(size.width, topCutoutY), radius: r),
+      -pi / 2,
+      -pi,
+      false,
+    );
 
     // right bottom notch
     p.lineTo(size.width, size.height - bottomCutoutY - r);
-    p.arcTo(Rect.fromCircle(center: Offset(size.width, size.height - bottomCutoutY), radius: r), -pi / 2, -pi, false);
+    p.arcTo(
+      Rect.fromCircle(
+        center: Offset(size.width, size.height - bottomCutoutY),
+        radius: r,
+      ),
+      -pi / 2,
+      -pi,
+      false,
+    );
 
     p.lineTo(size.width, size.height);
     p.lineTo(0, size.height);
 
     // left bottom notch
     p.lineTo(0, size.height - bottomCutoutY + r);
-    p.arcTo(Rect.fromCircle(center: Offset(0, size.height - bottomCutoutY), radius: r), pi / 2, -pi, false);
+    p.arcTo(
+      Rect.fromCircle(
+        center: Offset(0, size.height - bottomCutoutY),
+        radius: r,
+      ),
+      pi / 2,
+      -pi,
+      false,
+    );
 
     // left top notch
     p.lineTo(0, topCutoutY + r);
-    p.arcTo(Rect.fromCircle(center: Offset(0, topCutoutY), radius: r), pi / 2, -pi, false);
+    p.arcTo(
+      Rect.fromCircle(center: Offset(0, topCutoutY), radius: r),
+      pi / 2,
+      -pi,
+      false,
+    );
 
     p.close();
     return p;

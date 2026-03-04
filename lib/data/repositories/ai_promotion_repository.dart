@@ -14,17 +14,20 @@ class AIPromotionRepository {
     if (apiKey == null || apiKey.isEmpty) {
       debugPrint('Warning: GEMINI_API_KEY is not set in .env');
     }
-    
+
     _model = GenerativeModel(
       model: 'gemini-2.5-flash',
       apiKey: apiKey ?? '',
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-      ),
+      generationConfig: GenerationConfig(responseMimeType: 'application/json'),
     );
   }
 
-  Future<AIPromotionModel?> getPromotion(String isbn, String title, String author, String description) async {
+  Future<AIPromotionModel?> getPromotion(
+    String isbn,
+    String title,
+    String author,
+    String description,
+  ) async {
     try {
       // 1. Check cache in Supabase first
       final response = await _supabase
@@ -40,8 +43,9 @@ class AIPromotionRepository {
 
       // 2. Not found, generate using Gemini API
       debugPrint('No cache found. Generating AI promotion for $isbn...');
-      
-      final prompt = """
+
+      final prompt =
+          """
 너는 세계 최고의 베스트셀러 편집자이자 매혹적인 스토리텔러야. 
 네 목표는 독자가 이 책을 당장 읽지 않고는 못 배기게 만드는 흥미로운 백그라운드 스토리를 들려주는 거야.
 
@@ -69,7 +73,7 @@ class AIPromotionRepository {
 
       final content = [Content.text(prompt)];
       final aiResponse = await _model.generateContent(content);
-      
+
       if (aiResponse.text == null) {
         throw Exception('AI returned empty response');
       }
@@ -77,10 +81,13 @@ class AIPromotionRepository {
       // Parse JSON from Gemini
       String jsonString = aiResponse.text!;
       // Clean up markdown quotes if Gemini wrapped the JSON
-      jsonString = jsonString.replaceAll('```json', '').replaceAll('```', '').trim();
-      
+      jsonString = jsonString
+          .replaceAll('```json', '')
+          .replaceAll('```', '')
+          .trim();
+
       final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      
+
       // Helper to clean up HTML entities Gemini might return
       String decodeHtmlEntities(String text) {
         return text
@@ -90,11 +97,13 @@ class AIPromotionRepository {
             .replaceAll('&quot;', '"')
             .replaceAll('&#39;', "'");
       }
-      
+
       final newPromotion = AIPromotionModel(
         isbn: isbn,
         hookTitle: decodeHtmlEntities(jsonMap['hook_title'] ?? '피렌체 맞춤형 책 소개'),
-        historicalBackground: decodeHtmlEntities(jsonMap['historical_background'] ?? ''),
+        historicalBackground: decodeHtmlEntities(
+          jsonMap['historical_background'] ?? '',
+        ),
         closingQuestion: decodeHtmlEntities(jsonMap['closing_question'] ?? ''),
       );
 

@@ -50,8 +50,10 @@ class _NeumorphicButtonState extends State<NeumorphicButton> {
 
   @override
   Widget build(BuildContext context) {
-    final double depth = _isPressed ? 0.0 : 4.0; // Pressed state flattens the shadow
-    
+    final double depth = _isPressed
+        ? 0.0
+        : 4.0; // Pressed state flattens the shadow
+
     // Slight movement when pressed to simulate physical button
     final double offset = _isPressed ? 2.0 : 0.0;
 
@@ -66,7 +68,11 @@ class _NeumorphicButtonState extends State<NeumorphicButton> {
           height: widget.height,
           padding: widget.padding,
           borderRadius: widget.borderRadius,
-          color: widget.color ?? (widget.onPressed == null ? AppColors.ivoryDark : AppColors.ivory),
+          color:
+              widget.color ??
+              (widget.onPressed == null
+                  ? AppColors.ivoryDark
+                  : AppColors.ivory),
           depth: depth,
           child: Center(child: widget.child),
         ),

@@ -17,7 +17,8 @@ class ReadingRecordDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ReadingRecordDialog> createState() => _ReadingRecordDialogState();
+  ConsumerState<ReadingRecordDialog> createState() =>
+      _ReadingRecordDialogState();
 }
 
 class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
@@ -49,7 +50,7 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
     int? totalPages;
 
     if (_isCompleted) {
-      // If completed, we assume they read everything. 
+      // If completed, we assume they read everything.
       // If total pages is provided, readPages == totalPages.
       if (_totalPagesController.text.isNotEmpty) {
         totalPages = int.tryParse(_totalPagesController.text);
@@ -82,7 +83,7 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
               color: Colors.black.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
         child: SingleChildScrollView(
@@ -118,7 +119,10 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
               // 1. Completion Toggle
               const Text(
                 '끝까지 다 읽었나요?',
-                style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.black),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.black,
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -135,7 +139,9 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                             '네, 완독했어요',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: _isCompleted ? AppColors.burgundy : AppColors.grey,
+                              color: _isCompleted
+                                  ? AppColors.burgundy
+                                  : AppColors.grey,
                             ),
                           ),
                         ),
@@ -155,7 +161,9 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                             '아니요 (부분 독서)',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: !_isCompleted ? AppColors.burgundy : AppColors.grey,
+                              color: !_isCompleted
+                                  ? AppColors.burgundy
+                                  : AppColors.grey,
                             ),
                           ),
                         ),
@@ -170,7 +178,10 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
               if (!_isCompleted) ...[
                 const Text(
                   '어디까지 읽었나요?',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.black),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.black,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -178,7 +189,10 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                     Expanded(
                       child: NeumorphicContainer(
                         depth: -2,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         borderRadius: 8,
                         child: TextField(
                           controller: _readPagesController,
@@ -187,19 +201,32 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: '읽은 쪽수',
-                            hintStyle: TextStyle(color: AppColors.greyLight, fontSize: 13),
+                            hintStyle: TextStyle(
+                              color: AppColors.greyLight,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('/', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.grey, fontSize: 18)),
+                      child: Text(
+                        '/',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.grey,
+                          fontSize: 18,
+                        ),
+                      ),
                     ),
                     Expanded(
                       child: NeumorphicContainer(
                         depth: -2,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         borderRadius: 8,
                         child: TextField(
                           controller: _totalPagesController,
@@ -208,7 +235,10 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             hintText: '전체 쪽수',
-                            hintStyle: TextStyle(color: AppColors.greyLight, fontSize: 13),
+                            hintStyle: TextStyle(
+                              color: AppColors.greyLight,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
@@ -218,7 +248,11 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                 const SizedBox(height: 8),
                 const Text(
                   '기록하신 분량에 꼭 맞는 두께로 서재에 꽂히게 됩니다.',
-                  style: TextStyle(color: AppColors.grey, fontSize: 11, height: 1.4),
+                  style: TextStyle(
+                    color: AppColors.grey,
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -227,7 +261,10 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
               // 3. N-th Reading Stepper
               const Text(
                 '몇 번째 읽는 책인가요?',
-                style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.black),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.black,
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -241,7 +278,11 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                       depth: 2,
                       padding: EdgeInsets.all(8),
                       borderRadius: 12,
-                      child: Icon(Icons.remove, color: AppColors.grey, size: 20),
+                      child: Icon(
+                        Icons.remove,
+                        color: AppColors.grey,
+                        size: 20,
+                      ),
                     ),
                   ),
                   Padding(
@@ -263,7 +304,11 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
                       depth: 2,
                       padding: EdgeInsets.all(8),
                       borderRadius: 12,
-                      child: Icon(Icons.add, color: AppColors.burgundy, size: 20),
+                      child: Icon(
+                        Icons.add,
+                        color: AppColors.burgundy,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
@@ -289,7 +334,10 @@ class _ReadingRecordDialogState extends ConsumerState<ReadingRecordDialog> {
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => context.pop(),
-                child: const Text('취소', style: TextStyle(color: AppColors.grey)),
+                child: const Text(
+                  '취소',
+                  style: TextStyle(color: AppColors.grey),
+                ),
               ),
             ],
           ),

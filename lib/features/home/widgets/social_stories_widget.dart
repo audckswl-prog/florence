@@ -35,7 +35,10 @@ class SocialStoriesWidget extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: hasUpdate
                       ? Border.all(color: AppColors.burgundy, width: 2)
-                      : Border.all(color: const Color(0xFFE0E0E0), width: 1), // Subtle border for non-updates
+                      : Border.all(
+                          color: const Color(0xFFE0E0E0),
+                          width: 1,
+                        ), // Subtle border for non-updates
                 ),
                 child: CircleAvatar(
                   radius: 28,
@@ -49,9 +52,9 @@ class SocialStoriesWidget extends StatelessWidget {
               Text(
                 story['name'] as String,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.charcoal,
-                      fontSize: 11,
-                    ),
+                  color: AppColors.charcoal,
+                  fontSize: 11,
+                ),
               ),
             ],
           );
