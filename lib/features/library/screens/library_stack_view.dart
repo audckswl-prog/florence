@@ -12,6 +12,17 @@ import '../../../data/models/user_book_model.dart';
 class LibraryStackView extends ConsumerWidget {
   const LibraryStackView({super.key});
 
+  double _calcShelfPhysicalHeight(List<UserBook> books) {
+    if (books.isEmpty) return 0.0;
+    double maxH = 0.0;
+    for (var b in books) {
+      final r = Random(b.isbn.hashCode);
+      final double h = 150.0 + (r.nextDouble() * 20.0);
+      if (h > maxH) maxH = h;
+    }
+    return maxH + 12.0; // max book height + wood shelf base
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final booksAsync = ref.watch(readBooksProvider);
@@ -138,10 +149,23 @@ class LibraryStackView extends ConsumerWidget {
                 // 즉, [6선반, 5선반, 4선반...] 순서
                 final reversedShelves = shelves.reversed.toList();
 
-                // 요구사항 구현의 핵심 기술 포인트:
-                // 1. 선반 개수가 적을 때 (예: 2선반 밖에 없을 때) -> 화면 상단에 붕 뜨지 않고 바닥(네비바)에 딱 붙어있어야 함.
-                // 2. 선반 개수가 많을 때 (예: 6선반) -> 최신 선반이 맨 위로 올라오게 정렬되며 자유롭게 스크롤되어야 하고, 
-                //    끝까지 스크롤 해 가장 밑바닥(1선반)에 도달했을 때만 네비바에 붙어야 함.
+                // 사용자가 지정한 완벽한 스냅(Snap) 위치 계산:
+                // 앱 진입 시 최신의 2개 선반(인덱스 0, 1)이 화면에 보일 때
+                // 5선반(인덱스 1)의 밑바닥이 정확히 하단바와 12px 간격을 이루게 합니다.
+                double topPadding = 0.0;
+                if (reversedShelves.isNotEmpty) {
+                  double h0 = _calcShelfPhysicalHeight(reversedShelves[0]);
+                  double h1 = reversedShelves.length > 1 ? _calcShelfPhysicalHeight(reversedShelves[1]) : 0.0;
+                  
+                  // index 0의 기본 마진은 24 (선반 간격)
+                  // targetHeight = 0선반높이 + 24 + 1선반높이 + 시각적여백(12)
+                  double targetHeight = reversedShelves.length == 1 ? (h0 + 12.0) : (h0 + 24.0 + h1 + 12.0);
+                  
+                  if (constraints.maxHeight > targetHeight) {
+                    topPadding = constraints.maxHeight - targetHeight;
+                  }
+                }
+
                 return SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
@@ -150,15 +174,18 @@ class LibraryStackView extends ConsumerWidget {
                       minHeight: constraints.maxHeight, // 화면 높이보다 내용이 적어도 꽉 채움
                     ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end, // 높이가 남으면 모든 선반을 바닥으로 끌어내림
+                      mainAxisAlignment: MainAxisAlignment.start, // 상단부터 배치하며 계산된 패딩으로 밀어냅니다.
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: List.generate(reversedShelves.length, (index) {
-                        final shelfBooks = reversedShelves[index];
-                        // 뒤집힌 배열이므로 마지막 인덱스(length - 1)가 가장 오래된 1선반(진짜 맨 밑바닥)입니다.
-                        final isBottomMostShelf = index == reversedShelves.length - 1;
-                        
-                        return _buildShelfRow(shelfBooks, isLastShelf: isBottomMostShelf);
-                      }),
+                      children: [
+                        if (topPadding > 0) SizedBox(height: topPadding),
+                        ...List.generate(reversedShelves.length, (index) {
+                          final shelfBooks = reversedShelves[index];
+                          // 뒤집힌 배열이므로 마지막 인덱스(length - 1)가 가장 오래된 1선반(진짜 맨 밑바닥)입니다.
+                          final isBottomMostShelf = index == reversedShelves.length - 1;
+                          
+                          return _buildShelfRow(shelfBooks, isLastShelf: isBottomMostShelf);
+                        }),
+                      ],
                     ),
                   ),
                 );
