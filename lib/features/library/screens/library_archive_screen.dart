@@ -10,12 +10,12 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   const LibraryArchiveScreen({super.key, required this.books});
 
-  // 마호가니 원목 색상 팔레트
-  static const Color _woodDark = Color(0xFF3E1008);
-  static const Color _woodMid = Color(0xFF5C1A10);
-  static const Color _woodLight = Color(0xFF7A2E1C);
-  static const Color _woodHighlight = Color(0xFF8B3A22);
-  static const Color _woodGrain = Color(0xFF4A1209);
+  // 월넛 원목 색상 팔레트 (부드러운 갈색 질감)
+  static const Color _woodDark = Color(0xFF2C1910);
+  static const Color _woodMid = Color(0xFF432918);
+  static const Color _woodLight = Color(0xFF5D3A24);
+  static const Color _woodHighlight = Color(0xFF6E4830);
+  static const Color _woodGrain = Color(0xFF362012);
   static const Color _innerWall = Color(0xFFF5F1EC);
   static const double _frameSide = 10.0;
   static const double _shelfThickness = 8.0;
