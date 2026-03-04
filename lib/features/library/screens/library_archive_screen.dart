@@ -283,9 +283,10 @@ class LibraryArchiveScreen extends StatelessWidget {
         }, // LayoutBuilder builder
       ), // LayoutBuilder
     ), // SafeArea
-  ], // Stack children
-); // Stack
-} // build method
+          ], // Stack children
+        ), // body: Stack
+    ); // Scaffold
+  } // build method
 
   List<List<int>> _arrangeBooksOnShelves(
     List<double> widths, double availableW, double scale,
