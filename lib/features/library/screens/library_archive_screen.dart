@@ -9,6 +9,14 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   const LibraryArchiveScreen({super.key, required this.books});
 
+  // 책장 프레임 색상
+  static const Color _frameColor = Color(0xFF5A1E1E);
+  // 책장 내부 벽 색상
+  static const Color _innerWall = Color(0xFFF5F1EC);
+  // 프레임 두께
+  static const double _frameSide = 10.0;
+  static const double _shelfThickness = 8.0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,231 +27,230 @@ class LibraryArchiveScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: AppColors.charcoal),
       ),
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final double totalWidth = constraints.maxWidth;
-            final double totalHeight = constraints.maxHeight;
-            const double headerHeight = 60.0;
-            const double shelfDividerHeight = 10.0;
-            const double bookAreaBaseHeight = 170.0;
-            final double availableHeight = totalHeight - headerHeight;
+        child: Center(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double screenW = constraints.maxWidth;
+              final double screenH = constraints.maxHeight;
 
-            if (books.isEmpty || totalWidth <= 0 || availableHeight <= 0) {
-              return const SizedBox.shrink();
-            }
+              // 책장 가구의 가로/세로 마진
+              const double marginH = 20.0;
+              const double marginV = 16.0;
+              final double shelfOuterW = screenW - marginH * 2;
+              final double shelfOuterH = screenH - marginV * 2;
 
-            // 책들의 원본 너비를 계산
-            final List<double> originalWidths = [];
-            for (var b in books) {
-              int pages = b.book.pageCount;
-              if (pages == 0) {
-                final random = Random(b.isbn.hashCode);
-                pages = 200 + random.nextInt(400);
+              // 내부 사용 가능 영역 (프레임 두께 제외)
+              final double innerW = shelfOuterW - _frameSide * 2;
+              final double innerH = shelfOuterH - _frameSide - 50.0; // 50 = 상단 Firenze 패널 높이
+
+              if (books.isEmpty || innerW <= 0 || innerH <= 0) {
+                return const SizedBox.shrink();
               }
-              final int readPages = b.readPages;
-              final int totalPages = b.totalPages ?? pages;
-              double thicknessRatio = 1.0;
-              if (readPages > 0 &&
-                  totalPages > 0 &&
-                  readPages <= totalPages) {
-                thicknessRatio = readPages / totalPages;
+
+              // 책 원본 너비 계산
+              final List<double> originalWidths = [];
+              for (var b in books) {
+                int pages = b.book.pageCount;
+                if (pages == 0) {
+                  final random = Random(b.isbn.hashCode);
+                  pages = 200 + random.nextInt(400);
+                }
+                final int readPages = b.readPages;
+                final int totalPages = b.totalPages ?? pages;
+                double thicknessRatio = 1.0;
+                if (readPages > 0 &&
+                    totalPages > 0 &&
+                    readPages <= totalPages) {
+                  thicknessRatio = readPages / totalPages;
+                }
+                double w = ((18.0 + (pages * 0.08)) * thicknessRatio)
+                    .clamp(14.0, 70.0);
+                originalWidths.add(w);
               }
-              double w = ((18.0 + (pages * 0.08)) * thicknessRatio)
-                  .clamp(14.0, 70.0);
-              originalWidths.add(w);
-            }
 
-            // 최적의 스케일(S) 찾기
-            double optimalScale = 1.0;
-            List<List<int>> optimalShelves = [];
+              // 스케일 찾기
+              double optimalScale = 1.0;
+              List<List<int>> optimalShelves = [];
+              const double bookH = 170.0;
 
-            for (double s = 1.0; s >= 0.1; s -= 0.01) {
-              List<List<int>> testShelves = [];
-              List<int> currentRow = [];
-              double currentRowWidth = 0.0;
-              double scaledSpacing = 1.0 * s;
+              for (double s = 1.0; s >= 0.08; s -= 0.01) {
+                List<List<int>> testShelves = [];
+                List<int> currentRow = [];
+                double currentRowW = 0.0;
 
-              for (int i = 0; i < originalWidths.length; i++) {
-                double scaledW = originalWidths[i] * s;
-                if (currentRowWidth + scaledW + scaledSpacing >
-                        totalWidth &&
-                    currentRow.isNotEmpty) {
+                for (int i = 0; i < originalWidths.length; i++) {
+                  double scaledW = originalWidths[i] * s;
+                  if (currentRowW + scaledW > innerW && currentRow.isNotEmpty) {
+                    testShelves.add(currentRow);
+                    currentRow = [];
+                    currentRowW = 0.0;
+                  }
+                  currentRow.add(i);
+                  currentRowW += scaledW;
+                }
+                if (currentRow.isNotEmpty) {
                   testShelves.add(currentRow);
-                  currentRow = [];
-                  currentRowWidth = 0.0;
                 }
-                currentRow.add(i);
-                currentRowWidth += scaledW + scaledSpacing;
-              }
-              if (currentRow.isNotEmpty) {
-                testShelves.add(currentRow);
+
+                // 각 칸 = 책 높이 + 선반 두께
+                double unitH = (bookH + _shelfThickness) * s;
+                double totalH = testShelves.length * unitH;
+
+                if (totalH <= innerH) {
+                  optimalScale = s;
+                  optimalShelves = testShelves;
+                  break;
+                }
               }
 
-              double scaledUnitHeight =
-                  (bookAreaBaseHeight + shelfDividerHeight) * s;
-              double totalRequired = testShelves.length * scaledUnitHeight;
-
-              if (totalRequired <= availableHeight) {
-                optimalScale = s;
-                optimalShelves = testShelves;
-                break;
-              }
-            }
-
-            // fallback
-            if (optimalShelves.isEmpty) {
-              optimalScale = 0.15;
-              List<int> currentRow = [];
-              double currentRowWidth = 0.0;
-              double scaledSpacing = 1.0 * optimalScale;
-              for (int i = 0; i < originalWidths.length; i++) {
-                double scaledW = originalWidths[i] * optimalScale;
-                if (currentRowWidth + scaledW + scaledSpacing >
-                        totalWidth &&
-                    currentRow.isNotEmpty) {
+              if (optimalShelves.isEmpty) {
+                optimalScale = 0.1;
+                List<int> currentRow = [];
+                double currentRowW = 0.0;
+                for (int i = 0; i < originalWidths.length; i++) {
+                  double scaledW = originalWidths[i] * optimalScale;
+                  if (currentRowW + scaledW > innerW &&
+                      currentRow.isNotEmpty) {
+                    optimalShelves.add(currentRow);
+                    currentRow = [];
+                    currentRowW = 0.0;
+                  }
+                  currentRow.add(i);
+                  currentRowW += scaledW;
+                }
+                if (currentRow.isNotEmpty) {
                   optimalShelves.add(currentRow);
-                  currentRow = [];
-                  currentRowWidth = 0.0;
                 }
-                currentRow.add(i);
-                currentRowWidth += scaledW + scaledSpacing;
               }
-              if (currentRow.isNotEmpty) {
-                optimalShelves.add(currentRow);
-              }
-            }
 
-            // 최신 선반이 맨 위로
-            final reversedShelves = optimalShelves.reversed.toList();
+              // 최신 책이 위로
+              final displayShelves = optimalShelves.reversed.toList();
 
-            // 선반들의 총 높이 계산
-            final double scaledUnitHeight =
-                (bookAreaBaseHeight + shelfDividerHeight) * optimalScale;
-            final double totalShelvesHeight =
-                reversedShelves.length * scaledUnitHeight;
-            // 남는 공간을 선반 사이에 균등 분배
-            final double remainingSpace =
-                availableHeight - totalShelvesHeight;
-            final double gapPerShelf = reversedShelves.length > 1
-                ? (remainingSpace / (reversedShelves.length + 1))
-                    .clamp(0.0, double.infinity)
-                : remainingSpace / 2;
+              // 책장 내부 높이와 선반 총 높이 비교해서 균등 분배
+              final double unitH =
+                  (bookH + _shelfThickness) * optimalScale;
+              final double totalShelvesH =
+                  displayShelves.length * unitH;
+              final double extraSpace = innerH - totalShelvesH;
+              // 빈 공간을 최상단에 배치 (책장 상단 빈칸처럼 보이게)
+              final double topGap = extraSpace > 0 ? extraSpace : 0;
 
-            return Column(
-              children: [
-                // 상단 Firenze 헤더
-                Container(
-                  width: double.infinity,
-                  height: headerHeight,
-                  color: const Color(0xFF5A1E1E),
-                  child: Center(
-                    child: Text(
-                      'Firenze',
-                      style: TextStyle(
-                        fontFamily: 'GreatVibes',
-                        fontSize: 32,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.8),
-                            offset: const Offset(1, 1),
-                            blurRadius: 2,
-                          ),
-                          Shadow(
-                            color: Colors.white.withOpacity(0.2),
-                            offset: const Offset(-1, -1),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: marginH,
+                  vertical: marginV,
+                ),
+                // 흰 배경 위에 놓인 "책장 가구" 오브젝트
+                child: Container(
+                  width: shelfOuterW,
+                  height: shelfOuterH,
+                  decoration: BoxDecoration(
+                    color: _innerWall,
+                    border: Border.all(
+                      color: _frameColor,
+                      width: _frameSide,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // 상단 Firenze 헤더
+                      Container(
+                        width: double.infinity,
+                        height: 50.0,
+                        color: _frameColor,
+                        child: Center(
+                          child: Text(
+                            'Firenze',
+                            style: TextStyle(
+                              fontFamily: 'GreatVibes',
+                              fontSize: 28,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.7),
+                                  offset: const Offset(1, 1),
+                                  blurRadius: 2,
+                                ),
+                                Shadow(
+                                  color: Colors.white.withOpacity(0.15),
+                                  offset: const Offset(-1, -1),
+                                  blurRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // 책장 내부: 상단 빈 공간 + 선반들
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (topGap > 0) SizedBox(height: topGap),
+                            ...displayShelves.map((indices) {
+                              return _buildShelfCompartment(
+                                indices,
+                                books,
+                                optimalScale,
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                // 책장 영역: 위에서부터 균일하게 채움
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    color: Colors.white,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: _buildShelvesWithGaps(
-                        reversedShelves,
-                        books,
-                        optimalScale,
-                        gapPerShelf,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
-  List<Widget> _buildShelvesWithGaps(
-    List<List<int>> shelves,
-    List<UserBook> allBooks,
-    double scale,
-    double gap,
-  ) {
-    final List<Widget> widgets = [];
-    for (int i = 0; i < shelves.length; i++) {
-      // 선반 위에 균등 간격
-      if (gap > 0) {
-        widgets.add(SizedBox(height: gap));
-      }
-      widgets.add(_buildScaledShelf(shelves[i], allBooks, scale));
-    }
-    return widgets;
-  }
-
-  Widget _buildScaledShelf(
-    List<int> shelfIndices,
+  /// 선반 한 칸: 책들 + 아래 칸막이
+  Widget _buildShelfCompartment(
+    List<int> indices,
     List<UserBook> allBooks,
     double scale,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 1) 책들이 서 있는 공간
+        // 책 영역
         SizedBox(
           height: 170.0 * scale,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4.0 * scale),
+            padding: EdgeInsets.symmetric(horizontal: 2.0 * scale),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: shelfIndices.map((index) {
+              children: indices.map((i) {
                 return Transform.scale(
                   scale: scale,
                   alignment: Alignment.bottomCenter,
                   child: BookSpineWidget(
-                    key: ValueKey(allBooks[index].isbn),
-                    userBook: allBooks[index],
+                    key: ValueKey(allBooks[i].isbn),
+                    userBook: allBooks[i],
                   ),
                 );
               }).toList(),
             ),
           ),
         ),
-        // 2) 선반 바닥 (칸막이)
+        // 선반 바닥
         Container(
           width: double.infinity,
-          height: 10.0 * scale,
-          decoration: BoxDecoration(
-            color: const Color(0xFF5A1E1E),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 3 * scale,
-                offset: Offset(0, 3 * scale),
-              ),
-            ],
-          ),
+          height: _shelfThickness * scale,
+          color: _frameColor,
         ),
       ],
     );
