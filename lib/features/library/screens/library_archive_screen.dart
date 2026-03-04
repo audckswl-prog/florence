@@ -10,15 +10,15 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   const LibraryArchiveScreen({super.key, required this.books});
 
-  // 월넛 원목 색상 팔레트 (무광 질감톤, 광택 제거)
-  static const Color _woodDark = Color(0xFF2C1E16);
-  static const Color _woodMid = Color(0xFF3B281D);
-  static const Color _woodLight = Color(0xFF4A3326);
-  static const Color _woodHighlight = Color(0xFF553B2C);
-  static const Color _woodGrain = Color(0xFF332219);
+  // 버건디 원목 색상 팔레트 (AppColors.burgundy 기반, 무광 질감)
+  static const Color _woodDark = Color(0xFF3B080A);      // 아주 어두운 와인색 (그림자)
+  static const Color _woodMid = AppColors.burgundy;      // 기본 앱 버건디 (#751013)
+  static const Color _woodLight = Color(0xFF8B181C);     // 활기가 도는 밝은 버건디
+  static const Color _woodHighlight = Color(0xFF9A2024); // AppColors.burgundyLight (빛망울)
+  static const Color _woodGrain = Color(0xFF5A0C0E);     // 중간 어두운 톤 (나무결 음영)
   
-  // 책장 내부 벽면 (책장 프레임과 이어지는 깊은 원목 색상)
-  static const Color _innerWall = Color(0xFF241811); // _woodDark보다 살짝 더 어두워 안쪽으로 들어간 느낌
+  // 책장 내부 벽면 (책장 프레임과 이어지는 깊고 어두운 톤)
+  static const Color _innerWall = Color(0xFF2A0507); // _woodDark보다 비어보이는 공간 느낌
   
   static const double _frameSide = 12.0; // 프레임 약간 두껍게 안정감 부여
   static const double _shelfThickness = 12.0;
@@ -238,16 +238,16 @@ class LibraryArchiveScreen extends StatelessWidget {
                                       'Firenze',
                                       style: GoogleFonts.greatVibes(
                                         fontSize: 28,
-                                        color: const Color(0xFF23150F), // 텍스트를 나무색에 더 가깝게
+                                        color: AppColors.ivory, // 텍스트를 흰색(상아색)으로 변경
                                         shadows: [
                                           Shadow(
-                                            color: Colors.white.withOpacity(0.15),
-                                            offset: const Offset(0.5, 1.0),
-                                            blurRadius: 0.5,
+                                            color: Colors.black.withOpacity(0.8), // 글씨 안쪽으로 깊게 파인 그림자
+                                            offset: const Offset(1.0, 1.5),
+                                            blurRadius: 1.0,
                                           ),
                                           Shadow(
-                                            color: Colors.black.withOpacity(0.7),
-                                            offset: const Offset(-0.8, -0.8),
+                                            color: _woodDark.withOpacity(0.9),
+                                            offset: const Offset(-1.0, -1.0),
                                             blurRadius: 1.0,
                                           ),
                                         ],
