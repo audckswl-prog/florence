@@ -97,12 +97,47 @@ class LibraryStackView extends ConsumerWidget {
                               ),
                             );
                           },
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(
-                              Icons.auto_awesome_mosaic_outlined, // 우아하고 얇은 아이콘으로 교체
-                              color: AppColors.burgundy,
-                              size: 24,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // 왼쪽 세로로 긴 직사각형
+                                  Container(
+                                    width: 9,
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: AppColors.burgundy, width: 2.0),
+                                      borderRadius: BorderRadius.circular(2.5),
+                                    ),
+                                  ),
+                                  // 오른쪽 위아래 두 개의 가로 직사각형
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        width: 10,
+                                        height: 9,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: AppColors.burgundy, width: 2.0),
+                                          borderRadius: BorderRadius.circular(2.5),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: AppColors.burgundy, width: 2.0),
+                                          borderRadius: BorderRadius.circular(2.5),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
