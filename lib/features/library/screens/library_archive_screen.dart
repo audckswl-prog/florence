@@ -10,42 +10,56 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   const LibraryArchiveScreen({super.key, required this.books});
 
-  // 월넛 원목 색상 팔레트 (부드러운 갈색 질감)
-  static const Color _woodDark = Color(0xFF2C1910);
-  static const Color _woodMid = Color(0xFF432918);
-  static const Color _woodLight = Color(0xFF5D3A24);
-  static const Color _woodHighlight = Color(0xFF6E4830);
-  static const Color _woodGrain = Color(0xFF362012);
-  static const Color _innerWall = Color(0xFFF5F1EC);
-  static const double _frameSide = 10.0;
-  static const double _shelfThickness = 8.0;
+  // 월넛 원목 색상 팔레트 (무광 질감톤, 광택 제거)
+  static const Color _woodDark = Color(0xFF2C1E16);
+  static const Color _woodMid = Color(0xFF3B281D);
+  static const Color _woodLight = Color(0xFF4A3326);
+  static const Color _woodHighlight = Color(0xFF553B2C);
+  static const Color _woodGrain = Color(0xFF332219);
+  
+  // 책장 내부 벽면 (깊이감을 위해 약간 어둡게)
+  static const Color _innerWall = Color(0xFFE8E2DA);
+  
+  static const double _frameSide = 12.0; // 프레임 약간 두껍게 안정감 부여
+  static const double _shelfThickness = 12.0;
   static const double _headerHeight = 50.0;
   static const double _bookSidePadding = 8.0;
 
-  /// 수평 나무결 그라데이션
+  /// 수평 프레임 (상단/하단 베벨 및 무광 디자인)
   static const BoxDecoration _hWood = BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: [
-        _woodMid, _woodLight, _woodHighlight, _woodLight,
-        _woodMid, _woodGrain, _woodMid, _woodLight, _woodMid, _woodDark,
-      ],
-      stops: [0.0, 0.1, 0.2, 0.35, 0.5, 0.55, 0.65, 0.8, 0.9, 1.0],
+    color: _woodMid,
+    border: Border(
+      top: BorderSide(color: _woodHighlight, width: 1.5), // 빛망울(Bevel 표면)
+      bottom: BorderSide(color: _woodDark, width: 2.0),   // 그림자(Bevel 아랫면)
     ),
   );
 
-  /// 수직 나무결 그라데이션
+  /// 수직 프레임 (좌우 베벨 및 무광 디자인)
   static const BoxDecoration _vWood = BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: [
-        _woodMid, _woodLight, _woodMid, _woodGrain,
-        _woodMid, _woodLight, _woodMid, _woodDark,
-      ],
+    color: _woodMid,
+    border: Border(
+      left: BorderSide(color: _woodHighlight, width: 1.5),
+      right: BorderSide(color: _woodDark, width: 2.0),
     ),
   );
+
+  /// 각 선반(Shelf) 바닥 (3D 그림자 포함)
+  static BoxDecoration _shelfDecoration(double scale) {
+    return BoxDecoration(
+      color: _woodMid,
+      border: Border(
+        top: BorderSide(color: _woodHighlight, width: 1.5 * scale),
+        bottom: BorderSide(color: _woodDark, width: 2.0 * scale),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.5),
+          offset: Offset(0, 4 * scale), // 선반 바로 아래 그림자 (깊이감)
+          blurRadius: 6 * scale,
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,34 +204,51 @@ class LibraryArchiveScreen extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(_frameSide),
                           child: Container(
-                            color: _innerWall,
+                            decoration: BoxDecoration(
+                              color: _innerWall,
+                              boxShadow: [
+                                // 책장 내부 전체에 드리우는 은은한 상단 그림자
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  offset: const Offset(0, 4),
+                                  blurRadius: 10,
+                                  spreadRadius: -2,
+                                  blurStyle: BlurStyle.inner, // 내부 그림자로 깊이감 구현
+                                ),
+                              ],
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Firenze 헤더 (나무 질감 + 필기체 + 음각)
+                                // Firenze 헤더 (무광 나무 질감 + 깊이감 있는 음각)
                                 Container(
                                   width: double.infinity,
                                   height: _headerHeight,
-                                  decoration: _hWood,
+                                  decoration: _hWood.copyWith(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.4),
+                                        offset: const Offset(0, 3),
+                                        blurRadius: 5,
+                                      ),
+                                    ],
+                                  ),
                                   child: Center(
                                     child: Text(
                                       'Firenze',
                                       style: GoogleFonts.greatVibes(
                                         fontSize: 28,
-                                        color: const Color(0xFF2A0A04),
+                                        color: const Color(0xFF23150F), // 텍스트를 나무색에 더 가깝게
                                         shadows: [
                                           Shadow(
-                                            color: Colors.white
-                                                .withOpacity(0.25),
+                                            color: Colors.white.withOpacity(0.15),
                                             offset: const Offset(0.5, 1.0),
                                             blurRadius: 0.5,
                                           ),
                                           Shadow(
-                                            color: Colors.black
-                                                .withOpacity(0.6),
-                                            offset:
-                                                const Offset(-0.5, -0.5),
-                                            blurRadius: 0.5,
+                                            color: Colors.black.withOpacity(0.7),
+                                            offset: const Offset(-0.8, -0.8),
+                                            blurRadius: 1.0,
                                           ),
                                         ],
                                       ),
@@ -330,11 +361,11 @@ class LibraryArchiveScreen extends StatelessWidget {
             ),
           ),
         ),
-        // 선반 바닥 — 나무 질감
+        // 선반 바닥 — 무광 입체 질감
         Container(
           width: double.infinity,
           height: _shelfThickness * scale,
-          decoration: _hWood,
+          decoration: _shelfDecoration(scale),
         ),
       ],
     );
