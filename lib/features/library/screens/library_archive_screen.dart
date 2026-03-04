@@ -19,41 +19,18 @@ class LibraryArchiveScreen extends StatelessWidget {
   // 책장 내부 벽면 (책장 프레임과 이어지는 깊고 어두운 톤)
   static const Color _innerWall = AppColors.ivory; // 배경과 동일한 밝은 단색 적용
 
-  static const double _frameSide = 12.0; // 프레임 약간 두껍게 안정감 부여
   static const double _shelfThickness = 12.0;
   static const double _headerHeight = 50.0;
-  static const double _bookSidePadding = 8.0;
+  static const double _bookSidePadding = 12.0; // 양옆 여백 강화
 
-  /// 수평 프레임 (상단/하단 베벨 및 무광 디자인)
-  static const BoxDecoration _hWood = BoxDecoration(
-    color: _woodMid,
-    border: Border(
-      top: BorderSide(color: _woodHighlight, width: 1.5), // 빛망울(Bevel 표면)
-      bottom: BorderSide(color: _woodDark, width: 2.0),   // 그림자(Bevel 아랫면)
-    ),
-  );
-
-  /// 수직 프레임 (좌우 베벨 및 무광 디자인)
-  static const BoxDecoration _vWood = BoxDecoration(
-    color: _woodMid,
-    border: Border(
-      left: BorderSide(color: _woodHighlight, width: 1.5),
-      right: BorderSide(color: _woodDark, width: 2.0),
-    ),
-  );
-
-  /// 각 선반(Shelf) 바닥 (3D 그림자 포함)
+  /// 각 선반(Shelf) 바닥 (오픈형 플로팅 디자인)
   static BoxDecoration _shelfDecoration(double scale) {
     return BoxDecoration(
-      color: _woodMid,
-      border: Border(
-        top: BorderSide(color: _woodHighlight, width: 1.5 * scale),
-        bottom: BorderSide(color: _woodDark, width: 2.0 * scale),
-      ),
+      color: _woodDark, // 무광 고동색 테마
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.5),
-          offset: Offset(0, 4 * scale), // 선반 바로 아래 그림자 (깊이감)
+          color: Colors.black.withOpacity(0.2),
+          offset: Offset(0, 4 * scale), // 선반 바로 아래 그림자 (가벼운 입체감)
           blurRadius: 6 * scale,
         ),
       ],
@@ -91,8 +68,7 @@ class LibraryArchiveScreen extends StatelessWidget {
 
             const double marginH = 24.0;
             final double shelfOuterW = screenW - marginH * 2;
-            final double innerW =
-                shelfOuterW - _frameSide * 2 - _bookSidePadding * 2;
+            final double innerW = shelfOuterW - _bookSidePadding * 2;
 
             // 책 원본 너비 계산
             final List<double> originalWidths = [];
@@ -117,13 +93,12 @@ class LibraryArchiveScreen extends StatelessWidget {
 
             // 스케일 찾기
             const double bookH = 170.0;
-            const double topPad = 20.0;
+            const double topPad = 25.0;
             const double compartmentH = topPad + bookH + _shelfThickness;
 
             List<List<int>> shelves =
                 _arrangeBooksOnShelves(originalWidths, innerW, 1.0);
-            double shelfOuterH = _frameSide + _headerHeight +
-                shelves.length * compartmentH + _frameSide;
+            double shelfOuterH = _headerHeight + shelves.length * compartmentH;
 
             final double maxH = screenH * 0.92;
             double scale = 1.0;
@@ -133,8 +108,7 @@ class LibraryArchiveScreen extends StatelessWidget {
                 shelves = _arrangeBooksOnShelves(
                     originalWidths, innerW, s);
                 final double scaledCH = compartmentH * s;
-                shelfOuterH = _frameSide + _headerHeight +
-                    shelves.length * scaledCH + _frameSide;
+                shelfOuterH = _headerHeight + shelves.length * scaledCH;
                 if (shelfOuterH <= maxH) {
                   scale = s;
                   break;
@@ -145,8 +119,7 @@ class LibraryArchiveScreen extends StatelessWidget {
             final displayShelves = shelves.reversed.toList();
             final double scaledCH = compartmentH * scale;
             final double actualInnerH = displayShelves.length * scaledCH;
-            final double actualOuterH =
-                _frameSide + _headerHeight + actualInnerH + _frameSide;
+            final double actualOuterH = _headerHeight + actualInnerH;
             final double verticalMargin =
                 ((screenH - actualOuterH) / 2).clamp(8.0, double.infinity);
 
@@ -156,119 +129,46 @@ class LibraryArchiveScreen extends StatelessWidget {
                   horizontal: marginH,
                   vertical: verticalMargin,
                 ),
-                // ─── 책장 가구 본체 ───
+                // ─── 오픈형 책장 (플로팅 쉘프) ───
                 child: Container(
                   width: shelfOuterW,
                   height: actualOuterH,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.6), // 어두운 방에 어울리는 깊은 그림자
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(5.0),
-                    child: Stack(
-                      children: [
-                        // 상단 프레임
-                      Positioned(
-                        top: 0, left: 0, right: 0,
-                        height: _frameSide,
-                        child: Container(decoration: _hWood),
-                      ),
-                      // 하단 프레임
-                      Positioned(
-                        bottom: 0, left: 0, right: 0,
-                        height: _frameSide,
-                        child: Container(decoration: _hWood),
-                      ),
-                      // 좌측 프레임
-                      Positioned(
-                        top: 0, bottom: 0, left: 0,
-                        width: _frameSide,
-                        child: Container(decoration: _vWood),
-                      ),
-                      // 우측 프레임
-                      Positioned(
-                        top: 0, bottom: 0, right: 0,
-                        width: _frameSide,
-                        child: Container(decoration: _vWood),
-                      ),
-                      // 내부 콘텐츠
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.all(_frameSide),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: _innerWall,
-                              boxShadow: [
-                                // 책장 내부 전체에 드리우는 은은한 상단 그림자
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  offset: const Offset(0, 4),
-                                  blurRadius: 10,
-                                  spreadRadius: -2,
-                                  blurStyle: BlurStyle.inner, // 내부 그림자로 깊이감 구현
+                  color: Colors.transparent, // 프레임 없는 투명 구조
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Firenze 헤더 (테두리 나무 느낌 없이 공중에 띄운 글자)
+                      Container(
+                        width: double.infinity,
+                        height: _headerHeight,
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Text(
+                            'Firenze',
+                            style: GoogleFonts.greatVibes(
+                              fontSize: 34,
+                              color: AppColors.charcoal,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 2,
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Firenze 헤더 (무광 나무 질감 + 깊이감 있는 음각)
-                                Container(
-                                  width: double.infinity,
-                                  height: _headerHeight,
-                                  decoration: _hWood.copyWith(
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.4),
-                                        offset: const Offset(0, 3),
-                                        blurRadius: 5,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'Firenze',
-                                      style: GoogleFonts.greatVibes(
-                                        fontSize: 28,
-                                        color: AppColors.charcoal, // 텍스트를 검정 계열(Charcoal)으로 변경
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.white.withOpacity(0.5), // 양각 느낌의 밝은 하이라이트 투명하게
-                                            offset: const Offset(1.0, 1.0),
-                                            blurRadius: 1.0,
-                                          ),
-                                          Shadow(
-                                            color: Colors.black.withOpacity(0.3), // 약간의 그림자 추가
-                                            offset: const Offset(-0.5, -0.5),
-                                            blurRadius: 1.0,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // 선반들
-                                ...displayShelves.map((indices) {
-                                  return _buildShelfCompartment(
-                                    indices, books, scale,
-                                  );
-                                }),
                               ],
                             ),
                           ),
                         ),
                       ),
+                      
+                      // 선반들
+                      ...displayShelves.map((indices) {
+                        return _buildShelfCompartment(
+                          indices, books, scale,
+                        );
+                      }),
                     ],
-                  ), // Stack
-                ), // ClipRRect
-              ), // Container (formerly SizedBox)
+                  ),
+                ), // Container
             ), // Padding
           ); // SingleChildScrollView
         }, // LayoutBuilder builder
@@ -303,7 +203,7 @@ class LibraryArchiveScreen extends StatelessWidget {
     List<int> indices, List<UserBook> allBooks, double scale,
   ) {
     final double bookAreaH = 170.0 * scale;
-    final double topPad = 20.0 * scale;
+    final double topPad = 25.0 * scale;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
