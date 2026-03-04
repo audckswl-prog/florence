@@ -107,11 +107,11 @@ class LibraryStackView extends ConsumerWidget {
                                 children: [
                                   // 왼쪽 세로로 긴 직사각형
                                   Container(
-                                    width: 9,
+                                    width: 8,
                                     height: 22,
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: AppColors.burgundy, width: 2.0),
-                                      borderRadius: BorderRadius.circular(2.5),
+                                      border: Border.all(color: AppColors.burgundy, width: 1.5),
+                                      borderRadius: BorderRadius.circular(1.5),
                                     ),
                                   ),
                                   // 오른쪽 위아래 두 개의 가로 직사각형
@@ -122,16 +122,16 @@ class LibraryStackView extends ConsumerWidget {
                                         width: 10,
                                         height: 9,
                                         decoration: BoxDecoration(
-                                          border: Border.all(color: AppColors.burgundy, width: 2.0),
-                                          borderRadius: BorderRadius.circular(2.5),
+                                          border: Border.all(color: AppColors.burgundy, width: 1.5),
+                                          borderRadius: BorderRadius.circular(1.5),
                                         ),
                                       ),
                                       Container(
                                         width: 10,
-                                        height: 10,
+                                        height: 9,
                                         decoration: BoxDecoration(
-                                          border: Border.all(color: AppColors.burgundy, width: 2.0),
-                                          borderRadius: BorderRadius.circular(2.5),
+                                          border: Border.all(color: AppColors.burgundy, width: 1.5),
+                                          borderRadius: BorderRadius.circular(1.5),
                                         ),
                                       ),
                                     ],
