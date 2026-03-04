@@ -7,6 +7,7 @@ import '../../../core/widgets/florence_loader.dart';
 import '../providers/library_providers.dart';
 import '../widgets/book_spine_widget.dart';
 import '../screens/book_search_delegate.dart';
+import '../screens/library_archive_screen.dart';
 import '../../../data/models/user_book_model.dart';
 
 class LibraryStackView extends ConsumerWidget {
@@ -62,17 +63,54 @@ class LibraryStackView extends ConsumerWidget {
             margin: const EdgeInsets.only(top: 24.0, bottom: 0.0), // 책 윗부분에 거의 닿도록 아래 마진 제거
             child: Column(
               children: [
-                // 1. 숫자 텍스트 (총 글자 추가, 가운데 정렬)
-                Text(
-                  '총 ${books.length}권',
-                  style: const TextStyle(
-                    color: AppColors.burgundy,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Pretendard',
-                    letterSpacing: 2.0,
+                // 1. 숫자 텍스트 (가운데 정렬) 및 우측 아카이브 아이콘
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // 중앙 텍스트
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          '총 ${books.length}권',
+                          style: const TextStyle(
+                            color: AppColors.burgundy,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Pretendard',
+                            letterSpacing: 2.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      // 우측 아이콘
+                      Positioned(
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => LibraryArchiveScreen(books: displayBooks),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4.0),
+                            decoration: BoxDecoration(
+                              color: AppColors.burgundy.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: const Icon(
+                              Icons.grid_view_rounded, // 여러 서재를 한눈에 보는 듯한 아이콘 디자인
+                              color: AppColors.burgundy,
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16.0), // 숫자와 라인 사이의 간격
                 // 2. 1px 가로선 (양옆 패딩 24.0을 주어 아래쪽 붉은 선반과 가로 너비를 100% 동일하게 일치)
