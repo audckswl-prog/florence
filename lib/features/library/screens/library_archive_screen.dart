@@ -11,11 +11,11 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   const LibraryArchiveScreen({super.key, required this.books});
 
-  // 버건디 원목 색상 팔레트 (AppColors.burgundy 기반, 무광 질감)
-  static const Color _woodDark = Color(0xFF3B080A);      // 아주 어두운 와인색 (그림자)
-  static const Color _woodMid = AppColors.burgundy;      // 기본 앱 버건디 (#751013)
-  static const Color _woodLight = Color(0xFF8B181C);     // 활기가 도는 밝은 버건디
-  static const Color _woodHighlight = Color(0xFF9A2024); // AppColors.burgundyLight (빛망울)
+  // 고동색 원목 색상 팔레트 (무광 질감)
+  static const Color _woodDark = Color(0xFF2B1D14);      // 아주 어두운 고동색 (그림자)
+  static const Color _woodMid = Color(0xFF4A3324);       // 중간 고동색 베이스
+  static const Color _woodLight = Color(0xFF5E4331);     // 밝은 고동색
+  static const Color _woodHighlight = Color(0xFF6E513D); // 빛망울 (Bevel 표면)
   // 책장 내부 벽면 (책장 프레임과 이어지는 깊고 어두운 톤)
   static const Color _innerWall = AppColors.ivory; // 배경과 동일한 밝은 단색 적용
 
@@ -68,7 +68,7 @@ class LibraryArchiveScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white70),
+        iconTheme: const IconThemeData(color: AppColors.charcoal),
       ),
       body: Stack(
         fit: StackFit.expand,
