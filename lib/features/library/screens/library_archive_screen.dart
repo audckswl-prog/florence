@@ -11,22 +11,23 @@ class LibraryArchiveScreen extends StatelessWidget {
 
   const LibraryArchiveScreen({super.key, required this.books});
 
-  // 고동색 원목 색상 팔레트 (무광 질감)
-  static const Color _woodDark = Color(0xFF2B1D14);      // 아주 어두운 고동색 (그림자)
-  static const Color _woodMid = Color(0xFF4A3324);       // 중간 고동색 베이스
-  static const Color _woodLight = Color(0xFF5E4331);     // 밝은 고동색
-  static const Color _woodHighlight = Color(0xFF6E513D); // 빛망울 (Bevel 표면)
+  // 고동색 원목 색상 팔레트 (무광 질감, 레퍼런스 이미지 기반 약간 붉은빛이 도는 다크 브라운)
+  static const Color _woodDark = Color(0xFF3F1D16);      // 선반 자체의 깊은 고동색
+  static const Color _woodMid = Color(0xFF5A3125);       // 중간 고동색 베이스
+  static const Color _woodLight = Color(0xFF724031);     // 밝은 고동색
+  static const Color _woodHighlight = Color(0xFF865140); // 빛망울 (Bevel 표면)
   // 책장 내부 벽면 (책장 프레임과 이어지는 깊고 어두운 톤)
   static const Color _innerWall = AppColors.ivory; // 배경과 동일한 밝은 단색 적용
 
   static const double _shelfThickness = 12.0;
   static const double _headerHeight = 50.0;
-  static const double _bookSidePadding = 12.0; // 양옆 여백 강화
+  static const double _bookSidePadding = 16.0; // 둥근 모서리에 책이 닿지 않도록 양옆 여백 추가
 
-  /// 각 선반(Shelf) 바닥 (오픈형 플로팅 디자인)
+  /// 각 선반(Shelf) 바닥 (오픈형 플로팅 디자인 및 둥근 모서리)
   static BoxDecoration _shelfDecoration(double scale) {
     return BoxDecoration(
       color: _woodDark, // 무광 고동색 테마
+      borderRadius: BorderRadius.circular(4.0 * scale), // 레퍼런스 이미지처럼 끝을 부드럽게 깎음
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(0.2),
