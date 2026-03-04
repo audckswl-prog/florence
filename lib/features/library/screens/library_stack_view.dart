@@ -133,35 +133,34 @@ class LibraryStackView extends ConsumerWidget {
                   shelves.add(currentRow);
                 }
 
-                // shelves는 [1선반(가장 오래된 책들), 2선반, ... , 6선반(가장 최근 선반)]
-                // 사용자가 앱에 들어왔을 때, "리스트의 맨 처음 보이는 화면" 즉, 스크롤의 시작점이
-                // 가장 최신 선반(예: 6, 5선반)이어야 하고, 이들이 화면 하단바(네비바)에 예쁘게 착 붙어있어야 합니다.
-                //
-                // 방법: ListView를 reverse: false (정방향)로 두되, 
-                // 전체 스크롤 영역이 화면보다 작을 때(선반이 몇 개 없을 때) 위로 들러붙는 것을 막고 
-                // 최신 선반들이 화면 아래(하단바 쪽)로 가라앉도록 
-                // **전체 아이템들을 거꾸로 뒤집고(최신이 맨 아래로 오게) reverse: true**를 주는 방식을 씁니다.
-
-                // 최신 선반이 맨 첫 화면(바닥)에 오도록 배열을 뒤집습니다. (예: 6선반, 5선반, 4선반...)
+                // shelves는 [1선반(가장 오래된 책들), 2선반, ... , 가장 최근 선반]
+                // 앱 진입 시 가장 최신 선반(예: 6, 5선반)이 화면 위쪽에 보이도록 배열을 뒤집습니다. 
+                // 즉, [6선반, 5선반, 4선반...] 순서
                 final reversedShelves = shelves.reversed.toList();
 
-                return ListView.builder(
-                  // reverse: true 속성은 스크롤의 시작점을 화면 '바닥'으로 만듭니다.
-                  // 즉, 배열의 0번째 요소(가장 최신인 6선반)가 하단바 바로 위에 렌더링됩니다.
-                  reverse: true, 
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0), 
-                  itemCount: reversedShelves.length,
-                  itemBuilder: (context, index) {
-                    final shelfBooks = reversedShelves[index];
-                    
-                    // index == 0 : 현재 화면 하단바에 완전히 맞닿아 있는 가장 최신 층 (예: 6선반)
-                    // 앱 디자인상 "화면 맨 바닥에 닿는 선반"은 항상 12px 여백을 가져야 하므로 isLastShelf를 true로 줍니다.
-                    // 스크롤을 끝까지 올려서 도달하는 "진짜 1선반(가장 오래된 선반)"은 reversedShelves.length - 1 입니다.
-                    // 위쪽으로 스크롤해서 올라오는 5선반, 4선반 등은 자연스럽게 24px 여백을 가집니다.
-                    final isTouchingBottomNav = index == 0;
-                    
-                    return _buildShelfRow(shelfBooks, isLastShelf: isTouchingBottomNav);
-                  },
+                // 요구사항 구현의 핵심 기술 포인트:
+                // 1. 선반 개수가 적을 때 (예: 2선반 밖에 없을 때) -> 화면 상단에 붕 뜨지 않고 바닥(네비바)에 딱 붙어있어야 함.
+                // 2. 선반 개수가 많을 때 (예: 6선반) -> 최신 선반이 맨 위로 올라오게 정렬되며 자유롭게 스크롤되어야 하고, 
+                //    끝까지 스크롤 해 가장 밑바닥(1선반)에 도달했을 때만 네비바에 붙어야 함.
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight, // 화면 높이보다 내용이 적어도 꽉 채움
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end, // 높이가 남으면 모든 선반을 바닥으로 끌어내림
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: List.generate(reversedShelves.length, (index) {
+                        final shelfBooks = reversedShelves[index];
+                        // 뒤집힌 배열이므로 마지막 인덱스(length - 1)가 가장 오래된 1선반(진짜 맨 밑바닥)입니다.
+                        final isBottomMostShelf = index == reversedShelves.length - 1;
+                        
+                        return _buildShelfRow(shelfBooks, isLastShelf: isBottomMostShelf);
+                      }),
+                    ),
+                  ),
                 );
               }
             ),
