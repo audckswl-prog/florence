@@ -228,22 +228,49 @@ class LibraryArchiveScreen extends StatelessWidget {
         // 책 영역
         SizedBox(
           height: 170.0 * scale,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2.0 * scale),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: indices.map((i) {
-                return Transform.scale(
-                  scale: scale,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: indices.map((i) {
+              // 각 책의 원본 너비를 직접 계산
+              final book = allBooks[i];
+              int pages = book.book.pageCount;
+              if (pages == 0) {
+                final r = Random(book.isbn.hashCode);
+                pages = 200 + r.nextInt(400);
+              }
+              final int readPages = book.readPages;
+              final int totalPages = book.totalPages ?? pages;
+              double ratio = 1.0;
+              if (readPages > 0 && totalPages > 0 && readPages <= totalPages) {
+                ratio = readPages / totalPages;
+              }
+              final double origW =
+                  ((18.0 + (pages * 0.08)) * ratio).clamp(14.0, 70.0);
+              final double scaledW = origW * scale;
+              final double origH =
+                  150.0 + (Random(book.isbn.hashCode).nextDouble() * 20.0);
+              final double scaledH = origH * scale;
+
+              // SizedBox로 스케일된 크기만큼만 레이아웃 공간 차지
+              // FittedBox로 원본 위젯을 그 안에 꽉 채워 넣음
+              return SizedBox(
+                width: scaledW,
+                height: scaledH,
+                child: FittedBox(
+                  fit: BoxFit.fill,
                   alignment: Alignment.bottomCenter,
-                  child: BookSpineWidget(
-                    key: ValueKey(allBooks[i].isbn),
-                    userBook: allBooks[i],
+                  child: SizedBox(
+                    width: origW,
+                    height: origH,
+                    child: BookSpineWidget(
+                      key: ValueKey(book.isbn),
+                      userBook: book,
+                    ),
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+              );
+            }).toList(),
           ),
         ),
         // 선반 바닥
