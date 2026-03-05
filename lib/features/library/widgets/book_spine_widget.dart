@@ -15,13 +15,14 @@ class BookSpineWidget extends ConsumerWidget {
 
   // 3가지 포인트 컬러 중 아이보리(베이지) 계열만 사용 (텍스트는 버건디)
   // 사용자가 제공한 사진의 베이스(오트밀/밝은 아이보리)를 바탕으로 미세하게 변형한 4가지 색상
+  // 사용자가 지정한 3가지 색상과 제공된 사진의 베이스(오트밀) 색상 포함 총 4가지 색상
   Color _generateColor(String key) {
     final random = Random(key.hashCode);
     final palettes = [
-      const Color(0xFFEFECE4), // 1. Base Ivory (사진과 가장 유사한 밝고 고운 기본 오트밀)
-      const Color(0xFFE8E5DA), // 2. Slightly Darker / Greyer (살짝 톤다운된 차분한 회갈색 빛)
-      const Color(0xFFF3EFEA), // 3. Slightly Lighter (밝은 느낌이 강한 화이트 아이보리)
-      const Color(0xFFEBE6D8), // 4. Slightly Warmer (빛바랜 느낌이 더해진 웜 샌드 빛)
+      const Color(0xFFEFECE4), // 1. Base Ivory (제공해주신 사진과 가장 유사한 기본 색상)
+      const Color(0xFFF7E7CE), // 2. 사용자 지정 색상 #F7E7CE
+      const Color(0xFF36454F), // 3. 사용자 지정 색상 #36454F
+      const Color(0xFFD2B48C), // 4. 사용자 지정 색상 #D2B48C
     ];
     return palettes[random.nextInt(palettes.length)];
   }
