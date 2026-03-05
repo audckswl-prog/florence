@@ -97,47 +97,12 @@ class LibraryStackView extends ConsumerWidget {
                               ),
                             );
                           },
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  // 왼쪽 세로로 긴 직사각형
-                                  Container(
-                                    width: 8,
-                                    height: 22,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: AppColors.burgundy, width: 1.5),
-                                      borderRadius: BorderRadius.circular(1.5),
-                                    ),
-                                  ),
-                                  // 오른쪽 위아래 두 개의 가로 직사각형
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Container(
-                                        width: 10,
-                                        height: 9,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: AppColors.burgundy, width: 1.5),
-                                          borderRadius: BorderRadius.circular(1.5),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 10,
-                                        height: 9,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: AppColors.burgundy, width: 1.5),
-                                          borderRadius: BorderRadius.circular(1.5),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(
+                              Icons.shelves, // 책장을 직관적으로 보여주는 기본 내장 아이콘
+                              color: AppColors.burgundy,
+                              size: 26, // 크기 살짝 조정
                             ),
                           ),
                         ),
