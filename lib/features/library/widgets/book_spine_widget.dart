@@ -58,9 +58,8 @@ class BookSpineWidget extends ConsumerWidget {
     );
     final int readCount = userBook.readCount;
 
-    // 텍스트 색상: 배경색의 밝기에 따라 검정색 또는 흰색으로 지정 (레퍼런스 이미지 조건 충족)
-    final bool isDarkBackground = bookColor.computeLuminance() < 0.5;
-    final Color textColor = isDarkBackground ? Colors.white : Colors.black;
+    // 텍스트 색상: 어두운 차콜색(#36454F)일 때만 흰색, 탄 컬러(#D2B48C) 등 나머지는 모두 검정색
+    final Color textColor = bookColor == const Color(0xFF36454F) ? Colors.white : Colors.black;
 
     // 2. 세로 책 높이 (150px ~ 170px 사이에서 약간 불규칙하게 - 원래의 큼직한 스케일)
     final double bookHeight = 150.0 + (random.nextDouble() * 20.0);
