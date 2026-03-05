@@ -18,10 +18,7 @@ class FlorenceToast {
     _currentOverlay = null;
 
     final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: 55.0,
-        left: 0,
-        right: 0,
+      builder: (context) => Positioned.fill(
         child: Align(
           alignment: Alignment.center,
           child: TweenAnimationBuilder<double>(

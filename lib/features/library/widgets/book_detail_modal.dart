@@ -91,31 +91,6 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
       // Refresh library list
       ref.invalidate(userBooksProvider);
 
-      if (status == 'read' && mounted) {
-        final mockUserBook =
-            widget.userBook ??
-            UserBook(
-              id: 'temp',
-              userId: userId,
-              isbn: _book.isbn,
-              status: 'read',
-              book: _book,
-              readCount: 1, // default
-            );
-
-        // Pop the modal FIRST before showing the dialog, passing a flag so the parent can show the dialog
-        // Or better yet, just show the dialog here, and THEN pop the modal but wait for the dialog to finish.
-        // Actually, if we pop the modal first, this widget is unmounted.
-        // Let's pop the modal first, then the parent screen (e.g. ReadingListScreen or Home) could handle it.
-        // BUT wait, this is a bottom sheet/modal. If we push a new screen over it, then pop the modal underneath, it might pop the new screen!
-        // We should pop the BookDetailModal FIRST to get back to the main screen context, then show the dialog.
-
-        Navigator.of(
-          context,
-        ).pop({'action': 'read_completed', 'book': mockUserBook});
-        return; // Exit early so we don't pop again below
-      }
-
       if (mounted) {
         Navigator.of(context).pop(true);
       }

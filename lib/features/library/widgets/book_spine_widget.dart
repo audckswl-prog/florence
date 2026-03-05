@@ -72,28 +72,9 @@ class BookSpineWidget extends ConsumerWidget {
           backgroundColor: Colors.transparent,
           builder: (context) =>
               BookDetailModal(book: userBook.book, userBook: userBook),
-        ).then((result) async {
+        ).then((result) {
           if (result == true) {
             ref.invalidate(userBooksProvider);
-          } else if (result is Map<String, dynamic> &&
-              result['action'] == 'read_completed') {
-            final nav = Navigator.of(context);
-            ref.invalidate(userBooksProvider);
-            final mockUserBook = result['book'];
-            final quote = await showDialog<String>(
-              context: context,
-              builder: (context) =>
-                  ReadingCompletionDialog(userBook: mockUserBook),
-            );
-
-            if (quote != null) {
-              nav.push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ReadingTicketScreen(userBook: mockUserBook, quote: quote),
-                ),
-              );
-            }
           }
         });
       },

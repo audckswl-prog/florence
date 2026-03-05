@@ -336,7 +336,6 @@ class _BookList extends ConsumerWidget {
                                       .currentUser
                                       ?.id;
                                   if (userId != null) {
-                                    final nav = Navigator.of(context);
                                     await ref
                                         .read(supabaseRepositoryProvider)
                                         .updateUserBookStatus(
@@ -349,36 +348,12 @@ class _BookList extends ConsumerWidget {
                                         );
                                     ref.invalidate(
                                       userBooksProvider,
-                                    ); // Update library and all dependent lists
-
-                                    final updatedBook = UserBook(
-                                      id: book.id,
-                                      userId: book.userId,
-                                      isbn: book.isbn,
-                                      status: 'read',
-                                      book: book.book,
-                                      readPages: readPages,
-                                      totalPages: totalPages,
-                                      readCount: readCount,
                                     );
 
-                                    final quote = await showDialog<String>(
-                                      context: context,
-                                      builder: (context) =>
-                                          ReadingCompletionDialog(
-                                            userBook: updatedBook,
-                                          ),
-                                    );
-
-                                    if (quote != null) {
-                                      nav.push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ReadingTicketScreen(
-                                                userBook: updatedBook,
-                                                quote: quote,
-                                              ),
-                                        ),
+                                    if (context.mounted) {
+                                      FlorenceToast.show(
+                                        context,
+                                        '서재에 추가되었습니다.',
                                       );
                                     }
                                   }
