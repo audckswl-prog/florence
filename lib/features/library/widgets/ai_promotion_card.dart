@@ -12,15 +12,8 @@ class AIPromotionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Generate params for the provider
-    final params = (
-      isbn: book.isbn,
-      title: book.title,
-      author: book.author,
-      description: book.description,
-    );
-
-    final promotionAsyncValues = ref.watch(aiPromotionFutureProvider(params));
+    // Record(params) 대신 Book 객체 원본을 그대로 넘겨 Riverpod 해싱 에러 해결
+    final promotionAsyncValues = ref.watch(aiPromotionFutureProvider(book));
 
     Widget buildCardContent(Widget child) {
       return Container(
