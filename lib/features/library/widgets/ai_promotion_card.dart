@@ -163,7 +163,15 @@ class AIPromotionCard extends ConsumerWidget {
       ),
       error: (error, stack) {
         debugPrint('AIPromotion UI Error: $error');
-        return const SizedBox.shrink(); // Don't show anything on error to keep UI clean
+        return buildCardContent(
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text(
+              'AI 프로모션을 불러올 수 없습니다.\nError: $error',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        );
       },
     );
   }

@@ -113,7 +113,12 @@ class AIPromotionRepository {
       return newPromotion;
     } catch (e) {
       debugPrint('Error getting AI promotion: $e');
-      return null;
+      return AIPromotionModel(
+        isbn: isbn,
+        hookTitle: '에러 발생 알림',
+        historicalBackground: '데이터베이스나 API 연동 과정에서 문자가 발생했습니다:\n$e',
+        closingQuestion: '해결이 필요합니다.',
+      );
     }
   }
 }
