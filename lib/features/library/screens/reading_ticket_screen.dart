@@ -351,7 +351,13 @@ class ReadingTicketWidget extends StatelessWidget {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(6),
                                   child: CachedNetworkImage(
-                                    imageUrl: book.coverUrl,
+                                    // 알라딘 썸네일(coversum/cover150/cover200)을 고화질(cover500)로 치환
+                                    imageUrl: book.coverUrl.contains('aladin.co.kr')
+                                        ? book.coverUrl.replaceAll(
+                                            RegExp(r'coversum|cover150|cover200'),
+                                            'cover500',
+                                          )
+                                        : book.coverUrl,
                                     fit: BoxFit.cover,
                                   ),
                                 ),
