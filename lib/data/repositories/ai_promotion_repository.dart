@@ -10,7 +10,10 @@ class AIPromotionRepository {
   late final GenerativeModel _model;
 
   AIPromotionRepository(this._supabase) {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
+    final apiKey = const String.fromEnvironment('GEMINI_API_KEY').isNotEmpty
+        ? const String.fromEnvironment('GEMINI_API_KEY')
+        : (dotenv.isInitialized ? dotenv.env['GEMINI_API_KEY'] : '');
+        
     if (apiKey == null || apiKey.isEmpty) {
       debugPrint('Warning: GEMINI_API_KEY is not set in .env');
     }
