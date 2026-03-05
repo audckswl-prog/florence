@@ -124,7 +124,11 @@ class BookSpineWidget extends ConsumerWidget {
                   style: TextStyle(
                     color: textColor,
                     fontFamily: 'Pretendard',
-                    fontWeight: FontWeight.w600,
+                    // 흰색 글씨는 빛 번짐(착시)으로 인해 더 두꺼워 보이므로,
+                    // 검은색 글씨(w600)와 시각적 두께를 맞추기 위해 한 단계 얇은 w500을 사용합니다.
+                    fontWeight: textColor == Colors.white
+                        ? FontWeight.w500
+                        : FontWeight.w600,
                     // 두꺼운 책들은 모두 동일한 고정 폰트 크기(10.5)를 사용하도록 제한
                     // 아주 얇은 책인 경우에만 글씨가 잘리지 않게 점진적으로 작아지게 처리
                     fontSize: thickness > 28
