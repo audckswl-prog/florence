@@ -211,7 +211,7 @@ class _BookDetailModalState extends ConsumerState<BookDetailModal> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: CachedNetworkImage(
-                      imageUrl: _book.coverUrl,
+                      imageUrl: _book.highResCoverUrl,
                       width: 100,
                       height: 150,
                       fit: BoxFit.cover,

@@ -25,14 +25,8 @@ class GenericBookCover extends StatelessWidget {
     final h = height ?? 120.0;
     final hasCover = book.coverUrl.isNotEmpty;
 
-    // Improve Aladin cover image quality (coversum / cover150 / cover200 -> cover500)
-    String highQualityCoverUrl = book.coverUrl;
-    if (highQualityCoverUrl.contains('aladin.co.kr')) {
-      highQualityCoverUrl = highQualityCoverUrl.replaceAll(
-        RegExp(r'coversum|cover150|cover200'),
-        'cover500',
-      );
-    }
+    // Book 모델의 highResCoverUrl getter가 알라딘 URL을 자동으로 고화질(cover500)로 변환합니다.
+    final String highQualityCoverUrl = book.highResCoverUrl;
 
     // Asymmetric border for physical book feel (spine vs open edge)
     final borderRadius = const BorderRadius.only(

@@ -159,7 +159,7 @@ class _BookList extends ConsumerWidget {
                       ],
                     ),
                     child: Image.network(
-                      book.book.coverUrl,
+                      book.book.highResCoverUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
                           Container(color: Colors.grey[300]),

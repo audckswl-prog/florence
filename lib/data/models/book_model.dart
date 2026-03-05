@@ -17,6 +17,18 @@ class Book {
     return '연도 미상';
   }
 
+  /// 알라딘 API 썸네일 URL(coversum/cover150/cover200)을 고화질(cover500)로 자동 변환.
+  /// 앱 전체에서 이 getter를 사용하면 일관된 고화질 표지를 보장합니다.
+  String get highResCoverUrl {
+    if (coverUrl.contains('aladin.co.kr')) {
+      return coverUrl.replaceAll(
+        RegExp(r'coversum|cover150|cover200'),
+        'cover500',
+      );
+    }
+    return coverUrl;
+  }
+
   Book({
     required this.title,
     required this.author,

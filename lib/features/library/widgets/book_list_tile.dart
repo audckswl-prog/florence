@@ -24,7 +24,7 @@ class BookListTile extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: CachedNetworkImage(
-                imageUrl: book.coverUrl,
+                imageUrl: book.highResCoverUrl,
                 width: 60,
                 height: 90,
                 fit: BoxFit.cover,
