@@ -24,13 +24,13 @@ class BookSpineWidget extends ConsumerWidget {
       const Color(0xFFD2B48C), // 4. 사용자 지정 색상 #D2B48C (중간 밝기 탄 컬러)
     ];
 
-    // 단순 Random()은 초깃값이 비슷한 시드에서 특정 숫자가 몰려 나오는 현상(연속된 색상)이 발생할 수 있습니다.
-    // 이를 방지하기 위해 ISBN 문자열 전체를 분산도 높은 해시 값으로 변환(djb2 변형)하여 4분배합니다.
-    int hash = 5381;
+    // 웹 컴파일 환경에서 비트 연산(<< 5)이 32비트로 잘려 해시 충돌(같은 색상만 나옴)이 일어나는 버그 원천 차단
+    // 소수(Prime) 1000000007를 이용해 안전한 모듈러 연산으로 문자열을 분산시킵니다.
+    int hash = 0;
     for (int i = 0; i < key.length; i++) {
-       hash = ((hash << 5) + hash) + key.codeUnitAt(i); 
+       hash = (hash * 31 + key.codeUnitAt(i)) % 1000000007; 
     }
-    return palettes[hash.abs() % palettes.length];
+    return palettes[hash % palettes.length];
   }
 
   @override
