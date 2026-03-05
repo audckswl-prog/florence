@@ -100,9 +100,9 @@ class LibraryStackView extends ConsumerWidget {
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
                             child: Icon(
-                              Icons.shelves, // 책장을 직관적으로 보여주는 기본 내장 아이콘
+                              Icons.view_agenda_rounded, // 책장 선반(2칸)을 매우 직관적으로 형상화한 구버전 호환 완벽 아이콘
                               color: AppColors.burgundy,
-                              size: 26, // 크기 살짝 조정
+                              size: 26,
                             ),
                           ),
                         ),
