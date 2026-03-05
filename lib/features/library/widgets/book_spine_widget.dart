@@ -17,14 +17,20 @@ class BookSpineWidget extends ConsumerWidget {
   // 사용자가 제공한 사진의 베이스(오트밀/밝은 아이보리)를 바탕으로 미세하게 변형한 4가지 색상
   // 사용자가 지정한 3가지 색상과 제공된 사진의 베이스(오트밀) 색상 포함 총 4가지 색상
   Color _generateColor(String key) {
-    final random = Random(key.hashCode);
     final palettes = [
       const Color(0xFFEFECE4), // 1. Base Ivory (제공해주신 사진과 가장 유사한 기본 색상)
-      const Color(0xFFF7E7CE), // 2. 사용자 지정 색상 #F7E7CE
-      const Color(0xFF36454F), // 3. 사용자 지정 색상 #36454F
-      const Color(0xFFD2B48C), // 4. 사용자 지정 색상 #D2B48C
+      const Color(0xFFF7E7CE), // 2. 사용자 지정 색상 #F7E7CE (밝은 베이지)
+      const Color(0xFF36454F), // 3. 사용자 지정 색상 #36454F (어두운 차콜/그레이)
+      const Color(0xFFD2B48C), // 4. 사용자 지정 색상 #D2B48C (중간 밝기 탄 컬러)
     ];
-    return palettes[random.nextInt(palettes.length)];
+
+    // 단순 Random()은 초깃값이 비슷한 시드에서 특정 숫자가 몰려 나오는 현상(연속된 색상)이 발생할 수 있습니다.
+    // 이를 방지하기 위해 ISBN 문자열 전체를 분산도 높은 해시 값으로 변환(djb2 변형)하여 4분배합니다.
+    int hash = 5381;
+    for (int i = 0; i < key.length; i++) {
+       hash = ((hash << 5) + hash) + key.codeUnitAt(i); 
+    }
+    return palettes[hash.abs() % palettes.length];
   }
 
   @override
@@ -52,9 +58,9 @@ class BookSpineWidget extends ConsumerWidget {
     );
     final int readCount = userBook.readCount;
 
-    // 텍스트 색상: 항상 버건디 (브랜드 아이덴티티)
-    const isDark = false;
-    const textColor = AppColors.burgundy;
+    // 텍스트 색상: 배경색의 밝기에 따라 검정색 또는 흰색으로 지정 (레퍼런스 이미지 조건 충족)
+    final bool isDarkBackground = bookColor.computeLuminance() < 0.5;
+    final Color textColor = isDarkBackground ? Colors.white : Colors.black;
 
     // 2. 세로 책 높이 (150px ~ 170px 사이에서 약간 불규칙하게 - 원래의 큼직한 스케일)
     final double bookHeight = 150.0 + (random.nextDouble() * 20.0);
