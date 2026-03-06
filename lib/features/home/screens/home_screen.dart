@@ -432,8 +432,13 @@ class _SharedReadingTab extends ConsumerWidget {
     final bookTitle = pw.firstBookTitle;
     final memberCount = pw.members.length;
 
+    // Fixed height for the inline ticket
+    final double ticketHeight = 360.0;
+    final double topH = 80.0;
+    final double botH = 80.0;
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 24.0),
       child: GestureDetector(
         onTap: () {
           // completed 상태면 상세 화면의 티켓(receipt) 뷰로 바로 이동
@@ -443,162 +448,262 @@ class _SharedReadingTab extends ConsumerWidget {
           });
         },
         child: Container(
-          // 배경색을 종이 느낌 나는 색상으로 설정하고, 위아래 지그재그나 점선 효과 느낌을 줌
+          height: ticketHeight,
           decoration: BoxDecoration(
-            color: const Color(0xFFFDFDFD), // 약간의 미색(종이색)
-            borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.08),
                 blurRadius: 12,
-                offset: const Offset(0, 4),
+                offset: const Offset(0, 6),
               ),
             ],
-            // 영수증 테두리 느낌을 위한 Border
-            border: Border.all(
-              color: AppColors.greyLight.withOpacity(0.5),
-              width: 1,
-            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Top Zigzag
-              SizedBox(
-                height: 6,
-                child: CustomPaint(
-                  painter: _ZigZagPainter(color: const Color(0xFFFDFDFD)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // 좌측: 표지 (영수증 스타일 흑백 느낌이나 그냥 썸네일)
-                    Container(
-                      width: 50,
-                      height: 75,
-                      decoration: BoxDecoration(
-                        color: AppColors.ivory,
-                        borderRadius: BorderRadius.circular(4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(1, 1),
+          child: ClipPath(
+            clipper: TicketClipper(topCutoutY: topH, bottomCutoutY: botH),
+            child: ColoredBox(
+              color: const Color(0xFFF0F0F0), // Original ticket bg color
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ── TOP (barcode) ──────────────────────────────────────
+                  SizedBox(
+                    height: topH,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 18,
+                            right: 18,
+                            bottom: 16,
                           ),
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: coverUrl != null && coverUrl.isNotEmpty
-                          ? Image.network(
-                              coverUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Center(
-                                child: Icon(Icons.receipt_long, color: AppColors.greyLight),
-                              ),
-                            )
-                          : const Center(
-                              child: Icon(Icons.receipt_long, color: AppColors.greyLight),
+                          child: SizedBox(
+                            height: 40,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: List.generate(36, (i) {
+                                final w = i % 3 == 0 ? 3 : (i % 2 == 0 ? 1 : 2);
+                                return Container(
+                                  width: w.toDouble(),
+                                  color: AppColors.charcoal,
+                                );
+                              }),
                             ),
+                          ),
+                        ),
+                        // Replace DashedLine widget with simple Container + CustomPaint if DashedLine isn't used globally,
+                        // or just use a simple dashed line approach
+                        SizedBox(
+                          height: 1,
+                          child: LayoutBuilder(
+                            builder: (_, constraints) {
+                              const dashW = 7.0, gap = 5.0;
+                              final count = (constraints.maxWidth / (dashW + gap)).floor();
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: List.generate(
+                                  count,
+                                  (_) => SizedBox(
+                                    width: dashW,
+                                    height: 1,
+                                    child: ColoredBox(color: AppColors.charcoal.withOpacity(0.8)),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    // 우측: 텍스트 정보
-                    Expanded(
-                      child: Column(
+                  ),
+
+                  // ── MIDDLE (content) ──────────────────────────────────
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 18,
+                      ),
+                      child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // 타이틀 및 뱃지 영역
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  project.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 16,
-                                    color: AppColors.charcoal,
-                                    fontFamily: 'Courier', // 영수증 폰트 느낌
-                                    letterSpacing: 0.5,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          // Left: Book Cover
+                          Expanded(
+                            flex: 4,
+                            child: AspectRatio(
+                              aspectRatio: 1 / 1.45,
+                              child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: AppColors.black,
-                                  borderRadius: BorderRadius.circular(4),
+                                  borderRadius: BorderRadius.circular(6),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
-                                child: const Text(
-                                  'ISSUED',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: coverUrl != null && coverUrl.isNotEmpty
+                                      ? Image.network(
+                                          coverUrl,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Container(color: AppColors.ivory),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          // 책 제목
-                          if (bookTitle != null)
-                            Text(
-                              bookTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: AppColors.charcoal.withOpacity(0.8),
-                                fontSize: 13,
-                                fontFamily: 'Courier',
                               ),
                             ),
-                          const SizedBox(height: 12),
-                          // 하단 점선 및 상태정보
-                          Row(
-                            children: [
-                              const Icon(Icons.group, size: 14, color: AppColors.grey),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$memberCount Members',
-                                style: const TextStyle(
-                                  color: AppColors.grey,
-                                  fontSize: 11,
-                                  fontFamily: 'Courier',
+                          ),
+                          const SizedBox(width: 16),
+                          
+                          // Right: Content Details
+                          Expanded(
+                            flex: 5,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // GATE & Flight Icon
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Column(
+                                      children: [
+                                        Transform.rotate(
+                                          angle: 3.14159 / 4,
+                                          child: const Icon(
+                                            Icons.flight,
+                                            size: 20,
+                                            color: AppColors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        const Text(
+                                          'SHARED',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 2.0,
+                                            color: AppColors.charcoal,
+                                            fontFamily: 'Courier',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const Spacer(),
-                              const Text(
-                                '티켓 보기 ❯',
-                                style: TextStyle(
-                                  color: AppColors.burgundy,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(height: 8),
+                                
+                                // Project Name
+                                Text(
+                                  project.name,
+                                  style: const TextStyle(
+                                    fontFamily: 'Pretendard',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.charcoal,
+                                    letterSpacing: -0.5,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 6),
+                                
+                                // Book Title
+                                if (bookTitle != null)
+                                  Text(
+                                    bookTitle,
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.charcoal.withOpacity(0.8),
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                
+                                const Spacer(),
+                                
+                                // Member count
+                                Row(
+                                  children: [
+                                    const Icon(Icons.group, size: 14, color: AppColors.charcoal),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '$memberCount Members',
+                                      style: const TextStyle(
+                                        color: AppColors.charcoal,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              // Bottom Zigzag
-              Transform.rotate(
-                angle: 3.141592, // pi
-                child: SizedBox(
-                  height: 6,
-                  child: CustomPaint(
-                    painter: _ZigZagPainter(color: const Color(0xFFFDFDFD)),
                   ),
-                ),
+
+                  // ── BOTTOM (Firenze) ─────────────────────────
+                  SizedBox(
+                    height: botH,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 1,
+                          child: LayoutBuilder(
+                            builder: (_, constraints) {
+                              const dashW = 7.0, gap = 5.0;
+                              final count = (constraints.maxWidth / (dashW + gap)).floor();
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: List.generate(
+                                  count,
+                                  (_) => SizedBox(
+                                    width: dashW,
+                                    height: 1,
+                                    child: ColoredBox(color: AppColors.charcoal.withOpacity(0.8)),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 12,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Firenze',
+                                  style: TextStyle(
+                                    fontFamily: 'GreatVibes',
+                                    fontSize: 28,
+                                    color: AppColors.burgundy,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -637,33 +742,71 @@ class _CirclePainter extends BoxPainter {
   }
 }
 
-class _ZigZagPainter extends CustomPainter {
-  final Color color;
+// ── Ticket-shaped clip (half-circle notches on sides) ────────────────
+class TicketClipper extends CustomClipper<Path> {
+  final double topCutoutY;
+  final double bottomCutoutY;
 
-  _ZigZagPainter({required this.color});
+  const TicketClipper({required this.topCutoutY, required this.bottomCutoutY});
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    final path = Path();
+  Path getClip(Size size) {
+    const r = 10.0;
+    final p = Path();
 
-    double x = 0;
-    double step = 8;
+    p.moveTo(0, 0);
+    p.lineTo(size.width, 0);
 
-    path.moveTo(0, 0);
-    while (x < size.width) {
-      path.lineTo(x + step / 2, size.height);
-      path.lineTo(x + step, 0);
-      x += step;
-    }
+    // right top notch
+    p.lineTo(size.width, topCutoutY - r);
+    p.arcTo(
+      Rect.fromCircle(center: Offset(size.width, topCutoutY), radius: r),
+      -3.14159 / 2,
+      -3.14159,
+      false,
+    );
 
-    path.lineTo(size.width, size.height * 2);
-    path.lineTo(0, size.height * 2);
-    path.close();
+    // right bottom notch
+    p.lineTo(size.width, size.height - bottomCutoutY - r);
+    p.arcTo(
+      Rect.fromCircle(
+        center: Offset(size.width, size.height - bottomCutoutY),
+        radius: r,
+      ),
+      -3.14159 / 2,
+      -3.14159,
+      false,
+    );
 
-    canvas.drawPath(path, paint);
+    p.lineTo(size.width, size.height);
+    p.lineTo(0, size.height);
+
+    // left bottom notch
+    p.lineTo(0, size.height - bottomCutoutY + r);
+    p.arcTo(
+      Rect.fromCircle(
+        center: Offset(0, size.height - bottomCutoutY),
+        radius: r,
+      ),
+      3.14159 / 2,
+      -3.14159,
+      false,
+    );
+
+    // left top notch
+    p.lineTo(0, topCutoutY + r);
+    p.arcTo(
+      Rect.fromCircle(center: Offset(0, topCutoutY), radius: r),
+      3.14159 / 2,
+      -3.14159,
+      false,
+    );
+
+    p.close();
+    return p;
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldReclip(TicketClipper old) =>
+      old.topCutoutY != topCutoutY || old.bottomCutoutY != bottomCutoutY;
 }
