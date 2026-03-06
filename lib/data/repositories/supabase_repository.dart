@@ -343,6 +343,17 @@ class SupabaseRepository {
           .eq('receiver_id', userId)
           .eq('status', 'accepted');
 
+      debugPrint('[getFriends] userId: $userId');
+      debugPrint('[getFriends] response1 (I sent): ${response1?.length ?? 0} rows => $response1');
+      debugPrint('[getFriends] response2 (I received): ${response2?.length ?? 0} rows => $response2');
+
+      // Also check ALL friendships for this user regardless of status
+      final allFriendships = await _client
+          .from('friendships')
+          .select()
+          .or('requester_id.eq.$userId,receiver_id.eq.$userId');
+      debugPrint('[getFriends] ALL friendships for user: ${allFriendships?.length ?? 0} rows => $allFriendships');
+
       List<Map<String, dynamic>> friends = [];
       if (response1 != null)
         friends.addAll(List<Map<String, dynamic>>.from(response1));
@@ -350,6 +361,7 @@ class SupabaseRepository {
         friends.addAll(List<Map<String, dynamic>>.from(response2));
       return friends;
     } catch (e) {
+      debugPrint('[getFriends] ERROR: $e');
       throw Exception('Error fetching friends: $e');
     }
   }
