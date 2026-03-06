@@ -832,11 +832,11 @@ class SupabaseRepository {
   ) async {
     try {
       final fileName =
-          '${projectId}_${userId}_${DateTime.now().millisecondsSinceEpoch}.png';
-      final filePath = '$projectId/$fileName';
+          'drawing_${projectId}_${userId}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final filePath = '$userId/$fileName';
 
       await _client.storage
-          .from('drawings')
+          .from('memo_images')
           .uploadBinary(
             filePath,
             imageBytes,
@@ -844,7 +844,7 @@ class SupabaseRepository {
           );
 
       final publicUrl = _client.storage
-          .from('drawings')
+          .from('memo_images')
           .getPublicUrl(filePath);
       return publicUrl;
     } catch (e) {
