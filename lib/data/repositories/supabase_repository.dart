@@ -367,6 +367,27 @@ class SupabaseRepository {
     }
   }
 
+  /// 임시 디버그용: 모든 friendship 행을 가져와서 문자열로 반환
+  Future<String> debugGetAllFriendships(String userId) async {
+    try {
+      final all = await _client
+          .from('friendships')
+          .select()
+          .or('requester_id.eq.$userId,receiver_id.eq.$userId');
+      if (all == null || all.isEmpty) {
+        return 'friendships 테이블에 해당 유저 데이터 없음 (0행)';
+      }
+      final buf = StringBuffer('총 ${all.length}행:\n');
+      for (final row in all) {
+        buf.writeln('  id:${row['id']}, req:${row['requester_id']?.toString().substring(0, 8)}, '
+            'recv:${row['receiver_id']?.toString().substring(0, 8)}, status:${row['status']}');
+      }
+      return buf.toString();
+    } catch (e) {
+      return 'ERROR: $e';
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getPendingFriendRequests(
     String userId,
   ) async {

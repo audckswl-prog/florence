@@ -83,14 +83,40 @@ void showSharedReadingFriendsList(
               ),
               const SizedBox(height: 32),
               if (friends.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Center(
-                    child: Text(
-                      '아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.grey),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Column(
+                    children: [
+                      const Text(
+                        '아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: AppColors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      // ── 임시 디버그 정보 ──
+                      FutureBuilder(
+                        future: SupabaseRepository(Supabase.instance.client)
+                            .debugGetAllFriendships(
+                              Supabase.instance.client.auth.currentUser?.id ?? '',
+                            ),
+                        builder: (ctx, snap) {
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const Text('디버그 로딩중...', style: TextStyle(fontSize: 10));
+                          }
+                          return Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '🔍 디버그:\nuserId: ${Supabase.instance.client.auth.currentUser?.id}\n${snap.data ?? snap.error}',
+                              style: const TextStyle(fontSize: 9, fontFamily: 'monospace'),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 )
               else
