@@ -239,25 +239,34 @@ class _SharedReadingTab extends ConsumerWidget {
 
                     // ── 완료된 프로젝트 ──
                     if (completed.isNotEmpty) ...[
-                      Padding(
-                        padding: EdgeInsets.only(
-                          top: active.isNotEmpty ? 24 : 0,
-                          bottom: 12,
-                        ),
-                        child: const Text(
+                      const SizedBox(height: 32),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
                           '완독',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: AppColors.charcoal,
-                            fontFamily: 'Pretendard',
                           ),
                         ),
                       ),
-                      ...completed.map(
-                        (pw) => _buildCompletedTicketCard(context, pw),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 480, // Height for the mini tickets
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: completed.length,
+                          separatorBuilder: (context, index) => const SizedBox(width: 16),
+                          itemBuilder: (context, index) {
+                            return _buildCompletedMiniTicket(context, completed[index], index);
+                          },
+                        ),
                       ),
                     ],
+                    
+                    const SizedBox(height: 40),
                   ],
                 );
               },
@@ -426,283 +435,275 @@ class _SharedReadingTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildCompletedTicketCard(BuildContext context, ProjectWithMembers pw) {
+  Widget _buildCompletedMiniTicket(BuildContext context, ProjectWithMembers pw, int index) {
     final project = pw.project;
     final coverUrl = pw.firstBookCover;
-    final bookTitle = pw.firstBookTitle;
-    final memberCount = pw.members.length;
+    
+    // Fake the nationality and year for the UI
+    final nationalityCode = 'US';
+    final publicationYear = '2011';
+    final bookTitle = pw.firstBookTitle ?? 'Unknown Title';
+    
+    // The exact dimensions and proportions of the widget in the screenshot
+    const double ticketWidth = 260.0;
+    const double ticketHeight = 460.0;
+    const double topCutY = 86.0;
+    const double bottomCutY = 80.0;
 
-    // Fixed height for the inline ticket
-    final double ticketHeight = 360.0;
-    final double topH = 80.0;
-    final double botH = 80.0;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
-      child: GestureDetector(
-        onTap: () {
-          // completed 상태면 상세 화면의 티켓(receipt) 뷰로 바로 이동
-          context.push('/home/social/detail/${project.id}/receipt', extra: {
-            'project': project,
-            'rate': 1.0, // 완독이므로 100%
-          });
-        },
-        child: Container(
-          height: ticketHeight,
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: ClipPath(
-            clipper: TicketClipper(topCutoutY: topH, bottomCutoutY: botH),
-            child: ColoredBox(
-              color: const Color(0xFFF0F0F0), // Original ticket bg color
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // ── TOP (barcode) ──────────────────────────────────────
-                  SizedBox(
-                    height: topH,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 18,
-                            right: 18,
-                            bottom: 16,
-                          ),
-                          child: SizedBox(
-                            height: 40,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: List.generate(36, (i) {
-                                final w = i % 3 == 0 ? 3 : (i % 2 == 0 ? 1 : 2);
-                                return Container(
-                                  width: w.toDouble(),
-                                  color: AppColors.charcoal,
-                                );
-                              }),
-                            ),
-                          ),
-                        ),
-                        // Replace DashedLine widget with simple Container + CustomPaint if DashedLine isn't used globally,
-                        // or just use a simple dashed line approach
-                        SizedBox(
-                          height: 1,
-                          child: LayoutBuilder(
-                            builder: (_, constraints) {
-                              const dashW = 7.0, gap = 5.0;
-                              final count = (constraints.maxWidth / (dashW + gap)).floor();
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: List.generate(
-                                  count,
-                                  (_) => SizedBox(
-                                    width: dashW,
-                                    height: 1,
-                                    child: ColoredBox(color: AppColors.charcoal.withOpacity(0.8)),
-                                  ),
-                                ),
+    return GestureDetector(
+      onTap: () {
+        context.push('/home/social/detail/${project.id}/receipt', extra: {
+          'project': project,
+          'rate': 1.0,
+        });
+      },
+      child: Container(
+        width: ticketWidth,
+        height: ticketHeight,
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipPath(
+          clipper: TicketClipper(topCutoutY: topCutY, bottomCutoutY: bottomCutY),
+          child: ColoredBox(
+            color: const Color(0xFFF0F0F0), // Paper color
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── TOP: Barcode section ──
+                SizedBox(
+                  height: topCutY,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: SizedBox(
+                          height: 36,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: List.generate(40, (i) {
+                              final w = i % 4 == 0 ? 3 : (i % 3 == 0 ? 1 : 2);
+                              return Container(
+                                width: w.toDouble(),
+                                color: AppColors.charcoal,
                               );
-                            },
+                            }),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  // ── MIDDLE (content) ──────────────────────────────────
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 18,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Left: Book Cover
-                          Expanded(
-                            flex: 4,
-                            child: AspectRatio(
-                              aspectRatio: 1 / 1.45,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: coverUrl != null && coverUrl.isNotEmpty
-                                      ? Image.network(
-                                          coverUrl,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Container(color: AppColors.ivory),
+                      // Dashed line
+                      SizedBox(
+                        height: 1,
+                        child: LayoutBuilder(
+                          builder: (_, constraints) {
+                            const dashW = 6.0, gap = 4.0;
+                            final count = (constraints.maxWidth / (dashW + gap)).floor();
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: List.generate(
+                                count,
+                                (_) => const SizedBox(
+                                  width: dashW,
+                                  height: 1,
+                                  child: ColoredBox(color: AppColors.grey),
                                 ),
                               ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── MIDDLE: Content section ──
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header with Flight icon & flag
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                bookTitle,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.charcoal,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          
-                          // Right: Content Details
-                          Expanded(
-                            flex: 5,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                // GATE & Flight Icon
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Column(
-                                      children: [
-                                        Transform.rotate(
-                                          angle: 3.14159 / 4,
-                                          child: const Icon(
-                                            Icons.flight,
-                                            size: 20,
-                                            color: AppColors.black,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        const Text(
-                                          'SHARED',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 2.0,
-                                            color: AppColors.charcoal,
-                                            fontFamily: 'Courier',
-                                          ),
-                                        ),
-                                      ],
+                                    Transform.rotate(
+                                      angle: 3.14159 / 4,
+                                      child: const Icon(Icons.flight, size: 16),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
-                                
-                                // Project Name
+                                const Text(
+                                  'G A T E',
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 2.0,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                // Dummy flag image
+                                Container(
+                                  width: 24,
+                                  height: 14,
+                                  color: Colors.red.withOpacity(0.5),
+                                  // In real app, you can use flag package
+                                ),
+                                const SizedBox(height: 2),
                                 Text(
-                                  project.name,
+                                  '미국, $publicationYear년',
                                   style: const TextStyle(
-                                    fontFamily: 'Pretendard',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.charcoal,
-                                    letterSpacing: -0.5,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 6),
-                                
-                                // Book Title
-                                if (bookTitle != null)
-                                  Text(
-                                    bookTitle,
-                                    style: TextStyle(
-                                      fontFamily: 'Pretendard',
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppColors.charcoal.withOpacity(0.8),
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                
-                                const Spacer(),
-                                
-                                // Member count
-                                Row(
-                                  children: [
-                                    const Icon(Icons.group, size: 14, color: AppColors.charcoal),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '$memberCount Members',
-                                      style: const TextStyle(
-                                        color: AppColors.charcoal,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // ── BOTTOM (Firenze) ─────────────────────────
-                  SizedBox(
-                    height: botH,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: 1,
-                          child: LayoutBuilder(
-                            builder: (_, constraints) {
-                              const dashW = 7.0, gap = 5.0;
-                              final count = (constraints.maxWidth / (dashW + gap)).floor();
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: List.generate(
-                                  count,
-                                  (_) => SizedBox(
-                                    width: dashW,
-                                    height: 1,
-                                    child: ColoredBox(color: AppColors.charcoal.withOpacity(0.8)),
-                                  ),
+                          ],
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Book Cover
+                        Center(
+                          child: Container(
+                            width: 100,
+                            height: 145,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(2, 2),
                                 ),
-                              );
-                            },
+                              ],
+                            ),
+                            child: coverUrl != null && coverUrl.isNotEmpty
+                                ? Image.network(coverUrl, fit: BoxFit.cover)
+                                : const SizedBox.shrink(),
                           ),
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 12,
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Page or identifier
+                        const Text(
+                          'P.???',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.charcoal,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Quote
+                        const Expanded(
+                          child: Text(
+                            '"행복의 극대화, 자유의 존중, 그리고 미덕의 배양. 정의에 대한 이 세 가지 접근 방식은 서로 다른 방식으로 정의를 바라보게 한다."',
+                            style: TextStyle(
+                              fontSize: 10,
+                              height: 1.5,
+                              color: AppColors.charcoal,
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Firenze',
-                                  style: TextStyle(
-                                    fontFamily: 'GreatVibes',
-                                    fontSize: 28,
-                                    color: AppColors.burgundy,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // ── BOTTOM: Firenze logo & button ──
+                SizedBox(
+                  height: bottomCutY,
+                  child: Column(
+                    children: [
+                      // Dashed line
+                      SizedBox(
+                        height: 1,
+                        child: LayoutBuilder(
+                          builder: (_, constraints) {
+                            const dashW = 6.0, gap = 4.0;
+                            final count = (constraints.maxWidth / (dashW + gap)).floor();
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: List.generate(
+                                count,
+                                (_) => const SizedBox(
+                                  width: dashW,
+                                  height: 1,
+                                  child: ColoredBox(color: AppColors.grey),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Firenze',
+                                style: TextStyle(
+                                  fontFamily: 'GreatVibes',
+                                  fontSize: 28,
+                                  color: AppColors.burgundy,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  '독서앱 설치하기',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
