@@ -255,7 +255,7 @@ class _SharedReadingTab extends ConsumerWidget {
                         ),
                       ),
                       ...completed.map(
-                        (pw) => _buildActiveProjectCard(context, pw),
+                        (pw) => _buildCompletedTicketCard(context, pw),
                       ),
                     ],
                   ],
@@ -427,6 +427,186 @@ class _SharedReadingTab extends ConsumerWidget {
   }
 }
 
+  Widget _buildCompletedTicketCard(BuildContext context, ProjectWithMembers pw) {
+    final project = pw.project;
+    final coverUrl = pw.firstBookCover;
+    final bookTitle = pw.firstBookTitle;
+    final memberCount = pw.members.length;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: GestureDetector(
+        onTap: () {
+          // completed 상태면 상세 화면의 티켓(receipt) 뷰로 바로 이동
+          context.push('/home/social/detail/${project.id}/receipt', extra: {
+            'project': project,
+            'rate': 1.0, // 완독이므로 100%
+          });
+        },
+        child: Container(
+          // 배경색을 종이 느낌 나는 색상으로 설정하고, 위아래 지그재그나 점선 효과 느낌을 줌
+          decoration: BoxDecoration(
+            color: const Color(0xFFFDFDFD), // 약간의 미색(종이색)
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            // 영수증 테두리 느낌을 위한 Border
+            border: Border.all(
+              color: AppColors.greyLight.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top Zigzag
+              SizedBox(
+                height: 6,
+                child: CustomPaint(
+                  painter: _ZigZagPainter(color: const Color(0xFFFDFDFD)),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 좌측: 표지 (영수증 스타일 흑백 느낌이나 그냥 썸네일)
+                    Container(
+                      width: 50,
+                      height: 75,
+                      decoration: BoxDecoration(
+                        color: AppColors.ivory,
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(1, 1),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: coverUrl != null && coverUrl.isNotEmpty
+                          ? Image.network(
+                              coverUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Icon(Icons.receipt_long, color: AppColors.greyLight),
+                              ),
+                            )
+                          : const Center(
+                              child: Icon(Icons.receipt_long, color: AppColors.greyLight),
+                            ),
+                    ),
+                    const SizedBox(width: 16),
+                    // 우측: 텍스트 정보
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 타이틀 및 뱃지 영역
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  project.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                    color: AppColors.charcoal,
+                                    fontFamily: 'Courier', // 영수증 폰트 느낌
+                                    letterSpacing: 0.5,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.black,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'ISSUED',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          // 책 제목
+                          if (bookTitle != null)
+                            Text(
+                              bookTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: AppColors.charcoal.withOpacity(0.8),
+                                fontSize: 13,
+                                fontFamily: 'Courier',
+                              ),
+                            ),
+                          const SizedBox(height: 12),
+                          // 하단 점선 및 상태정보
+                          Row(
+                            children: [
+                              const Icon(Icons.group, size: 14, color: AppColors.grey),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$memberCount Members',
+                                style: const TextStyle(
+                                  color: AppColors.grey,
+                                  fontSize: 11,
+                                  fontFamily: 'Courier',
+                                ),
+                              ),
+                              const Spacer(),
+                              const Text(
+                                '티켓 보기 ❯',
+                                style: TextStyle(
+                                  color: AppColors.burgundy,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Bottom Zigzag
+              Transform.rotate(
+                angle: 3.141592, // pi
+                child: SizedBox(
+                  height: 6,
+                  child: CustomPaint(
+                    painter: _ZigZagPainter(color: const Color(0xFFFDFDFD)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class CircleTabIndicator extends Decoration {
   final Color color;
   final double radius;
@@ -456,4 +636,35 @@ class _CirclePainter extends BoxPainter {
     );
     canvas.drawCircle(offset + circleOffset, radius, _paint);
   }
+}
+
+class _ZigZagPainter extends CustomPainter {
+  final Color color;
+
+  _ZigZagPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final path = Path();
+
+    double x = 0;
+    double step = 8;
+
+    path.moveTo(0, 0);
+    while (x < size.width) {
+      path.lineTo(x + step / 2, size.height);
+      path.lineTo(x + step, 0);
+      x += step;
+    }
+
+    path.lineTo(size.width, size.height * 2);
+    path.lineTo(0, size.height * 2);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
