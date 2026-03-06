@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import '../../library/providers/book_providers.dart';
 import '../../library/providers/library_providers.dart';
 import '../../library/widgets/reading_completion_dialog.dart';
 import '../../../data/models/user_book_model.dart';
+import 'drawing_canvas_screen.dart';
 
 class ProjectDetailScreen extends ConsumerStatefulWidget {
   final String projectId;
@@ -780,69 +782,259 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                             // 완독 시 서재/프로젝트 갤러리 provider 무효화
                             ref.invalidate(userBooksProvider);
 
-                            // userBook 객체를 다시 가져와서 모달을 띄우기
-                            try {
-                              final ubs = await ref
-                                  .read(supabaseRepositoryProvider)
-                                  .getUserBooks(member.userId);
-                              final uMap = ubs.firstWhere(
-                                (element) =>
-                                    element['isbn'] == member.selectedIsbn,
-                              );
-                              final uBook = UserBook.fromJson(uMap);
-
-                              if (mounted) {
-                                final quote = await showDialog<String>(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) => ReadingCompletionDialog(
-                                    userBook: uBook,
-                                    isSharedReading: true,
+                            if (mounted) {
+                              // ── STEP 1: 축하 알림 ──
+                              await showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (ctx) => Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(28),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.ivory,
+                                      borderRadius: BorderRadius.circular(24),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 10),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.celebration,
+                                          color: AppColors.burgundy,
+                                          size: 48,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          '프로젝트 완수를 축하합니다!',
+                                          style: TextStyle(
+                                            fontFamily: 'Pretendard',
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 20,
+                                            color: AppColors.burgundy,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        const Text(
+                                          '자동으로 내 서재에 책이 추가됩니다.\n함께한 독서는 추가로 독서티켓이 발급되니\n다음 지시를 따라 주세요.',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: AppColors.charcoal,
+                                            height: 1.5,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 24),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            onPressed: () => Navigator.of(ctx).pop(),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: AppColors.burgundy,
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(vertical: 14),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              '다음으로',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                ),
+                              );
+
+                              if (!mounted) return;
+
+                              // ── STEP 2: 인용구 입력 ──
+                              final quote = await showDialog<String>(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (ctx) {
+                                  final controller = TextEditingController();
+                                  return Dialog(
+                                    backgroundColor: Colors.transparent,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(28),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.ivory,
+                                        borderRadius: BorderRadius.circular(24),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 20,
+                                            offset: const Offset(0, 10),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.format_quote,
+                                            color: AppColors.burgundy,
+                                            size: 36,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          const Text(
+                                            '인상깊었던, 혹은 다른 사람과\n나누고 싶은 1~2 문장을\n입력해주세요.',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.charcoal,
+                                              height: 1.5,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: 20),
+                                          TextField(
+                                            controller: controller,
+                                            maxLines: 3,
+                                            decoration: InputDecoration(
+                                              hintText: '구절을 입력해주세요...',
+                                              filled: true,
+                                              fillColor: Colors.white,
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: BorderSide.none,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 20),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                if (controller.text.trim().isNotEmpty) {
+                                                  Navigator.of(ctx).pop(controller.text.trim());
+                                                }
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.burgundy,
+                                                foregroundColor: Colors.white,
+                                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                '다음으로',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+
+                              if (quote == null || !mounted) return;
+
+                              // ── STEP 3: 그림 그리기 ──
+                              final drawingBytes = await Navigator.of(context).push<Uint8List>(
+                                MaterialPageRoute(
+                                  fullscreenDialog: true,
+                                  builder: (_) => const DrawingCanvasScreen(),
+                                ),
+                              );
+
+                              if (drawingBytes == null || !mounted) return;
+
+                              // ── SAVE: 인용구 + 그림 업로드 ──
+                              try {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('저장 중...')),
                                 );
 
-                                if (quote != null) {
-                                  // Save quote to DB
-                                  await ref
-                                      .read(supabaseRepositoryProvider)
-                                      .updateUserBookStatus(
-                                        member.userId,
-                                        member.selectedIsbn!,
-                                        'read',
-                                        quote: quote,
-                                      );
-                                  ref.invalidate(userBooksProvider);
+                                final repo = ref.read(supabaseRepositoryProvider);
 
-                                  final currentProject = ref
-                                      .read(myProjectsProvider)
-                                      .value
-                                      ?.firstWhere(
-                                        (element) =>
-                                            element.id == member.projectId,
+                                // Upload drawing
+                                final drawingUrl = await repo.uploadDrawingImage(
+                                  member.projectId,
+                                  member.userId,
+                                  drawingBytes,
+                                );
+
+                                // Save quote + drawing URL to project_members
+                                await repo.updateMemberTicketData(
+                                  member.projectId,
+                                  member.userId,
+                                  quote: quote,
+                                  drawingUrl: drawingUrl,
+                                );
+
+                                // Also save quote to user_books
+                                await repo.updateUserBookStatus(
+                                  member.userId,
+                                  member.selectedIsbn!,
+                                  'read',
+                                  quote: quote,
+                                );
+
+                                ref.invalidate(userBooksProvider);
+                                ref.invalidate(myProjectsProvider);
+                                ref.invalidate(projectMembersProvider(member.projectId));
+
+                                // Check if all members are ready
+                                final allReady = await repo.checkAllMembersTicketReady(member.projectId);
+
+                                if (mounted) {
+                                  if (allReady) {
+                                    // 모든 멤버 완료 → 티켓 발급!
+                                    final currentProject = ref
+                                        .read(myProjectsProvider)
+                                        .value
+                                        ?.firstWhere(
+                                          (element) => element.id == member.projectId,
+                                        );
+                                    if (currentProject != null) {
+                                      context.push(
+                                        '/home/social/detail/${member.projectId}/receipt',
+                                        extra: {
+                                          'project': currentProject,
+                                          'rate': 1.0,
+                                        },
                                       );
-                                  if (currentProject != null) {
-                                    context.push(
-                                      '/home/social/detail/${member.projectId}/receipt',
-                                      extra: {
-                                        'project': currentProject,
-                                        'rate': 1.0,
-                                      },
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          '저장 완료! 다른 멤버가 아직 작성 중입니다. 모두 완료되면 독서 티켓이 발급됩니다.',
+                                        ),
+                                        duration: Duration(seconds: 4),
+                                      ),
                                     );
                                   }
                                 }
+                              } catch (e) {
+                                debugPrint('Error in completion flow: $e');
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('저장 중 오류: $e')),
+                                  );
+                                }
                               }
-                            } catch (e) {
-                              debugPrint(
-                                'Error loading user book for completion dialog: $e',
-                              );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    '🎉 축하합니다! 완독하셨네요! 읽은 책이 서재에 자동으로 추가됩니다.',
-                                  ),
-                                  duration: Duration(seconds: 3),
-                                ),
-                              );
                             }
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(

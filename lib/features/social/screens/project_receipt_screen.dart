@@ -6,13 +6,10 @@ import 'dart:ui';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
 import '../../../data/models/project_model.dart';
-import '../../../data/models/book_model.dart';
-import '../../../data/models/user_book_model.dart';
+import '../../../data/models/profile_model.dart';
 import '../../library/providers/book_providers.dart';
-import '../../library/providers/library_providers.dart';
-import '../../library/screens/reading_ticket_screen.dart';
-import '../../memo/providers/memo_providers.dart';
 import '../providers/social_providers.dart';
+import '../widgets/shared_reading_ticket_widget.dart';
 
 class ProjectReceiptScreen extends ConsumerStatefulWidget {
   final Project project;
@@ -30,16 +27,14 @@ class ProjectReceiptScreen extends ConsumerStatefulWidget {
 }
 
 class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
-  Book? _book;
-  bool _isLoadingBook = false;
-
   late final Alignment _bgAlignment;
   late final Color _bgTint;
+  Map<String, Profile> _profiles = {};
+  bool _loadingProfiles = true;
 
   static const _tints = [
     Color(0xFFE57373), Color(0xFFBA68C8), Color(0xFF4DB6AC), Color(0xFF64B5F6),
     Color(0xFFFFB74D), Color(0xFFF06292), Color(0xFF81C784), Color(0xFF90A4AE),
-    Color(0xFFFF8A65), Color(0xFFA1887F),
   ];
 
   @override
@@ -51,59 +46,36 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
       (rng.nextDouble() * 1.4) - 0.7,
     );
     _bgTint = _tints[rng.nextInt(_tints.length)];
-    _loadBook();
+    _loadProfiles();
   }
 
-  Future<void> _loadBook() async {
-    if (widget.project.isbn != null) {
-      setState(() => _isLoadingBook = true);
-      try {
-        final book = await ref
-            .read(bookRepositoryProvider)
-            .getBookDetail(widget.project.isbn!);
-        if (mounted) {
-          setState(() {
-            _book = book;
-            _isLoadingBook = false;
-          });
+  Future<void> _loadProfiles() async {
+    try {
+      final membersAsync = ref.read(projectMembersProvider(widget.project.id));
+      final members = membersAsync.value ?? [];
+      final repo = ref.read(supabaseRepositoryProvider);
+      final profiles = <String, Profile>{};
+      for (final m in members) {
+        final profile = await repo.getProfile(m.userId);
+        if (profile != null) {
+          profiles[m.userId] = profile;
         }
-      } catch (e) {
-        if (mounted) setState(() => _isLoadingBook = false);
       }
+      if (mounted) {
+        setState(() {
+          _profiles = profiles;
+          _loadingProfiles = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading profiles: $e');
+      if (mounted) setState(() => _loadingProfiles = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoadingBook || _book == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.ivory,
-        body: Center(child: FlorenceLoader()),
-      );
-    }
-
-    final memosAsync = widget.project.ownerId.isNotEmpty
-        ? ref.watch(memosForUserProvider(
-            (userId: widget.project.ownerId, isbn: _book!.isbn)))
-        : const AsyncValue<List<dynamic>>.data([]);
-
-    final aiDataAsync = ref.watch(aiTicketFutureProvider(_book!));
-    final readCountThisYear = ref.watch(readBooksThisYearProvider).value ?? 1;
-
-    String memoQuote = '';
-    memosAsync.whenData((memos) {
-      if (memos.isNotEmpty) {
-        memoQuote = memos.first.content;
-      }
-    });
-
-    final dummyUserBook = UserBook(
-      id: widget.project.id,
-      userId: widget.project.ownerId,
-      isbn: _book!.isbn,
-      status: 'read',
-      book: _book!,
-    );
+    final membersAsync = ref.watch(projectMembersProvider(widget.project.id));
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -132,50 +104,102 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
           ),
           Container(color: _bgTint.withOpacity(0.30)),
 
-          // Center: Reading Ticket
-          Align(
-            alignment: Alignment.center,
-            child: SizedBox.expand(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 340),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Hero(
-                      tag: 'shared_ticket_${_book!.isbn}',
-                      child: aiDataAsync.when(
-                        data: (aiData) => ReadingTicketWidget(
-                          userBook: dummyUserBook,
-                          quote: memoQuote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: aiData.nationalityCode,
-                          nationalityName: aiData.nationalityName,
-                          publicationYear:
-                              aiData.publicationYear != '연도 미상'
-                                  ? aiData.publicationYear
-                                  : _book!.publicationYear,
+          // Center: Shared Reading Ticket
+          membersAsync.when(
+            data: (members) {
+              if (_loadingProfiles) {
+                return const Center(child: FlorenceLoader());
+              }
+
+              // Check if all members have submitted
+              final allReady = members.every(
+                (m) => m.quote != null && m.drawingUrl != null,
+              );
+
+              if (!allReady) {
+                return Center(
+                  child: Container(
+                    margin: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: AppColors.ivory,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.hourglass_top,
+                          color: AppColors.burgundy,
+                          size: 48,
                         ),
-                        loading: () => ReadingTicketWidget(
-                          userBook: dummyUserBook,
-                          quote: memoQuote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: 'UN',
-                          nationalityName: '분석 중',
-                          publicationYear: _book!.publicationYear,
+                        const SizedBox(height: 16),
+                        const Text(
+                          '아직 모든 멤버가\n작성을 완료하지 않았습니다.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.charcoal,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        error: (e, st) => ReadingTicketWidget(
-                          userBook: dummyUserBook,
-                          quote: memoQuote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: 'UN',
-                          nationalityName: '알 수 없음',
-                          publicationYear: _book!.publicationYear,
-                        ),
-                      ),
+                        const SizedBox(height: 12),
+                        ...members.map((m) {
+                          final profile = _profiles[m.userId];
+                          final nickname = profile?.nickname ??
+                              'Member ${m.userId.substring(0, 4)}';
+                          final ready =
+                              m.quote != null && m.drawingUrl != null;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  ready
+                                      ? Icons.check_circle
+                                      : Icons.radio_button_unchecked,
+                                  color: ready
+                                      ? Colors.green
+                                      : AppColors.greyLight,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  nickname,
+                                  style: TextStyle(
+                                    color: ready
+                                        ? AppColors.charcoal
+                                        : AppColors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
                     ),
                   ),
+                );
+              }
+
+              return SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 60,
+                  left: 20,
+                  right: 20,
+                  bottom: 100,
                 ),
-              ),
+                child: SharedReadingTicketWidget(
+                  project: widget.project,
+                  members: members,
+                  memberProfiles: _profiles,
+                ),
+              );
+            },
+            loading: () => const Center(child: FlorenceLoader()),
+            error: (e, st) => Center(
+              child: Text('오류 발생: $e', style: const TextStyle(color: Colors.white)),
             ),
           ),
 

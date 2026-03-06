@@ -60,6 +60,8 @@ class ProjectMember {
   final String? selectedIsbn;
   final String? selectedBookTitle;
   final String? selectedBookCover;
+  final String? quote;
+  final String? drawingUrl;
   final DateTime joinedAt;
 
   ProjectMember({
@@ -73,6 +75,8 @@ class ProjectMember {
     this.selectedIsbn,
     this.selectedBookTitle,
     this.selectedBookCover,
+    this.quote,
+    this.drawingUrl,
     required this.joinedAt,
   });
 
@@ -91,6 +95,8 @@ class ProjectMember {
       selectedIsbn: json['selected_isbn'],
       selectedBookTitle: bookData?['title'],
       selectedBookCover: bookData?['cover_url'],
+      quote: json['quote'] as String?,
+      drawingUrl: json['drawing_url'] as String?,
       joinedAt: DateTime.parse(json['joined_at']),
     );
   }

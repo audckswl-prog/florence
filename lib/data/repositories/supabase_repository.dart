@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cross_file/cross_file.dart';
 import '../models/book_model.dart';
@@ -798,6 +799,75 @@ class SupabaseRepository {
       return response['id']; // Return the unique invite ID
     } catch (e) {
       throw Exception('Error creating project invite: $e');
+    }
+  }
+
+  /// Update a member's quote and/or drawing URL for the shared reading ticket
+  Future<void> updateMemberTicketData(
+    String projectId,
+    String userId, {
+    String? quote,
+    String? drawingUrl,
+  }) async {
+    try {
+      final updates = <String, dynamic>{};
+      if (quote != null) updates['quote'] = quote;
+      if (drawingUrl != null) updates['drawing_url'] = drawingUrl;
+      if (updates.isEmpty) return;
+
+      await _client
+          .from('project_members')
+          .update(updates)
+          .match({'project_id': projectId, 'user_id': userId});
+    } catch (e) {
+      throw Exception('Error updating member ticket data: $e');
+    }
+  }
+
+  /// Upload a drawing image to Supabase Storage and return the public URL
+  Future<String> uploadDrawingImage(
+    String projectId,
+    String userId,
+    Uint8List imageBytes,
+  ) async {
+    try {
+      final fileName =
+          '${projectId}_${userId}_${DateTime.now().millisecondsSinceEpoch}.png';
+      final filePath = '$projectId/$fileName';
+
+      await _client.storage
+          .from('drawings')
+          .uploadBinary(
+            filePath,
+            imageBytes,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
+
+      final publicUrl = _client.storage
+          .from('drawings')
+          .getPublicUrl(filePath);
+      return publicUrl;
+    } catch (e) {
+      throw Exception('Error uploading drawing: $e');
+    }
+  }
+
+  /// Check if all members of a project have submitted their quote and drawing
+  Future<bool> checkAllMembersTicketReady(String projectId) async {
+    try {
+      final members = await _client
+          .from('project_members')
+          .select()
+          .eq('project_id', projectId);
+
+      for (var m in members) {
+        if (m['quote'] == null || m['drawing_url'] == null) {
+          return false;
+        }
+      }
+      return true;
+    } catch (e) {
+      throw Exception('Error checking ticket readiness: $e');
     }
   }
 }
