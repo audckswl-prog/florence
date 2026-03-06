@@ -332,34 +332,62 @@ class SupabaseRepository {
 
   Future<List<Map<String, dynamic>>> getFriends(String userId) async {
     try {
-      // Query where user is either requester or receiver and status is accepted
+      // 1) 내가 요청자인 accepted friendships
       final response1 = await _client
           .from('friendships')
-          .select('*, receiver:profiles!receiver_id(*)')
+          .select()
           .eq('requester_id', userId)
           .eq('status', 'accepted');
+      // 2) 내가 수신자인 accepted friendships
       final response2 = await _client
           .from('friendships')
-          .select('*, requester:profiles!requester_id(*)')
+          .select()
           .eq('receiver_id', userId)
           .eq('status', 'accepted');
 
-      debugPrint('[getFriends] userId: $userId');
-      debugPrint('[getFriends] response1 (I sent): ${response1?.length ?? 0} rows => $response1');
-      debugPrint('[getFriends] response2 (I received): ${response2?.length ?? 0} rows => $response2');
-
-      // Also check ALL friendships for this user regardless of status
-      final allFriendships = await _client
-          .from('friendships')
-          .select()
-          .or('requester_id.eq.$userId,receiver_id.eq.$userId');
-      debugPrint('[getFriends] ALL friendships for user: ${allFriendships?.length ?? 0} rows => $allFriendships');
-
       List<Map<String, dynamic>> friends = [];
-      if (response1 != null)
-        friends.addAll(List<Map<String, dynamic>>.from(response1));
-      if (response2 != null)
-        friends.addAll(List<Map<String, dynamic>>.from(response2));
+
+      // response1: 내가 requester → 상대방은 receiver
+      for (final row in (response1 ?? [])) {
+        final friendId = row['receiver_id'] as String?;
+        Map<String, dynamic>? profile;
+        if (friendId != null) {
+          try {
+            final profileData = await _client
+                .from('profiles')
+                .select()
+                .eq('id', friendId)
+                .maybeSingle();
+            profile = profileData;
+          } catch (_) {}
+        }
+        friends.add({
+          ...Map<String, dynamic>.from(row),
+          'receiver': profile,
+        });
+      }
+
+      // response2: 내가 receiver → 상대방은 requester
+      for (final row in (response2 ?? [])) {
+        final friendId = row['requester_id'] as String?;
+        Map<String, dynamic>? profile;
+        if (friendId != null) {
+          try {
+            final profileData = await _client
+                .from('profiles')
+                .select()
+                .eq('id', friendId)
+                .maybeSingle();
+            profile = profileData;
+          } catch (_) {}
+        }
+        friends.add({
+          ...Map<String, dynamic>.from(row),
+          'requester': profile,
+        });
+      }
+
+      debugPrint('[getFriends] Found ${friends.length} friends for $userId');
       return friends;
     } catch (e) {
       debugPrint('[getFriends] ERROR: $e');
@@ -394,10 +422,29 @@ class SupabaseRepository {
     try {
       final response = await _client
           .from('friendships')
-          .select('*, requester:profiles!requester_id(*)')
+          .select()
           .eq('receiver_id', userId)
           .eq('status', 'pending');
-      return List<Map<String, dynamic>>.from(response);
+
+      List<Map<String, dynamic>> results = [];
+      for (final row in (response ?? [])) {
+        final requesterId = row['requester_id'] as String?;
+        Map<String, dynamic>? profile;
+        if (requesterId != null) {
+          try {
+            profile = await _client
+                .from('profiles')
+                .select()
+                .eq('id', requesterId)
+                .maybeSingle();
+          } catch (_) {}
+        }
+        results.add({
+          ...Map<String, dynamic>.from(row),
+          'requester': profile,
+        });
+      }
+      return results;
     } catch (e) {
       throw Exception('Error fetching friend requests: $e');
     }
