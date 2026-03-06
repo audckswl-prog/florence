@@ -425,7 +425,6 @@ class _SharedReadingTab extends ConsumerWidget {
       ),
     );
   }
-}
 
   Widget _buildCompletedTicketCard(BuildContext context, ProjectWithMembers pw) {
     final project = pw.project;
