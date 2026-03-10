@@ -391,14 +391,6 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
 }
 
 void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
-  final friends = ref.read(friendsProvider).value ?? [];
-
-  if (friends.isEmpty) {
-    showSharedReadingFriendsList(context, ref);
-    FlorenceToast.show(context, '친구를 추가하고 이용할 수 있습니다.');
-    return;
-  }
-
   showModalBottomSheet(
     context: context,
     backgroundColor: AppColors.ivory,
@@ -407,167 +399,205 @@ void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (ctx) {
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          final selectedFriendIds = <String>{};
-          return SafeArea(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '책 함께 읽기',
-                    style: TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.charcoal,
-                    ),
+      return Consumer(
+        builder: (context, ref, child) {
+          final friendsAsync = ref.watch(friendsProvider);
+          return StatefulBuilder(
+            builder: (context, setModalState) {
+              final selectedFriendIds = <String>{};
+
+              return SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 24,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '함께 읽을 친구를 선택하세요',
-                    style: TextStyle(color: AppColors.grey, fontSize: 14),
-                  ),
-                  const SizedBox(height: 20),
-
-                  Container(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.3,
-                    ),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: friends.length,
-                      itemBuilder: (context, index) {
-                        final friend = friends[index];
-                        final myId =
-                            Supabase.instance.client.auth.currentUser!.id;
-                        final isRequester = friend['requester_id'] == myId;
-                        final profile = isRequester
-                            ? friend['receiver']
-                            : friend['requester'];
-                        final friendId = isRequester
-                            ? friend['receiver_id']
-                            : friend['requester_id'];
-                        final isSelected = selectedFriendIds.contains(friendId);
-
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.white,
-                            backgroundImage: profile['profile_url'] != null
-                                ? NetworkImage(profile['profile_url'])
-                                : null,
-                            child: profile['profile_url'] == null
-                                ? const Icon(
-                                    Icons.person,
-                                    color: AppColors.grey,
-                                  )
-                                : null,
-                          ),
-                          title: Text(
-                            profile['nickname'] ?? '이름 없음',
-                            style: const TextStyle(fontWeight: FontWeight.w500),
-                          ),
-                          trailing: Checkbox(
-                            value: isSelected,
-                            activeColor: AppColors.burgundy,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            onChanged: (val) {
-                              setModalState(() {
-                                if (val == true)
-                                  selectedFriendIds.add(friendId);
-                                else
-                                  selectedFriendIds.remove(friendId);
-                              });
-                            },
-                          ),
-                          onTap: () {
-                            setModalState(() {
-                              if (isSelected)
-                                selectedFriendIds.remove(friendId);
-                              else
-                                selectedFriendIds.add(friendId);
-                            });
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: selectedFriendIds.isEmpty
-                          ? null
-                          : () async {
-                              try {
-                                final repository = ref.read(
-                                  supabaseRepositoryProvider,
-                                );
-                                final myId = Supabase
-                                    .instance
-                                    .client
-                                    .auth
-                                    .currentUser!
-                                    .id;
-
-                                await repository.createProject(
-                                  name: '함께 읽기',
-                                  ownerId: myId,
-                                  friendIds: selectedFriendIds.toList(),
-                                );
-
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('함께 읽기 초대권을 보냈습니다!'),
-                                    ),
-                                  );
-                                  ref.invalidate(myProjectsProvider);
-                                  ref.invalidate(myProjectsWithMembersProvider);
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('오류: $e')),
-                                  );
-                                }
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.burgundy,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: AppColors.greyLight
-                            .withOpacity(0.3),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        '초대장 보내기',
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '책 함께 읽기',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontFamily: 'Pretendard',
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.charcoal,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        '함께 읽을 친구를 선택하세요',
+                        style: TextStyle(color: AppColors.grey, fontSize: 14),
+                      ),
+                      const SizedBox(height: 20),
+                      friendsAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (e, _) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: Text('오류: $e')),
+                        ),
+                        data: (friends) {
+                          if (friends.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 40),
+                              child: Center(
+                                child: Text(
+                                  '아직 친구가 없습니다.\n먼저 친구를 추가해주세요!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: AppColors.grey),
+                                ),
+                              ),
+                            );
+                          }
+                          return Container(
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * 0.3,
+                            ),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: friends.length,
+                              itemBuilder: (context, index) {
+                                final friend = friends[index];
+                                final myId = Supabase
+                                    .instance.client.auth.currentUser!.id;
+                                final isRequester =
+                                    friend['requester_id'] == myId;
+                                final profile = isRequester
+                                    ? friend['receiver']
+                                    : friend['requester'];
+                                final friendId = isRequester
+                                    ? friend['receiver_id']
+                                    : friend['requester_id'];
+                                if (profile == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                final isSelected =
+                                    selectedFriendIds.contains(friendId);
+
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: CircleAvatar(
+                                    backgroundColor: Colors.white,
+                                    backgroundImage: profile['profile_url'] !=
+                                            null
+                                        ? NetworkImage(profile['profile_url'])
+                                        : null,
+                                    child: profile['profile_url'] == null
+                                        ? const Icon(
+                                            Icons.person,
+                                            color: AppColors.grey,
+                                          )
+                                        : null,
+                                  ),
+                                  title: Text(
+                                    profile['nickname'] ?? '이름 없음',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                  trailing: Checkbox(
+                                    value: isSelected,
+                                    activeColor: AppColors.burgundy,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    onChanged: (val) {
+                                      setModalState(() {
+                                        if (val == true) {
+                                          selectedFriendIds.add(friendId);
+                                        } else {
+                                          selectedFriendIds.remove(friendId);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                  onTap: () {
+                                    setModalState(() {
+                                      if (isSelected) {
+                                        selectedFriendIds.remove(friendId);
+                                      } else {
+                                        selectedFriendIds.add(friendId);
+                                      }
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: selectedFriendIds.isEmpty
+                              ? null
+                              : () async {
+                                  try {
+                                    final repository = ref.read(
+                                      supabaseRepositoryProvider,
+                                    );
+                                    final myId = Supabase
+                                        .instance.client.auth.currentUser!.id;
+
+                                    await repository.createProject(
+                                      name: '함께 읽기',
+                                      ownerId: myId,
+                                      friendIds: selectedFriendIds.toList(),
+                                    );
+
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text('함께 읽기 초대권을 보냈습니다!'),
+                                        ),
+                                      );
+                                      ref.invalidate(myProjectsProvider);
+                                      ref.invalidate(
+                                          myProjectsWithMembersProvider);
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(content: Text('오류: $e')),
+                                      );
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.burgundy,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor:
+                                AppColors.greyLight.withOpacity(0.3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            '초대장 보내기',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
       );

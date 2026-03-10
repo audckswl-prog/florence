@@ -365,21 +365,24 @@ class SupabaseRepository {
           .eq('status', 'accepted');
 
       List<Map<String, dynamic>> friends = [];
+      final Set<String> addedFriendIds = {}; // 중복 필터링을 위한 Set
 
       // response1: 내가 requester → 상대방은 receiver
       for (final row in (response1 ?? [])) {
         final friendId = row['receiver_id'] as String?;
+        if (friendId == null || addedFriendIds.contains(friendId)) continue;
+
         Map<String, dynamic>? profile;
-        if (friendId != null) {
-          try {
-            final profileData = await _client
-                .from('profiles')
-                .select()
-                .eq('id', friendId)
-                .maybeSingle();
-            profile = profileData;
-          } catch (_) {}
-        }
+        try {
+          final profileData = await _client
+              .from('profiles')
+              .select()
+              .eq('id', friendId)
+              .maybeSingle();
+          profile = profileData;
+        } catch (_) {}
+
+        addedFriendIds.add(friendId);
         friends.add({
           ...Map<String, dynamic>.from(row),
           'receiver': profile,
@@ -389,24 +392,26 @@ class SupabaseRepository {
       // response2: 내가 receiver → 상대방은 requester
       for (final row in (response2 ?? [])) {
         final friendId = row['requester_id'] as String?;
+        if (friendId == null || addedFriendIds.contains(friendId)) continue;
+
         Map<String, dynamic>? profile;
-        if (friendId != null) {
-          try {
-            final profileData = await _client
-                .from('profiles')
-                .select()
-                .eq('id', friendId)
-                .maybeSingle();
-            profile = profileData;
-          } catch (_) {}
-        }
+        try {
+          final profileData = await _client
+              .from('profiles')
+              .select()
+              .eq('id', friendId)
+              .maybeSingle();
+          profile = profileData;
+        } catch (_) {}
+
+        addedFriendIds.add(friendId);
         friends.add({
           ...Map<String, dynamic>.from(row),
           'requester': profile,
         });
       }
 
-      debugPrint('[getFriends] Found ${friends.length} friends for $userId');
+      debugPrint('[getFriends] Found ${friends.length} unique friends for $userId');
       return friends;
     } catch (e) {
       debugPrint('[getFriends] ERROR: $e');
