@@ -13,7 +13,6 @@ import '../../library/providers/book_providers.dart';
 void showSharedReadingFriendsList(
   BuildContext context,
   WidgetRef ref,
-  List<Map<String, dynamic>> friends,
 ) {
   final searchFocusNode = ref.read(sharedReadingSearchFocusNodeProvider);
 
@@ -25,121 +24,146 @@ void showSharedReadingFriendsList(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (ctx) {
-      return SafeArea(
-        child: Container(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height * 0.6,
-          ),
-          padding: const EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 32,
-            bottom: 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '내 친구 (${friends.length}명)',
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.charcoal,
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      searchFocusNode.requestFocus();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.burgundy,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      minimumSize: Size.zero,
-                      elevation: 0,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text(
-                      '+친구 추가하기',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
+      return Consumer(
+        builder: (context, ref, child) {
+          final friendsAsync = ref.watch(friendsProvider);
+
+          return SafeArea(
+            child: Container(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(ctx).size.height * 0.6,
               ),
-              const SizedBox(height: 32),
-              if (friends.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Text(
-                    '아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.grey),
-                  ),
-                )
-              else
-                ...friends.map((friend) {
-                  final myId = Supabase.instance.client.auth.currentUser!.id;
-                  final isRequester = friend['requester_id'] == myId;
-                  final profile = isRequester
-                      ? friend['receiver']
-                      : friend['requester'];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Row(
+              padding: const EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 32,
+                bottom: 24,
+              ),
+              child: friendsAsync.when(
+                loading: () => const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 60),
+                    Center(child: CircularProgressIndicator()),
+                  ],
+                ),
+                error: (e, _) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 60),
+                    Center(child: Text('오류: $e')),
+                  ],
+                ),
+                data: (friends) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
+                        Text(
+                          '내 친구 (${friends.length}명)',
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.charcoal,
                           ),
-                          child: profile['profile_url'] != null
-                              ? ClipOval(
-                                  child: Image.network(
-                                    profile['profile_url'],
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.person,
-                                  color: AppColors.grey,
-                                  size: 28,
-                                ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            profile['nickname'] ?? '이름 없음',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.charcoal,
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            searchFocusNode.requestFocus();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.burgundy,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            minimumSize: Size.zero,
+                            elevation: 0,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            '+친구 추가하기',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
                             ),
                           ),
                         ),
                       ],
                     ),
-                  );
-                }),
-            ],
-          ),
-        ),
+                    const SizedBox(height: 32),
+                    if (friends.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Text(
+                            '아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppColors.grey),
+                          ),
+                        ),
+                      )
+                    else
+                      ...friends.map((friend) {
+                        final myId = Supabase.instance.client.auth.currentUser!.id;
+                        final isRequester = friend['requester_id'] == myId;
+                        final profile = isRequester
+                            ? friend['receiver']
+                            : friend['requester'];
+                        if (profile == null) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: profile['profile_url'] != null
+                                    ? ClipOval(
+                                        child: Image.network(
+                                          profile['profile_url'],
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.person,
+                                        color: AppColors.grey,
+                                        size: 28,
+                                      ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  profile['nickname'] ?? '이름 없음',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.charcoal,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       );
     },
   );
@@ -343,12 +367,9 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                 );
                               } else if (noti.type == 'friend_request' ||
                                   noti.type == 'friend_accept') {
-                                final friends =
-                                    ref.read(friendsProvider).value ?? [];
                                 showSharedReadingFriendsList(
                                   context,
                                   ref,
-                                  friends,
                                 );
                               }
                             },
@@ -373,7 +394,7 @@ void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
   final friends = ref.read(friendsProvider).value ?? [];
 
   if (friends.isEmpty) {
-    showSharedReadingFriendsList(context, ref, friends);
+    showSharedReadingFriendsList(context, ref);
     FlorenceToast.show(context, '친구를 추가하고 이용할 수 있습니다.');
     return;
   }
@@ -807,8 +828,7 @@ class _SharedReadingAppBarTitleState
             size: 26,
           ),
           onPressed: () {
-            final friends = ref.read(friendsProvider).value ?? [];
-            showSharedReadingFriendsList(context, ref, friends);
+            showSharedReadingFriendsList(context, ref);
           },
         ),
 
