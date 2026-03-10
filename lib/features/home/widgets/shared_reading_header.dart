@@ -399,13 +399,12 @@ void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (ctx) {
+      final selectedFriendIds = <String>{};
       return Consumer(
         builder: (context, ref, child) {
           final friendsAsync = ref.watch(friendsProvider);
           return StatefulBuilder(
             builder: (context, setModalState) {
-              final selectedFriendIds = <String>{};
-
               return SafeArea(
                 child: Padding(
                   padding: EdgeInsets.only(
