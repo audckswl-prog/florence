@@ -83,40 +83,12 @@ void showSharedReadingFriendsList(
               ),
               const SizedBox(height: 32),
               if (friends.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    children: [
-                      const Text(
-                        '아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.grey),
-                      ),
-                      const SizedBox(height: 16),
-                      // ── 임시 디버그 정보 ──
-                      FutureBuilder(
-                        future: SupabaseRepository(Supabase.instance.client)
-                            .debugGetAllFriendships(
-                              Supabase.instance.client.auth.currentUser?.id ?? '',
-                            ),
-                        builder: (ctx, snap) {
-                          if (snap.connectionState == ConnectionState.waiting) {
-                            return const Text('디버그 로딩중...', style: TextStyle(fontSize: 10));
-                          }
-                          return Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '🔍 디버그:\nuserId: ${Supabase.instance.client.auth.currentUser?.id}\n${snap.data ?? snap.error}',
-                              style: const TextStyle(fontSize: 9, fontFamily: 'monospace'),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    '아직 친구가 없습니다.\n닉네임 검색으로 친구를 추가해보세요!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppColors.grey),
                   ),
                 )
               else
@@ -602,86 +574,86 @@ class _SharedReadingAppBarTitleState
 
     try {
       final repository = ref.read(supabaseRepositoryProvider);
+      final myId = Supabase.instance.client.auth.currentUser!.id;
       final results = await repository.searchProfilesByNickname(query);
+
+      if (!mounted) return;
+
+      // 각 프로필의 기존 friendship 상태 조회
+      final statusMap = <String, String?>{};
+      for (final profile in results) {
+        statusMap[profile.id] = await repository.checkExistingFriendship(myId, profile.id);
+      }
 
       if (!mounted) return;
 
       showModalBottomSheet(
         context: context,
         backgroundColor: AppColors.ivory,
+        isScrollControlled: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         builder: (ctx) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '\'$query\' 검색 결과',
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.charcoal,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (results.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Center(
-                        child: Text(
-                          '일치하는 닉네임이 없습니다.',
-                          style: TextStyle(color: AppColors.grey),
+          return StatefulBuilder(
+            builder: (context, setModalState) {
+              return SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '\'$query\' 검색 결과',
+                        style: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.charcoal,
                         ),
                       ),
-                    )
-                  else
-                    ...results.map((profile) {
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          backgroundImage: profile.profileUrl != null
-                              ? NetworkImage(profile.profileUrl!)
-                              : null,
-                          child: profile.profileUrl == null
-                              ? const Icon(Icons.person, color: AppColors.grey)
-                              : null,
-                        ),
-                        title: Text(profile.nickname ?? '알 수 없음'),
-                        trailing: ElevatedButton(
-                          onPressed: () async {
-                            final myId =
-                                Supabase.instance.client.auth.currentUser!.id;
-                            await repository.sendFriendRequest(
-                              myId,
-                              profile.id,
-                            );
-                            if (mounted) {
-                              Navigator.pop(ctx);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('친구 요청을 보냈습니다.')),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.burgundy,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                      const SizedBox(height: 16),
+                      if (results.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: Text(
+                              '일치하는 닉네임이 없습니다.',
+                              style: TextStyle(color: AppColors.grey),
                             ),
                           ),
-                          child: const Text('친구 요청'),
-                        ),
-                      );
-                    }).toList(),
-                ],
-              ),
-            ),
+                        )
+                      else
+                        ...results.map((profile) {
+                          final existingStatus = statusMap[profile.id];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.white,
+                              backgroundImage: profile.profileUrl != null
+                                  ? NetworkImage(profile.profileUrl!)
+                                  : null,
+                              child: profile.profileUrl == null
+                                  ? const Icon(Icons.person, color: AppColors.grey)
+                                  : null,
+                            ),
+                            title: Text(profile.nickname ?? '알 수 없음'),
+                            trailing: _buildFriendActionButton(
+                              ctx: ctx,
+                              repository: repository,
+                              myId: myId,
+                              profileId: profile.id,
+                              existingStatus: existingStatus,
+                              statusMap: statusMap,
+                              setModalState: setModalState,
+                            ),
+                          );
+                        }).toList(),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       );
@@ -692,6 +664,77 @@ class _SharedReadingAppBarTitleState
         ).showSnackBar(SnackBar(content: Text('검색 오류: $e')));
       }
     }
+  }
+
+  Widget _buildFriendActionButton({
+    required BuildContext ctx,
+    required SupabaseRepository repository,
+    required String myId,
+    required String profileId,
+    required String? existingStatus,
+    required Map<String, String?> statusMap,
+    required void Function(void Function()) setModalState,
+  }) {
+    if (existingStatus == 'accepted') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.greyLight.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Text(
+          '이미 친구',
+          style: TextStyle(color: AppColors.grey, fontSize: 13),
+        ),
+      );
+    }
+    if (existingStatus == 'pending') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.greyLight.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Text(
+          '요청됨',
+          style: TextStyle(color: AppColors.grey, fontSize: 13),
+        ),
+      );
+    }
+    return ElevatedButton(
+      onPressed: () async {
+        try {
+          await repository.sendFriendRequest(myId, profileId);
+          // provider 갱신
+          ref.invalidate(pendingFriendRequestsProvider);
+          ref.invalidate(notificationsProvider);
+          ref.invalidate(friendsProvider);
+          // 상태 업데이트
+          setModalState(() {
+            statusMap[profileId] = 'pending';
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('친구 요청을 보냈습니다.')),
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('친구 요청 실패: ${e.toString().replaceAll('Exception: ', '')}')),
+            );
+          }
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.burgundy,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      child: const Text('친구 요청'),
+    );
   }
 
   @override

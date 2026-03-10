@@ -286,6 +286,25 @@ class SupabaseRepository {
 
   // --- Friendship Methods ---
 
+  /// 두 유저 간 기존 friendship 상태를 확인합니다.
+  /// 반환값: null (없음), 'pending', 'accepted'
+  Future<String?> checkExistingFriendship(String userId1, String userId2) async {
+    try {
+      final response = await _client
+          .from('friendships')
+          .select()
+          .or('and(requester_id.eq.$userId1,receiver_id.eq.$userId2),and(requester_id.eq.$userId2,receiver_id.eq.$userId1)');
+
+      if (response == null || (response as List).isEmpty) {
+        return null;
+      }
+      return response[0]['status'] as String?;
+    } catch (e) {
+      debugPrint('[checkExistingFriendship] ERROR: $e');
+      return null;
+    }
+  }
+
   Future<void> sendFriendRequest(String requesterId, String receiverId) async {
     try {
       await _client.from('friendships').insert({
