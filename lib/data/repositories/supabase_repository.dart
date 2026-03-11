@@ -660,7 +660,7 @@ class SupabaseRepository {
           .select('''
         *,
         projects (*),
-        profiles:user_id (*)
+        profiles (*)
       ''')
           .eq('user_id', userId);
 
@@ -675,7 +675,7 @@ class SupabaseRepository {
       // Try joining with books and profiles tables
       final response = await _client
           .from('project_members')
-          .select('*, books(*), profiles:user_id(*)')
+          .select('*, books(*), profiles(*)')
           .eq('project_id', projectId);
       return response;
     } catch (e) {
@@ -683,7 +683,7 @@ class SupabaseRepository {
       try {
         final response = await _client
             .from('project_members')
-            .select('*, profiles:user_id(*)')
+            .select('*, profiles(*)')
             .eq('project_id', projectId);
         return response;
       } catch (e2) {
