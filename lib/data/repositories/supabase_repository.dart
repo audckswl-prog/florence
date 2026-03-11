@@ -659,8 +659,7 @@ class SupabaseRepository {
           .from('project_members')
           .select('''
         *,
-        projects (*),
-        profiles (*)
+        projects (*)
       ''')
           .eq('user_id', userId);
 
@@ -672,24 +671,45 @@ class SupabaseRepository {
 
   Future<List<Map<String, dynamic>>> getProjectMembers(String projectId) async {
     try {
-      // Try joining with books and profiles tables
+      // Fetch members and books
       final response = await _client
           .from('project_members')
-          .select('*, books(*), profiles(*)')
+          .select('*, books(*)')
           .eq('project_id', projectId);
-      return response;
+      return _enrichWithProfiles(response);
     } catch (e) {
       // Fallback: fetch without books join
       try {
         final response = await _client
             .from('project_members')
-            .select('*, profiles(*)')
+            .select()
             .eq('project_id', projectId);
-        return response;
+        return _enrichWithProfiles(response);
       } catch (e2) {
         throw Exception('Error fetching project members: $e2');
       }
     }
+  }
+
+  Future<List<Map<String, dynamic>>> _enrichWithProfiles(List<Map<String, dynamic>> members) async {
+    List<Map<String, dynamic>> enriched = [];
+    for (final row in members) {
+      final memberUserId = row['user_id'] as String;
+      try {
+        final profileData = await _client
+            .from('profiles')
+            .select()
+            .eq('id', memberUserId)
+            .maybeSingle();
+        enriched.add({
+          ...row,
+          'profiles': profileData,
+        });
+      } catch (_) {
+        enriched.add(row);
+      }
+    }
+    return enriched;
   }
 
   Future<List<Map<String, dynamic>>> getProjectBooks(String projectId) async {
