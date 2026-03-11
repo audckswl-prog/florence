@@ -718,19 +718,29 @@ class SupabaseRepository {
     List<Map<String, dynamic>> enriched = [];
     for (final row in members) {
       final memberUserId = row['user_id'] as String;
+      final selectedIsbn = row['selected_isbn'] as String?;
+      Map<String, dynamic> enrichedRow = {...row};
       try {
         final profileData = await _client
             .from('profiles')
             .select()
             .eq('id', memberUserId)
             .maybeSingle();
-        enriched.add({
-          ...row,
-          'profiles': profileData,
-        });
-      } catch (_) {
-        enriched.add(row);
+        enrichedRow['profiles'] = profileData;
+      } catch (_) {}
+      // Fetch user_books data for this member's selected book
+      if (selectedIsbn != null) {
+        try {
+          final userBookData = await _client
+              .from('user_books')
+              .select()
+              .eq('user_id', memberUserId)
+              .eq('isbn', selectedIsbn)
+              .maybeSingle();
+          enrichedRow['user_book_data'] = userBookData;
+        } catch (_) {}
       }
+      enriched.add(enrichedRow);
     }
     return enriched;
   }

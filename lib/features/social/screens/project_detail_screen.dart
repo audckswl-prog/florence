@@ -342,10 +342,6 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                       _buildBookSelectionPhase(project, me, others)
                     else
                       _buildInProgressPhase(project, me, others),
-
-                    const SizedBox(height: 32),
-                    // Members Section & AI Chat
-                    _buildAiChatStart(project),
                   ],
                 ),
               );
@@ -864,320 +860,217 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
   }
 
   Widget _buildProgressCard(ProjectMember member, {required bool isMe}) {
-    // Fetch the user's book status for this specific ISBN
     if (member.selectedIsbn == null) return const SizedBox.shrink();
 
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: ref.read(supabaseRepositoryProvider).getUserBooks(member.userId),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData)
-          return const Center(child: CircularProgressIndicator());
+    final int read = member.readPages;
+    int total = member.totalPages;
+    if (total == 0) total = 300; // Last resort fallback
 
-        final userBooks = snapshot.data!;
-        Map<String, dynamic>? userBook;
-        try {
-          userBook = userBooks.firstWhere(
-            (ub) => ub['isbn'] == member.selectedIsbn,
-          );
-        } catch (_) {
-          userBook = null;
-        }
+    final double percent = total > 0 ? (read / total).clamp(0.0, 1.0) : 0.0;
 
-        final int read = userBook?['read_pages'] ?? 0;
-        // Use book's actual page count from joined books data, or from member model
-        int total = userBook?['total_pages'] ?? 0;
-        if (total == 0) {
-          // Try getting from the joined books data
-          final bookData = userBook?['books'] as Map<String, dynamic>?;
-          total = bookData?['page_count'] ?? 0;
-        }
-        if (total == 0) {
-          // Use member's selected book info
-          total = 300; // Last resort fallback
-        }
+    if (isMe && !_isDragging) {
+      _currentSliderValue = read.toDouble();
+    }
 
-        final double percent = total > 0 ? (read / total).clamp(0.0, 1.0) : 0.0;
-
-        if (isMe && !_isDragging) {
-          _currentSliderValue = read.toDouble();
-        }
-
-        // Book title from member model
-        final bookTitle = isMe
-            ? member.selectedBookTitle
-            : member.selectedBookTitle;
-        final coverUrl = member.selectedBookCover;
-
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFEEEEEE)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x05000000),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header: title + page count
-              Row(
-                children: [
-                  if (coverUrl != null && coverUrl.isNotEmpty) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        coverUrl,
-                        width: 32,
-                        height: 44,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            const SizedBox(width: 32, height: 44),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isMe ? '나의 진도' : '친구의 진도',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.charcoal,
-                          ),
-                        ),
-                        if (bookTitle != null)
-                          Text(
-                            bookTitle,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.grey,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                      ],
-                    ),
-                  ),
-                  // Page count with edit button for "me"
-                  if (isMe)
-                    GestureDetector(
-                      onTap: () => _editTotalPages(member, total),
-                      child: Row(
-                        children: [
-                          Text(
-                            '${_currentSliderValue.toInt()} / $total p',
-                            style: const TextStyle(
-                              color: AppColors.burgundy,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.edit,
-                            size: 14,
-                            color: AppColors.grey,
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    Text(
-                      '$read / $total p',
-                      style: const TextStyle(
-                        color: AppColors.burgundy,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (isMe) ...[
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: AppColors.burgundy,
-                    inactiveTrackColor: AppColors.ivory,
-                    thumbColor: AppColors.burgundy,
-                    overlayColor: AppColors.burgundy.withOpacity(0.2),
-                    trackHeight: 8.0,
-                  ),
-                  child: Slider(
-                    value: _currentSliderValue.clamp(0.0, total.toDouble()),
-                    max: total.toDouble(),
-                    divisions: total > 0 ? total : 100,
-                    onChangeStart: (_) => setState(() => _isDragging = true),
-                    onChanged: (val) {
-                      setState(() {
-                        _currentSliderValue = val;
-                      });
-                    },
-                    onChangeEnd: (val) async {
-                      setState(() => _isDragging = false);
-                      try {
-                        await ref
-                            .read(supabaseRepositoryProvider)
-                            .syncProjectReadingProgress(
-                              projectId: member.projectId,
-                              userId: member.userId,
-                              isbn: member.selectedIsbn!,
-                              readPages: val.toInt(),
-                              totalPages: total,
-                            );
-                        ref.invalidate(myProjectsProvider);
-                        ref.invalidate(
-                          projectMembersProvider(member.projectId),
-                        );
-                        if (mounted) {
-                          if (val >= total) {
-                            // 완독 시 서재/프로젝트 갤러리 provider 무효화
-                            ref.invalidate(userBooksProvider);
-
-                            if (mounted) {
-                              // 프로젝트 완료 여부 확인 (모든 멤버가 완독했는지)
-                              final repo = ref.read(supabaseRepositoryProvider);
-
-                              // syncProjectReadingProgress already calls checkProjectCompletion
-                              // So we re-fetch the project to see if ALL members completed
-                              ref.invalidate(myProjectsProvider);
-
-                              final updatedMembers = await repo.getProjectMembers(member.projectId);
-                              final allReadingDone = updatedMembers.every(
-                                (m) => m['reading_status'] == 'completed',
-                              );
-
-                              if (!mounted) return;
-
-                              if (!allReadingDone) {
-                                // 아직 다른 멤버가 완독하지 않음
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      '🎉 완독을 축하합니다! 다른 멤버가 아직 읽는 중입니다. 모두 완독하면 독서 티켓을 만들 수 있어요!',
-                                    ),
-                                    duration: Duration(seconds: 4),
-                                  ),
-                                );
-                                return;
-                              }
-
-                              // ═══ 모든 멤버 완독! 3단계 플로우 시작 ═══
-                              final currentProject = ref
-                                  .read(myProjectsProvider)
-                                  .value
-                                  ?.firstWhere(
-                                    (element) => element.id == member.projectId,
-                                  );
-                              if (currentProject != null) {
-                                await _startTicketFlow(currentProject, member);
-                              }
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('진도가 저장되었습니다. 화이팅!'),
-                              ),
-                            );
-                          }
-                        }
-                      } catch (e) {
-                        if (mounted)
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
-                      }
-                    },
-                  ),
-                ),
-              ] else ...[
-                // For friend, just show a LinearProgressIndicator
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: percent,
-                    backgroundColor: AppColors.ivory,
-                    color: AppColors.burgundy.withOpacity(0.6),
-                    minHeight: 8,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAiChatStart(Project project) {
-    if (project.status == 'pending_books') return const SizedBox.shrink();
+    final bookTitle = member.selectedBookTitle;
+    final coverUrl = member.selectedBookCover;
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.burgundy, // Softer AI UI
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x05000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header: title + page count
           Row(
             children: [
-              const Icon(Icons.auto_awesome, color: AppColors.ivory, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                'AI 도슨트와 대화하기',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              if (coverUrl != null && coverUrl.isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Image.network(
+                    coverUrl,
+                    width: 32,
+                    height: 44,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        const SizedBox(width: 32, height: 44),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isMe ? '나의 진도' : '${member.nickname ?? "친구"}의 진도',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.charcoal,
+                      ),
+                    ),
+                    if (bookTitle != null)
+                      Text(
+                        bookTitle,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.grey,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
                 ),
               ),
+              // Page count with edit button for "me"
+              if (isMe)
+                GestureDetector(
+                  onTap: () => _editTotalPages(member, total),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${_currentSliderValue.toInt()} / $total p',
+                        style: const TextStyle(
+                          color: AppColors.burgundy,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.edit,
+                        size: 14,
+                        color: AppColors.grey,
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Text(
+                  '$read / $total p',
+                  style: const TextStyle(
+                    color: AppColors.burgundy,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            '책을 읽다가 생긴 궁금증, 혹은 발제문이 필요하다면 언제든 AI 도슨트에게 물어보세요.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 13,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton(
-              onPressed: () {
-                context.push(
-                  '/home/social/detail/${project.id}/ai-chat',
-                  extra: project,
-                );
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white, width: 1.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
+          const SizedBox(height: 16),
+          if (isMe) ...[
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: AppColors.burgundy,
+                inactiveTrackColor: AppColors.ivory,
+                thumbColor: AppColors.burgundy,
+                overlayColor: AppColors.burgundy.withOpacity(0.2),
+                trackHeight: 8.0,
               ),
-              child: const Text(
-                '대화 시작',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              child: Slider(
+                value: _currentSliderValue.clamp(0.0, total.toDouble()),
+                max: total.toDouble(),
+                divisions: total > 0 ? total : 100,
+                onChangeStart: (_) => setState(() => _isDragging = true),
+                onChanged: (val) {
+                  setState(() {
+                    _currentSliderValue = val;
+                  });
+                },
+                onChangeEnd: (val) async {
+                  setState(() => _isDragging = false);
+                  try {
+                    await ref
+                        .read(supabaseRepositoryProvider)
+                        .syncProjectReadingProgress(
+                          projectId: member.projectId,
+                          userId: member.userId,
+                          isbn: member.selectedIsbn!,
+                          readPages: val.toInt(),
+                          totalPages: total,
+                        );
+                    ref.invalidate(myProjectsProvider);
+                    ref.invalidate(
+                      projectMembersProvider(member.projectId),
+                    );
+                    if (mounted) {
+                      if (val >= total) {
+                        ref.invalidate(userBooksProvider);
+
+                        if (mounted) {
+                          final repo = ref.read(supabaseRepositoryProvider);
+                          ref.invalidate(myProjectsProvider);
+
+                          final updatedMembers = await repo.getProjectMembers(member.projectId);
+                          final allReadingDone = updatedMembers.every(
+                            (m) => m['reading_status'] == 'completed',
+                          );
+
+                          if (!mounted) return;
+
+                          if (!allReadingDone) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  '🎉 완독을 축하합니다! 다른 멤버가 아직 읽는 중입니다. 모두 완독하면 독서 티켓을 만들 수 있어요!',
+                                ),
+                                duration: Duration(seconds: 4),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final currentProject = ref
+                              .read(myProjectsProvider)
+                              .value
+                              ?.firstWhere(
+                                (element) => element.id == member.projectId,
+                              );
+                          if (currentProject != null) {
+                            await _startTicketFlow(currentProject, member);
+                          }
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('진도가 저장되었습니다. 화이팅!'),
+                          ),
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    if (mounted)
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('저장 실패: $e')));
+                  }
+                },
               ),
             ),
-          ),
+          ] else ...[
+            // For friend, just show a LinearProgressIndicator
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: percent,
+                backgroundColor: AppColors.ivory,
+                color: AppColors.burgundy.withOpacity(0.6),
+                minHeight: 8,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
+
+
 }

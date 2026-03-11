@@ -65,6 +65,8 @@ class ProjectMember {
   final DateTime joinedAt;
   final String? nickname;
   final String? profileUrl;
+  final int readPages;
+  final int totalPages;
 
   ProjectMember({
     required this.id,
@@ -82,6 +84,8 @@ class ProjectMember {
     required this.joinedAt,
     this.nickname,
     this.profileUrl,
+    this.readPages = 0,
+    this.totalPages = 0,
   });
 
   factory ProjectMember.fromJson(Map<String, dynamic> json) {
@@ -89,6 +93,14 @@ class ProjectMember {
     final bookData = json['books'] as Map<String, dynamic>?;
     // Parse joined profile data if available
     final profileData = json['profiles'] as Map<String, dynamic>?;
+    // Parse user_book_data if available (enriched by _enrichWithProfiles)
+    final userBookData = json['user_book_data'] as Map<String, dynamic>?;
+
+    int readPages = userBookData?['read_pages'] ?? 0;
+    int totalPages = userBookData?['total_pages'] ?? 0;
+    if (totalPages == 0) {
+      totalPages = bookData?['page_count'] ?? 0;
+    }
 
     return ProjectMember(
       id: json['id'],
@@ -106,6 +118,8 @@ class ProjectMember {
       joinedAt: DateTime.parse(json['joined_at']),
       nickname: profileData?['nickname'],
       profileUrl: profileData?['profile_url'],
+      readPages: readPages,
+      totalPages: totalPages,
     );
   }
 }
