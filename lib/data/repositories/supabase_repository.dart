@@ -498,13 +498,36 @@ class SupabaseRepository {
 
   Future<List<NotificationModel>> getNotifications(String userId) async {
     try {
+      // Fetch base notifications without join
       final response = await _client
           .from('notifications')
-          .select('*, sender:profiles!sender_id(*)')
+          .select()
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
-      return (response as List)
+      List<Map<String, dynamic>> enriched = [];
+      for (final row in response) {
+        final senderId = row['sender_id'] as String?;
+        if (senderId != null) {
+          try {
+            final profileData = await _client
+                .from('profiles')
+                .select()
+                .eq('id', senderId)
+                .maybeSingle();
+            enriched.add({
+              ...row,
+              'sender': profileData,
+            });
+          } catch (_) {
+            enriched.add(row);
+          }
+        } else {
+          enriched.add(row);
+        }
+      }
+
+      return enriched
           .map((json) => NotificationModel.fromJson(json))
           .toList();
     } catch (e) {
