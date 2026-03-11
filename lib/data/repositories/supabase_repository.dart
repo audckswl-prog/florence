@@ -552,15 +552,7 @@ class SupabaseRepository {
         'reading_status': 'reading',
       });
 
-      // 3. Add all friends as members
-      for (final friendId in friendIds) {
-        await _client.from('project_members').insert({
-          'project_id': projectId,
-          'user_id': friendId,
-          'role': 'member',
-          'reading_status': 'reading',
-        });
-      }
+      // 3. Friends will join upon accepting the invite
 
       // 4. Send notifications to all friends
       for (final friendId in friendIds) {
@@ -667,7 +659,8 @@ class SupabaseRepository {
           .from('project_members')
           .select('''
         *,
-        projects (*)
+        projects (*),
+        profiles:user_id (*)
       ''')
           .eq('user_id', userId);
 
@@ -679,18 +672,18 @@ class SupabaseRepository {
 
   Future<List<Map<String, dynamic>>> getProjectMembers(String projectId) async {
     try {
-      // Try joining with books table for cover/title info
+      // Try joining with books and profiles tables
       final response = await _client
           .from('project_members')
-          .select('*, books(*)')
+          .select('*, books(*), profiles:user_id(*)')
           .eq('project_id', projectId);
       return response;
     } catch (e) {
-      // Fallback: fetch without join if FK relationship is not found
+      // Fallback: fetch without books join
       try {
         final response = await _client
             .from('project_members')
-            .select()
+            .select('*, profiles:user_id(*)')
             .eq('project_id', projectId);
         return response;
       } catch (e2) {
@@ -924,6 +917,25 @@ class SupabaseRepository {
           .from('project_members')
           .update(updates)
           .match({'project_id': projectId, 'user_id': userId});
+          
+      // 1. 모든 멤버가 티켓 작성을 마쳤는지 확인
+      final isReady = await checkAllMembersTicketReady(projectId);
+      if (isReady) {
+        // 2. 다른 멤버들에게 프로젝트 성공(티켓 발급) 알림 전송
+        final members = await _client.from('project_members').select().eq('project_id', projectId);
+        for (var m in members) {
+           final memberId = m['user_id'] as String;
+           if (memberId != userId) {
+               await createNotification(
+                   userId: memberId,
+                   senderId: userId,
+                   type: 'project_success',
+                   message: '모두 독서 티켓 작성을 완료했습니다! 발급된 티켓을 확인하세요.',
+                   relatedId: projectId,
+               );
+           }
+        }
+      }
     } catch (e) {
       throw Exception('Error updating member ticket data: $e');
     }

@@ -377,6 +377,30 @@ class _SharedReadingTab extends ConsumerWidget {
                       ],
                       const SizedBox(height: 12),
 
+                      // Member Avatars
+                      Row(
+                        children: pw.members.take(4).map((m) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6.0),
+                            child: CircleAvatar(
+                              radius: 14,
+                              backgroundColor: AppColors.greyLight.withOpacity(0.3),
+                              backgroundImage: m.profileUrl != null
+                                  ? NetworkImage(m.profileUrl!)
+                                  : null,
+                              child: m.profileUrl == null
+                                  ? const Icon(
+                                      Icons.person,
+                                      size: 16,
+                                      color: Colors.white,
+                                    )
+                                  : null,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 12),
+
                       // Status badge
                       Row(
                         children: [

@@ -63,6 +63,8 @@ class ProjectMember {
   final String? quote;
   final String? drawingUrl;
   final DateTime joinedAt;
+  final String? nickname;
+  final String? profileUrl;
 
   ProjectMember({
     required this.id,
@@ -78,11 +80,15 @@ class ProjectMember {
     this.quote,
     this.drawingUrl,
     required this.joinedAt,
+    this.nickname,
+    this.profileUrl,
   });
 
   factory ProjectMember.fromJson(Map<String, dynamic> json) {
     // Parse joined book data if available
     final bookData = json['books'] as Map<String, dynamic>?;
+    // Parse joined profile data if available
+    final profileData = json['profiles'] as Map<String, dynamic>?;
 
     return ProjectMember(
       id: json['id'],
@@ -98,6 +104,8 @@ class ProjectMember {
       quote: json['quote'] as String?,
       drawingUrl: json['drawing_url'] as String?,
       joinedAt: DateTime.parse(json['joined_at']),
+      nickname: profileData?['nickname'],
+      profileUrl: profileData?['profile_url'],
     );
   }
 }

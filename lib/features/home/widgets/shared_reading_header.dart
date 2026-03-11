@@ -358,8 +358,14 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                   .markNotificationAsRead(noti.id);
                               ref.invalidate(notificationsProvider);
                               Navigator.pop(context);
-                              if ((noti.type == 'project_invite' ||
-                                      noti.type == 'project_started' ||
+                              if (noti.type == 'project_invite' &&
+                                  noti.relatedId != null) {
+                                _showAcceptDeclineDialog(
+                                  context,
+                                  ref,
+                                  noti.relatedId!,
+                                );
+                              } else if ((noti.type == 'project_started' ||
                                       noti.type == 'project_success') &&
                                   noti.relatedId != null) {
                                 context.push(
@@ -1071,4 +1077,55 @@ class _SharedReadingHeaderState extends ConsumerState<SharedReadingHeader> {
       error: (e, _) => Center(child: Text('Error: $e')),
     );
   }
+}
+
+void _showAcceptDeclineDialog(
+  BuildContext context,
+  WidgetRef ref,
+  String projectId,
+) {
+  showDialog(
+    context: context,
+    builder: (ctx) {
+      return AlertDialog(
+        title: const Text(
+          '함께 읽기 초대',
+          style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Pretendard'),
+        ),
+        content: const Text('독서 모임 초대를 수락하시겠습니까?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('거절', style: TextStyle(color: AppColors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                final myId = Supabase.instance.client.auth.currentUser!.id;
+                await ref.read(supabaseRepositoryProvider).joinProject(projectId, myId);
+                ref.invalidate(myProjectsWithMembersProvider);
+                if (context.mounted) {
+                  context.push('/home/social/detail/$projectId');
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('수락 중 오류가 발생했습니다: $e')),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.burgundy,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('수락'),
+          ),
+        ],
+      );
+    },
+  );
 }
