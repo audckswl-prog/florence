@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/widgets/neumorphic_bottom_nav.dart';
 import '../../social/providers/social_providers.dart';
-import '../../../core/theme/colors.dart';
+import '../../../core/constants/app_colors.dart';
 
 class ScaffoldWithNavBar extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
