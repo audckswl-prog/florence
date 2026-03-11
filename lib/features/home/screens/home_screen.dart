@@ -203,13 +203,22 @@ class _SharedReadingTab extends ConsumerWidget {
                   );
                 }
 
-                // 완료된 프로젝트를 상단, 진행 중을 하단에 표시
-                final completed = projectsWithMembers
-                    .where((p) => p.project.status == 'completed')
-                    .toList();
-                final active = projectsWithMembers
-                    .where((p) => p.project.status != 'completed')
-                    .toList();
+                // 모든 멤버가 독서 진도 100% 달성(status == 'completed') + 독서 티켓 100% 작성(quote, drawingUrl)
+                final completed = projectsWithMembers.where((p) {
+                  final isProjectCompleted = p.project.status == 'completed';
+                  final areAllTicketsReady = p.members.every((m) =>
+                      m.quote != null && m.quote!.isNotEmpty &&
+                      m.drawingUrl != null && m.drawingUrl!.isNotEmpty);
+                  return isProjectCompleted && areAllTicketsReady;
+                }).toList();
+
+                final active = projectsWithMembers.where((p) {
+                  final isProjectCompleted = p.project.status == 'completed';
+                  final areAllTicketsReady = p.members.every((m) =>
+                      m.quote != null && m.quote!.isNotEmpty &&
+                      m.drawingUrl != null && m.drawingUrl!.isNotEmpty);
+                  return !(isProjectCompleted && areAllTicketsReady);
+                }).toList();
 
                 return ListView(
                   padding: const EdgeInsets.only(
