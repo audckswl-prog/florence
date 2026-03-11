@@ -278,12 +278,23 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.black),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          widget.project?.name ?? '함께 읽기',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.black,
-          ),
+        title: membersAsync.when(
+          data: (members) {
+            final myId = Supabase.instance.client.auth.currentUser?.id;
+            final others = members.where((m) => m.userId != myId).toList();
+            final titleText = others.isNotEmpty 
+                ? '${others.first.nickname ?? "친구"} 님과 함께 읽기'
+                : (widget.project?.name ?? '함께 읽기');
+            return Text(
+              titleText,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.black,
+                  ),
+            );
+          },
+          loading: () => const Text(''),
+          error: (_, __) => const Text('에러 발생'),
         ),
       ),
       body: projectsAsync.when(
@@ -382,7 +393,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           _buildAvatarGroup(me, others),
           const SizedBox(height: 20),
           Text(
-            project.name,
+            others.isNotEmpty 
+                ? '${others.first.nickname ?? "친구"} 님과 함께 읽기'
+                : project.name,
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -538,7 +551,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isMe ? '나의 책' : '친구의 책',
+                  isMe ? '나의 책' : '${member.nickname ?? "친구"}의 책',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: AppColors.charcoal,

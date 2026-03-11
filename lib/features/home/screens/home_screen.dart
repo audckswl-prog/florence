@@ -351,16 +351,25 @@ class _SharedReadingTab extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        project.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: AppColors.black,
-                          fontFamily: 'Pretendard',
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Builder(
+                        builder: (context) {
+                          final myId = Supabase.instance.client.auth.currentUser?.id;
+                          final others = pw.members.where((m) => m.userId != myId).toList();
+                          final titleText = others.isNotEmpty 
+                              ? '${others.first.nickname ?? "친구"} 님과 함께 읽기'
+                              : project.name;
+                          return Text(
+                            titleText,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: AppColors.black,
+                              fontFamily: 'Pretendard',
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        }
                       ),
                       if (bookTitle != null) ...[
                         const SizedBox(height: 4),
