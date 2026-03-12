@@ -443,7 +443,17 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
         },
       );
     },
-  );
+  ).whenComplete(() {
+    final myId = Supabase.instance.client.auth.currentUser?.id;
+    if (myId != null) {
+      ref
+          .read(supabaseRepositoryProvider)
+          .markInformationalNotificationsAsRead(myId)
+          .then((_) {
+        ref.invalidate(notificationsProvider);
+      });
+    }
+  });
 }
 
 void showSharedReadingCreateProjectSheet(BuildContext context, WidgetRef ref) {

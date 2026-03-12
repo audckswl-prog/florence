@@ -546,6 +546,19 @@ class SupabaseRepository {
     }
   }
 
+  Future<void> markInformationalNotificationsAsRead(String userId) async {
+    try {
+      await _client
+          .from('notifications')
+          .update({'is_read': true})
+          .eq('user_id', userId)
+          .eq('is_read', false)
+          .not('type', 'in', ['project_invite', 'friend_request']);
+    } catch (e) {
+      throw Exception('Error marking informational notifications as read: $e');
+    }
+  }
+
   // --- Project Methods ---
 
   Future<String> createProject({
