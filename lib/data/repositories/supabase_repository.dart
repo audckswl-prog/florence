@@ -694,7 +694,10 @@ class SupabaseRepository {
 
   Future<void> deleteProject(String projectId) async {
     try {
-      await _client.from('projects').delete().eq('id', projectId);
+      final res = await _client.from('projects').delete().eq('id', projectId).select();
+      if (res.isEmpty) {
+        throw Exception('삭제 권한이 없거나 이미 삭제되었습니다. (RLS 확인 필요)');
+      }
     } catch (e) {
       throw Exception('Error deleting project: $e');
     }
@@ -702,10 +705,15 @@ class SupabaseRepository {
 
   Future<void> leaveProject(String projectId, String userId) async {
     try {
-      await _client
+      final res = await _client
           .from('project_members')
           .delete()
-          .match({'project_id': projectId, 'user_id': userId});
+          .match({'project_id': projectId, 'user_id': userId})
+          .select();
+
+      if (res.isEmpty) {
+        throw Exception('나가기 실패: 권한이 없거나 멤버 레코드가 없습니다. (RLS 정책 확인 필요)');
+      }
 
       // 나간 뒤 남은 멤버 확인
       final members = await _client
