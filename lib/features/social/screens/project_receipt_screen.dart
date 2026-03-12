@@ -184,17 +184,12 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
               }
 
               return Padding(
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 60,
-                  left: 16,
-                  right: 16,
-                  bottom: MediaQuery.of(context).padding.bottom + 16,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Center(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: SizedBox(
-                      width: MediaQuery.of(context).size.width - 32,
+                      width: MediaQuery.of(context).size.width - 40,
                       child: SharedReadingTicketWidget(
                         project: widget.project,
                         members: members,
