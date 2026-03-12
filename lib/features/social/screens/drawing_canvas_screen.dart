@@ -56,7 +56,7 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
             child: const Text(
               '완료',
               style: TextStyle(
-                color: AppColors.burgundy,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
