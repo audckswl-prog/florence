@@ -51,7 +51,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
             return _buildMemberSection(member, profile, isEven, index + 1);
           }),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -59,7 +59,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -88,9 +88,9 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
   Widget _buildBarcode() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: SizedBox(
-        height: 40,
+        height: 30,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(50, (i) {
@@ -162,13 +162,13 @@ class SharedReadingTicketWidget extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Dashed divider
           _buildDashedLine(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
 
           // Nickname label
           Row(
@@ -191,11 +191,11 @@ class SharedReadingTicketWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
 
           // Drawing + Book Cover row (alternating)
           SizedBox(
-            height: 140,
+            height: 110,
             child: Row(
               children: drawingOnLeft
                   ? [
@@ -210,7 +210,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
                     ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
 
           // Page number
           Text(
@@ -220,7 +220,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
               color: AppColors.charcoal,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
 
           // Quote
           if (quote.isNotEmpty)
