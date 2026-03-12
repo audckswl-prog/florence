@@ -47,7 +47,14 @@ class _ScaffoldWithNavBarState extends ConsumerState<ScaffoldWithNavBar> {
               final message = newNoti['message'] ?? '새로운 알림이 도착했습니다.';
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(message, style: const TextStyle(fontFamily: 'Pretendard')),
+                  content: Text(
+                    message,
+                    style: const TextStyle(
+                      fontFamily: 'Pretendard',
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   behavior: SnackBarBehavior.floating,
                   backgroundColor: AppColors.burgundy,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
