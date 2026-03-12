@@ -5,9 +5,10 @@ import '../../../data/models/project_model.dart';
 import '../../../data/models/profile_model.dart';
 
 /// Shared Reading Ticket Widget
-/// Designed to look like a real ticket/receipt with:
-/// - Continuous paper look
-/// - Semicircular punch holes on the sides between sections
+/// Designed to look like a continuous receipt/ticket paper with:
+/// - Paper that extends top & bottom (no rounded corners)
+/// - Semicircular punch holes on both sides between member sections
+/// - Dashed perforation lines (절취선) connecting the punch holes
 /// - Cursive "Firenze" header
 /// - Alternating book/drawing card layout
 class SharedReadingTicketWidget extends StatelessWidget {
@@ -24,59 +25,130 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _TicketPunchClipper(
-        punchRadius: 12.0,
-        punchPositions: _calculatePunchPositions(),
+    return Container(
+      // 둥근 모서리 없음 — 위아래로 연결된 느낌
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F0EB),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF5F0EB),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildHeader(),
-            _buildBarcode(),
-            ...members.asMap().entries.map((entry) {
-              final index = entry.key;
-              final member = entry.value;
-              final profile = memberProfiles[member.userId];
-              final isFirst = index % 2 == 0;
-              return _buildMemberSection(member, profile, isFirst, index + 1);
-            }),
-            const SizedBox(height: 16),
-          ],
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildHeader(),
+          _buildBarcode(),
+          ...members.asMap().entries.expand((entry) {
+            final index = entry.key;
+            final member = entry.value;
+            final profile = memberProfiles[member.userId];
+            final isFirst = index % 2 == 0;
+            return [
+              // 펀칭 + 절취선 (첫 번째 멤버 앞에도, 그 이후 멤버 사이에도)
+              _buildPunchPerforationLine(),
+              _buildMemberSection(member, profile, isFirst, index + 1),
+            ];
+          }),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
 
-  /// 멤버 섹션 사이에 펀치 위치를 계산 (비율로)
-  List<double> _calculatePunchPositions() {
-    // 실제 위치는 위젯 높이에 따라 달라지므로, 
-    // 이 리스트는 _TicketPunchClipper에서 비율로 사용됨
-    // 멤버가 2명이면 중간 1곳, 3명이면 2곳...
-    if (members.length <= 1) return [];
-    final positions = <double>[];
-    for (int i = 1; i < members.length; i++) {
-      // 대략적인 비율: 헤더(~70) + 바코드(~40) + 멤버당(~240)
-      final headerHeight = 70.0;
-      final barcodeHeight = 40.0;
-      final sectionHeight = 240.0;
-      final totalApprox = headerHeight + barcodeHeight + (sectionHeight * members.length) + 16;
-      final punchY = headerHeight + barcodeHeight + (sectionHeight * i);
-      positions.add(punchY / totalApprox);
-    }
-    return positions;
+  /// 양쪽 펀칭 반원 + 가운데 절취선 (점선)
+  Widget _buildPunchPerforationLine() {
+    const double punchRadius = 12.0;
+    return SizedBox(
+      height: punchRadius * 2,
+      child: Stack(
+        children: [
+          // 가운데 절취선 (점선)
+          Center(
+            child: LayoutBuilder(
+              builder: (_, constraints) {
+                const dashW = 5.0, gap = 4.0;
+                // 펀칭 반원 영역을 제외한 가운데 영역에 절취선
+                final availableWidth = constraints.maxWidth - (punchRadius * 2);
+                final count = (availableWidth / (dashW + gap)).floor();
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    count,
+                    (_) => Container(
+                      width: dashW,
+                      height: 1,
+                      margin: EdgeInsets.symmetric(horizontal: gap / 2),
+                      color: AppColors.grey.withOpacity(0.5),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // 왼쪽 펀칭 반원
+          Positioned(
+            left: -punchRadius,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: Container(
+                width: punchRadius * 2,
+                height: punchRadius * 2,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.transparent,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 2,
+                      offset: const Offset(1, 0),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Container(
+                    // 배경색 투과 — 뒤의 배경이 보이도록
+                    color: const Color(0xFFD5CFC9),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // 오른쪽 펀칭 반원
+          Positioned(
+            right: -punchRadius,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: Container(
+                width: punchRadius * 2,
+                height: punchRadius * 2,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 2,
+                      offset: const Offset(-1, 0),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Container(
+                    color: const Color(0xFFD5CFC9),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildHeader() {
@@ -120,7 +192,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
   ) {
     final nickname = profile?.nickname ?? 'Member ${member.userId.substring(0, 4)}';
     final bookCover = member.selectedBookCover;
-    final bookTitle = member.selectedBookTitle ?? '';
     final drawingUrl = member.drawingUrl;
     final quote = member.quote ?? '';
     final totalPages = member.totalPages;
@@ -178,7 +249,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
             ),
     );
 
-    // 닉네임 배지 (원형 아바타 + 텍스트)
+    // 닉네임 배지
     final nicknameBadge = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
@@ -279,11 +350,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 점선 구분선
-          _buildDashedLine(),
-          const SizedBox(height: 8),
-
-          // 교차 카드 레이아웃
+          const SizedBox(height: 4),
           cardArea,
           const SizedBox(height: 6),
 
@@ -316,68 +383,4 @@ class SharedReadingTicketWidget extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildDashedLine() {
-    return LayoutBuilder(
-      builder: (_, constraints) {
-        const dashW = 6.0, gap = 4.0;
-        final count = (constraints.maxWidth / (dashW + gap)).floor();
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-            count,
-            (_) => const SizedBox(
-              width: dashW,
-              height: 1,
-              child: ColoredBox(color: AppColors.grey),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// ClipPath clipper that creates semicircular punch holes on both sides
-class _TicketPunchClipper extends CustomClipper<Path> {
-  final double punchRadius;
-  final List<double> punchPositions; // 0.0 ~ 1.0 비율
-
-  _TicketPunchClipper({
-    required this.punchRadius,
-    required this.punchPositions,
-  });
-
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-
-    // 기본 직사각형
-    path.addRect(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    // 각 펀치 위치에서 양쪽에 반원형 구멍 뚫기
-    for (final ratio in punchPositions) {
-      final y = size.height * ratio;
-
-      // 왼쪽 반원 구멍
-      path.addOval(Rect.fromCircle(
-        center: Offset(0, y),
-        radius: punchRadius,
-      ));
-
-      // 오른쪽 반원 구멍
-      path.addOval(Rect.fromCircle(
-        center: Offset(size.width, y),
-        radius: punchRadius,
-      ));
-    }
-
-    path.fillType = PathFillType.evenOdd;
-    return path;
-  }
-
-  @override
-  bool shouldReclip(_TicketPunchClipper oldClipper) =>
-      oldClipper.punchPositions != punchPositions ||
-      oldClipper.punchRadius != punchRadius;
 }
