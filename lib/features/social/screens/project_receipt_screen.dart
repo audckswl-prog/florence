@@ -203,33 +203,7 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
             ),
           ),
 
-          // Bottom: Save button
-          Positioned(
-            bottom: 40,
-            left: 24,
-            right: 24,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('이미지로 저장되었습니다 (준비중)')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.ivory,
-                foregroundColor: AppColors.burgundy,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 12,
-              ),
-              icon: const Icon(Icons.download, color: AppColors.burgundy),
-              label: const Text(
-                '이미지로 저장',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-            ),
-          ),
+
         ],
       ),
     );
