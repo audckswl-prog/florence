@@ -307,11 +307,13 @@ class SupabaseRepository {
 
   Future<void> sendFriendRequest(String requesterId, String receiverId) async {
     try {
-      await _client.from('friendships').insert({
+      final response = await _client.from('friendships').insert({
         'requester_id': requesterId,
         'receiver_id': receiverId,
         'status': 'pending',
-      });
+      }).select().single();
+
+      final friendshipId = response['id'] as String;
 
       // Also send notification
       await createNotification(
@@ -319,6 +321,7 @@ class SupabaseRepository {
         senderId: requesterId,
         type: 'friend_request',
         message: '새로운 친구 요청이 도착했습니다.',
+        relatedId: friendshipId,
       );
     } catch (e) {
       throw Exception('Error sending friend request: $e');
@@ -346,6 +349,17 @@ class SupabaseRepository {
       );
     } catch (e) {
       throw Exception('Error accepting friend request: $e');
+    }
+  }
+
+  Future<void> rejectFriendRequest(String friendshipId) async {
+    try {
+      await _client
+          .from('friendships')
+          .delete()
+          .eq('id', friendshipId);
+    } catch (e) {
+      throw Exception('Error rejecting friend request: $e');
     }
   }
 

@@ -227,11 +227,29 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.check,
-                                      color: AppColors.burgundy,
+                                  OutlinedButton(
+                                    onPressed: () async {
+                                      await ref
+                                          .read(supabaseRepositoryProvider)
+                                          .rejectFriendRequest(req['id']);
+                                      ref.invalidate(
+                                        pendingFriendRequestsProvider,
+                                      );
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      minimumSize: const Size(0, 32),
+                                      side: const BorderSide(
+                                          color: AppColors.greyLight),
                                     ),
+                                    child: const Text('거절',
+                                        style: TextStyle(
+                                            color: AppColors.grey,
+                                            fontSize: 12)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ElevatedButton(
                                     onPressed: () async {
                                       final myId = Supabase
                                           .instance
@@ -251,6 +269,16 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                       );
                                       ref.invalidate(friendsProvider);
                                     },
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 0),
+                                      minimumSize: const Size(0, 32),
+                                      backgroundColor: AppColors.burgundy,
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                    ),
+                                    child: const Text('수락',
+                                        style: TextStyle(fontSize: 12)),
                                   ),
                                 ],
                               ),
@@ -349,7 +377,7 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                     fontSize: 11,
                                   ),
                                 ),
-                                if (noti.type == 'project_invite' &&
+                                if ((noti.type == 'project_invite' || noti.type == 'friend_request') &&
                                     noti.relatedId != null &&
                                     !noti.isRead) ...[
                                   const SizedBox(height: 8),
@@ -357,7 +385,12 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       OutlinedButton(
-                                        onPressed: () {
+                                        onPressed: () async {
+                                          if (noti.type == 'friend_request') {
+                                            await ref.read(supabaseRepositoryProvider)
+                                                .rejectFriendRequest(noti.relatedId!);
+                                            ref.invalidate(pendingFriendRequestsProvider);
+                                          }
                                           ref.read(supabaseRepositoryProvider)
                                               .markNotificationAsRead(noti.id);
                                           ref.invalidate(notificationsProvider);
@@ -376,12 +409,20 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                       ),
                                       const SizedBox(width: 8),
                                       ElevatedButton(
-                                        onPressed: () {
+                                        onPressed: () async {
+                                          if (noti.type == 'friend_request') {
+                                            final myId = Supabase.instance.client.auth.currentUser!.id;
+                                            await ref.read(supabaseRepositoryProvider)
+                                                .acceptFriendRequest(noti.relatedId!, noti.senderId!, myId);
+                                            ref.invalidate(friendsProvider);
+                                            ref.invalidate(pendingFriendRequestsProvider);
+                                          } else {
+                                            _showAcceptDeclineDialog(
+                                                context, ref, noti.relatedId!);
+                                          }
                                           ref.read(supabaseRepositoryProvider)
                                               .markNotificationAsRead(noti.id);
                                           ref.invalidate(notificationsProvider);
-                                          _showAcceptDeclineDialog(
-                                              context, ref, noti.relatedId!);
                                         },
                                         style: ElevatedButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(
