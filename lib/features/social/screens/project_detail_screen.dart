@@ -259,6 +259,67 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     }
   }
 
+  void _showDeleteOrLeaveDialog(Project project, ProjectMember me) {
+    final isOwner = project.ownerId == me.userId;
+    final title = isOwner ? '프로젝트 삭제' : '프로젝트 나가기';
+    final content = isOwner
+        ? '정말 이 프로젝트를 삭제하시겠습니까?\n프로젝트와 모든 참여 내역이 영구적으로 삭제됩니다.'
+        : '정말 이 프로젝트에서 나가시겠습니까?';
+    final actionText = isOwner ? '삭제' : '나가기';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal),
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(height: 1.5, color: AppColors.charcoal),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('취소', style: TextStyle(color: AppColors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(ctx).pop(); // dialog 닫기
+              try {
+                // UI 바로 닫기 (로딩 없이 홈 화면으로 전환 후 캐시 무효화)
+                if (mounted) context.pop(); 
+                
+                final repo = ref.read(supabaseRepositoryProvider);
+                if (isOwner) {
+                  await repo.deleteProject(project.id);
+                } else {
+                  await repo.leaveProject(project.id, me.userId);
+                }
+                
+                ref.invalidate(myProjectsProvider);
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('오류가 발생했습니다: $e')),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(actionText),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // We re-fetch projects to get the latest status
@@ -296,6 +357,71 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           loading: () => const Text(''),
           error: (_, __) => const Text('에러 발생'),
         ),
+        actions: [
+          membersAsync.when(
+            data: (members) {
+              final myId = Supabase.instance.client.auth.currentUser?.id;
+              final me = members.firstWhere(
+                (m) => m.userId == myId,
+                orElse: () => ProjectMember(
+                  id: '',
+                  projectId: widget.projectId,
+                  userId: myId ?? '',
+                  role: 'member',
+                  readingStatus: '',
+                  aiQuestionCount: 0,
+                  joinedAt: DateTime.now(),
+                ),
+              );
+
+              // 프로젝트 정보가 로드 중이면 버튼 비활성화, 완료되면 메뉴 표시
+              final project = projectsAsync.value?.firstWhere(
+                (p) => p.id == widget.projectId,
+                orElse: () => Project(
+                  id: widget.projectId,
+                  name: '',
+                  ownerId: '',
+                  createdAt: DateTime.now(),
+                ),
+              );
+
+              if (project == null || project.id.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              final isOwner = project.ownerId == myId;
+
+              return PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: AppColors.black),
+                color: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                onSelected: (value) {
+                  if (value == 'delete_or_leave') {
+                    _showDeleteOrLeaveDialog(project, me);
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: 'delete_or_leave',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(isOwner ? Icons.delete_outline : Icons.exit_to_app, color: Colors.red, size: 20),
+                        const SizedBox(width: 12),
+                        Text(
+                          isOwner ? '프로젝트 삭제' : '프로젝트 나가기',
+                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
       ),
       body: projectsAsync.when(
         data: (projects) {

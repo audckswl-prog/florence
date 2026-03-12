@@ -692,6 +692,35 @@ class SupabaseRepository {
     }
   }
 
+  Future<void> deleteProject(String projectId) async {
+    try {
+      await _client.from('projects').delete().eq('id', projectId);
+    } catch (e) {
+      throw Exception('Error deleting project: $e');
+    }
+  }
+
+  Future<void> leaveProject(String projectId, String userId) async {
+    try {
+      await _client
+          .from('project_members')
+          .delete()
+          .match({'project_id': projectId, 'user_id': userId});
+
+      // 나간 뒤 남은 멤버 확인
+      final members = await _client
+          .from('project_members')
+          .select('id')
+          .eq('project_id', projectId);
+
+      if (members.isEmpty) {
+        await deleteProject(projectId);
+      }
+    } catch (e) {
+      throw Exception('Error leaving project: $e');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getProjectMembers(String projectId) async {
     try {
       // Fetch members and books
