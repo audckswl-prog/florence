@@ -339,12 +339,65 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                 color: AppColors.charcoal,
                               ),
                             ),
-                            subtitle: Text(
-                              noti.createdAt.toString().split('.')[0],
-                              style: const TextStyle(
-                                color: AppColors.greyLight,
-                                fontSize: 11,
-                              ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  noti.createdAt.toString().split('.')[0],
+                                  style: const TextStyle(
+                                    color: AppColors.greyLight,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                if (noti.type == 'project_invite' &&
+                                    noti.relatedId != null &&
+                                    !noti.isRead) ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      OutlinedButton(
+                                        onPressed: () {
+                                          ref.read(supabaseRepositoryProvider)
+                                              .markNotificationAsRead(noti.id);
+                                          ref.invalidate(notificationsProvider);
+                                        },
+                                        style: OutlinedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 0),
+                                          minimumSize: const Size(0, 32),
+                                          side: const BorderSide(
+                                              color: AppColors.greyLight),
+                                        ),
+                                        child: const Text('거절',
+                                            style: TextStyle(
+                                                color: AppColors.grey,
+                                                fontSize: 12)),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          ref.read(supabaseRepositoryProvider)
+                                              .markNotificationAsRead(noti.id);
+                                          ref.invalidate(notificationsProvider);
+                                          _showAcceptDeclineDialog(
+                                              context, ref, noti.relatedId!);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 0),
+                                          minimumSize: const Size(0, 32),
+                                          backgroundColor: AppColors.burgundy,
+                                          foregroundColor: Colors.white,
+                                          elevation: 0,
+                                        ),
+                                        child: const Text('수락하기',
+                                            style: TextStyle(fontSize: 12)),
+                                      ),
+                                    ],
+                                  ),
+                                ]
+                              ],
                             ),
                             tileColor: noti.isRead
                                 ? Colors.transparent
@@ -357,22 +410,19 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                                   .read(supabaseRepositoryProvider)
                                   .markNotificationAsRead(noti.id);
                               ref.invalidate(notificationsProvider);
-                              Navigator.pop(context);
                               if (noti.type == 'project_invite' &&
                                   noti.relatedId != null) {
-                                _showAcceptDeclineDialog(
-                                  context,
-                                  ref,
-                                  noti.relatedId!,
-                                );
+                                  // 버튼 클릭으로 대체됨
                               } else if ((noti.type == 'project_started' ||
                                       noti.type == 'project_success') &&
                                   noti.relatedId != null) {
+                                Navigator.pop(context);
                                 context.push(
                                   '/home/social/detail/${noti.relatedId}',
                                 );
                               } else if (noti.type == 'friend_request' ||
                                   noti.type == 'friend_accept') {
+                                Navigator.pop(context);
                                 showSharedReadingFriendsList(
                                   context,
                                   ref,
