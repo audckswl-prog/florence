@@ -166,19 +166,30 @@ class SharedReadingTicketWidget extends StatelessWidget {
   }
 
   Widget _buildBarcode() {
+    // 실제 바코드처럼 두께가 다른 검은 바들을 촘촘하게 배치
+    // Code 128 스타일의 패턴 시뮬레이션
+    const pattern = [
+      2,1,1,3,1,2,1,1,3,1,2,2,1,1,1,3,2,1,1,2,1,1,3,1,1,2,2,1,
+      1,3,1,1,2,1,3,1,1,2,1,1,2,3,1,1,1,2,1,3,1,2,1,1,2,1,1,3,
+      1,2,1,1,3,2,1,1,1,2,3,1,1,2,1,1,1,3,2,1,1,2,1,3,1,1,2,1,
+      1,2,1,3,1,1,2,1,1,1,3,2,1,1,2,1,3,1,2,1,1,2,1,1,3,1,2,1,
+    ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
       child: SizedBox(
-        height: 30,
+        height: 36,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(50, (i) {
-            final w = i % 4 == 0 ? 3 : (i % 3 == 0 ? 1 : 2);
-            return Container(
+          children: pattern.asMap().entries.map((entry) {
+            final i = entry.key;
+            final w = entry.value;
+            final isBar = i % 2 == 0; // 짝수 인덱스는 검은 바, 홀수는 흰 간격
+            return SizedBox(
               width: w.toDouble(),
-              color: AppColors.charcoal,
+              child: isBar
+                  ? Container(color: AppColors.charcoal)
+                  : const SizedBox(),
             );
-          }),
+          }).toList(),
         ),
       ),
     );
