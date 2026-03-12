@@ -217,7 +217,26 @@ class _SharedReadingTab extends ConsumerWidget {
                   final areAllTicketsReady = p.members.every((m) =>
                       m.quote != null && m.quote!.isNotEmpty &&
                       m.drawingUrl != null && m.drawingUrl!.isNotEmpty);
-                  return !(isProjectCompleted && areAllTicketsReady);
+                  if (isProjectCompleted && areAllTicketsReady) return false;
+
+                  // 1. 독서 진행 중(in_progress) && 마감 기한이 지난 경우 제외
+                  if (p.project.status == 'in_progress' && p.project.endDate != null) {
+                    if (DateTime.now().isAfter(p.project.endDate!)) {
+                      return false; // 만료됨
+                    }
+                  }
+
+                  // 2. 책 선택 대기 중(pending_books) && 초대 수락 후 2일(48시간)이 지난 경우 제외
+                  if (p.project.status == 'pending_books' && p.members.length >= 2) {
+                    final latestJoined = p.members
+                        .map((m) => m.joinedAt)
+                        .reduce((a, b) => a.isAfter(b) ? a : b);
+                    if (DateTime.now().difference(latestJoined).inHours >= 48) {
+                      return false; // 만료됨
+                    }
+                  }
+
+                  return true;
                 }).toList();
 
                 return ListView(

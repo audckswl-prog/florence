@@ -300,6 +300,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 }
                 
                 ref.invalidate(myProjectsProvider);
+                ref.invalidate(myProjectsWithMembersProvider);
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -495,6 +496,20 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       }
     } else if (project.status == 'completed') {
       subtitle = '완수 됨!';
+    } else if (project.status == 'pending_books' && others.isNotEmpty) {
+      final latestJoined = [me, ...others]
+          .map((m) => m.joinedAt)
+          .reduce((a, b) => a.isAfter(b) ? a : b);
+      final deadline = latestJoined.add(const Duration(hours: 48));
+      final hoursLeft = deadline.difference(DateTime.now()).inHours;
+      
+      if (hoursLeft > 24) {
+        subtitle = '선택 마감 D-${hoursLeft ~/ 24}';
+      } else if (hoursLeft >= 0) {
+        subtitle = '선택 마감 $hoursLeft시간 전';
+      } else {
+        subtitle = '선택 기한 초과';
+      }
     }
 
     return Container(
@@ -533,7 +548,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              color: project.status == 'in_progress'
+              color: (project.status == 'in_progress' || project.status == 'pending_books')
                   ? AppColors.burgundy
                   : AppColors.greyLight.withOpacity(0.3),
               borderRadius: BorderRadius.circular(20),
@@ -541,7 +556,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             child: Text(
               subtitle,
               style: TextStyle(
-                color: project.status == 'in_progress'
+                color: (project.status == 'in_progress' || project.status == 'pending_books')
                     ? Colors.white
                     : AppColors.charcoal,
                 fontWeight: FontWeight.bold,
