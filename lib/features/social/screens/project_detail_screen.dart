@@ -285,22 +285,27 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             onPressed: () => Navigator.of(ctx).pop(),
             child: const Text('취소', style: TextStyle(color: AppColors.grey)),
           ),
-          ElevatedButton(
+            ElevatedButton(
             onPressed: () async {
               Navigator.of(ctx).pop(); // dialog 닫기
               try {
-                // UI 바로 닫기 (로딩 없이 홈 화면으로 전환 후 캐시 무효화)
-                if (mounted) context.pop(); 
-                
+                // 비동기 실행 전에 필요한 인스턴스를 미리 읽음
                 final repo = ref.read(supabaseRepositoryProvider);
+                
                 if (isOwner) {
                   await repo.deleteProject(project.id);
                 } else {
                   await repo.leaveProject(project.id, me.userId);
                 }
                 
+                // 데이터베이스 작업이 끝난 후 캐시를 무효화
                 ref.invalidate(myProjectsProvider);
                 ref.invalidate(myProjectsWithMembersProvider);
+                
+                // 모든 작업이 끝나고 화면 닫기
+                if (mounted) {
+                  context.pop();
+                }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
