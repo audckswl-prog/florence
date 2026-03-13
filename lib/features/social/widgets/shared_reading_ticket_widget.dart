@@ -257,11 +257,17 @@ class SharedReadingTicketWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          if (quote.isNotEmpty)
-            Text(
-              '"$quote"',
-              style: const TextStyle(fontSize: 11, height: 1.6, color: AppColors.charcoal, fontWeight: FontWeight.w500),
-            ),
+          SizedBox(
+            height: 50,
+            child: quote.isNotEmpty
+                ? Text(
+                    '"$quote"',
+                    style: const TextStyle(fontSize: 11, height: 1.6, color: AppColors.charcoal, fontWeight: FontWeight.w500),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );
