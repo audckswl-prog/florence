@@ -34,7 +34,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
           // 위쪽 연장 여백 (종이가 위로 이어지는 느낌)
           const SizedBox(height: 30),
           _buildHeader(),
-          _buildBarcode(),
           ...members.asMap().entries.expand((entry) {
             final index = entry.key;
             final member = entry.value;
