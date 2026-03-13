@@ -146,9 +146,9 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 TextField(
                   controller: controller,
                   maxLines: 3,
-                  maxLength: 50,
+                  maxLength: 40,
                   decoration: InputDecoration(
-                    hintText: '구절을 입력해주세요... (최대 50자)',
+                    hintText: '구절을 입력해주세요... (최대 40자)',
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(

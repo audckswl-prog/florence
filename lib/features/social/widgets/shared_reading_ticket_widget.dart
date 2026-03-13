@@ -286,7 +286,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
             child: quote.isNotEmpty
                 ? Text(
                     '"$quote"',
-                    style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.charcoal, fontWeight: FontWeight.w500),
+                    style: const TextStyle(fontSize: 11, height: 1.4, color: AppColors.charcoal, fontWeight: FontWeight.w500),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   )
