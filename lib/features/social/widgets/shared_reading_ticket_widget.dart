@@ -201,40 +201,53 @@ class SharedReadingTicketWidget extends StatelessWidget {
       ),
     );
 
+    // 교차 카드 레이아웃: 책표지(4) + 그림(6)
     Widget cardArea;
     if (bookOnLeft) {
+      // 멤버 1: 왼쪽 책표지, 오른쪽 그림 (닉네임 배지가 우상단에 겹침)
       cardArea = SizedBox(
-        height: 160,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        height: 180,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Expanded(flex: 5, child: bookWidget),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 5,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [nicknameBadge, const SizedBox(height: 6), Expanded(child: drawingWidget)],
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(flex: 4, child: bookWidget),
+                const SizedBox(width: 8),
+                Expanded(flex: 6, child: drawingWidget),
+              ],
+            ),
+            // 닉네임 배지: 우상단에 겹침
+            Positioned(
+              top: -8,
+              right: 0,
+              child: nicknameBadge,
             ),
           ],
         ),
       );
     } else {
+      // 멤버 2: 왼쪽 그림, 오른쪽 책표지 (닉네임 배지가 좌상단에 겹침)
       cardArea = SizedBox(
-        height: 160,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        height: 180,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            Expanded(
-              flex: 5,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [nicknameBadge, const SizedBox(height: 6), Expanded(child: drawingWidget)],
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(flex: 6, child: drawingWidget),
+                const SizedBox(width: 8),
+                Expanded(flex: 4, child: bookWidget),
+              ],
             ),
-            const SizedBox(width: 8),
-            Expanded(flex: 5, child: bookWidget),
+            // 닉네임 배지: 좌상단에 겹침
+            Positioned(
+              top: -8,
+              left: 0,
+              child: nicknameBadge,
+            ),
           ],
         ),
       );
@@ -245,24 +258,29 @@ class SharedReadingTicketWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
           cardArea,
           const SizedBox(height: 6),
-          Align(
-            alignment: bookOnLeft ? Alignment.centerLeft : Alignment.centerRight,
-            child: Text(
-              'P.$totalPages',
-              style: TextStyle(fontSize: 10, color: AppColors.charcoal.withOpacity(0.6), fontWeight: FontWeight.w500),
-            ),
+          // 페이지 수
+          Text(
+            'P.$totalPages',
+            style: TextStyle(fontSize: 10, color: AppColors.charcoal.withOpacity(0.6), fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 4),
-          SizedBox(
+          // 인용구: 전체 너비, 고정 높이 박스
+          Container(
+            width: double.infinity,
             height: 50,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0EDE8),
+              borderRadius: BorderRadius.circular(6),
+            ),
             child: quote.isNotEmpty
                 ? Text(
                     '"$quote"',
-                    style: const TextStyle(fontSize: 11, height: 1.6, color: AppColors.charcoal, fontWeight: FontWeight.w500),
-                    maxLines: 3,
+                    style: const TextStyle(fontSize: 11, height: 1.5, color: AppColors.charcoal, fontWeight: FontWeight.w500),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   )
                 : const SizedBox.shrink(),
