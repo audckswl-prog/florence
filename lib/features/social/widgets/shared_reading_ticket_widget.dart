@@ -34,15 +34,22 @@ class SharedReadingTicketWidget extends StatelessWidget {
           // 위쪽 연장 여백 (종이가 위로 이어지는 느낌)
           const SizedBox(height: 30),
           _buildHeader(),
+          // 첫 번째 절취선 (펀칭 반원이 이 위치에 맞춰짐)
+          _buildPerforationLine(),
           ...members.asMap().entries.expand((entry) {
             final index = entry.key;
             final member = entry.value;
             final profile = memberProfiles[member.userId];
             final isFirst = index % 2 == 0;
-            return [
-              _buildPerforationLine(),
-              _buildMemberSection(member, profile, isFirst, index + 1),
-            ];
+            final widgets = <Widget>[];
+            if (index > 0) {
+              // 멤버 사이 절취선 (펀칭 없음, 살짝 아래에 위치)
+              widgets.add(const SizedBox(height: 12));
+              widgets.add(_buildPerforationLine());
+              widgets.add(const SizedBox(height: 8));
+            }
+            widgets.add(_buildMemberSection(member, profile, isFirst, index + 1));
+            return widgets;
           }),
           const SizedBox(height: 16),
           // 아래쪽 연장 여백 (종이가 아래로 이어지는 느낌)
@@ -344,24 +351,31 @@ class _TicketPunchClipper extends CustomClipper<Path> {
 
     if (memberCount <= 0) return path;
 
-    // 종이 구조 높이 계산
-    // 위 여백(30) + 헤더(~50) + 바코드(~48) = ~128
-    // 각 멤버 앞: 절취선(~6) + 멤버섹션(~228) = ~234
-    // 아래 여백(46)
-    final topOffset = 30.0 + 50.0 + 48.0;
-    const sectionHeight = 234.0;
+    // 첫 번째 절취선 위치: 위 여백(30) + 헤더(~50) + 절취선 padding(2)
+    final firstPunchY = 30.0 + 50.0 + 2.0;
 
-    for (int i = 0; i < memberCount; i++) {
-      final y = topOffset + (sectionHeight * i);
+    // 왼쪽 반원 구멍
+    path.addOval(Rect.fromCircle(
+      center: Offset(0, firstPunchY),
+      radius: punchRadius,
+    ));
+    // 오른쪽 반원 구멍
+    path.addOval(Rect.fromCircle(
+      center: Offset(size.width, firstPunchY),
+      radius: punchRadius,
+    ));
 
-      // 왼쪽 반원 구멍
+    // 두 번째 절취선 위치 (멤버 사이): 멤버1 섹션 아래
+    // 첫 절취선(~4) + 멤버1 섹션(~12+180+6+14+4+50+8 ≈ 290) + SizedBox(12)
+    if (memberCount > 1) {
+      final secondPunchY = firstPunchY + 4.0 + 290.0 + 12.0;
+
       path.addOval(Rect.fromCircle(
-        center: Offset(0, y),
+        center: Offset(0, secondPunchY),
         radius: punchRadius,
       ));
-      // 오른쪽 반원 구멍
       path.addOval(Rect.fromCircle(
-        center: Offset(size.width, y),
+        center: Offset(size.width, secondPunchY),
         radius: punchRadius,
       ));
     }
