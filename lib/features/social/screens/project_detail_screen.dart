@@ -275,56 +275,77 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: AppColors.ivory,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(28, 20, 28, 32),
+        titlePadding: const EdgeInsets.only(top: 32, left: 28, right: 28),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.charcoal),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Pretendard',
+            fontSize: 20,
+            color: AppColors.charcoal,
+          ),
         ),
         content: Text(
           content,
-          style: const TextStyle(height: 1.5, color: AppColors.charcoal),
+          style: const TextStyle(height: 1.5, color: AppColors.charcoal, fontSize: 16),
         ),
+        actionsPadding: const EdgeInsets.only(bottom: 24, right: 24, left: 24),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('취소', style: TextStyle(color: AppColors.grey)),
-          ),
-            ElevatedButton(
-            onPressed: () async {
-              Navigator.of(ctx).pop(); // dialog 닫기
-              try {
-                // 비동기 실행 전에 필요한 인스턴스를 미리 읽음
-                final repo = ref.read(supabaseRepositoryProvider);
-                
-                if (isOwner) {
-                  await repo.deleteProject(project.id);
-                } else {
-                  await repo.leaveProject(project.id, me.userId);
-                }
-                
-                // 데이터베이스 작업이 끝난 후 캐시를 무효화
-                ref.invalidate(myProjectsProvider);
-                ref.invalidate(myProjectsWithMembersProvider);
-                
-                // 모든 작업이 끝나고 화면 닫기
-                if (mounted) {
-                  context.pop();
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('오류가 발생했습니다: $e')),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text(actionText),
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('취소', style: TextStyle(color: AppColors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(ctx).pop(); // dialog 닫기
+                    try {
+                      final repo = ref.read(supabaseRepositoryProvider);
+                      
+                      if (isOwner) {
+                        await repo.deleteProject(project.id);
+                      } else {
+                        await repo.leaveProject(project.id, me.userId);
+                      }
+                      
+                      ref.invalidate(myProjectsProvider);
+                      ref.invalidate(myProjectsWithMembersProvider);
+                      
+                      if (mounted) {
+                        context.pop();
+                      }
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('오류가 발생했습니다: $e')),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(actionText, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

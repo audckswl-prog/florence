@@ -1189,41 +1189,69 @@ void _showAcceptDeclineDialog(
     context: context,
     builder: (ctx) {
       return AlertDialog(
+        backgroundColor: AppColors.ivory,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(28, 20, 28, 32),
+        titlePadding: const EdgeInsets.only(top: 32, left: 28, right: 28),
         title: const Text(
           '함께 읽기 초대',
-          style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Pretendard'),
-        ),
-        content: const Text('독서 모임 초대를 수락하시겠습니까?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('거절', style: TextStyle(color: AppColors.grey)),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Pretendard',
+            fontSize: 20,
+            color: AppColors.charcoal,
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                final myId = Supabase.instance.client.auth.currentUser!.id;
-                await ref.read(supabaseRepositoryProvider).joinProject(projectId, myId);
-                ref.invalidate(myProjectsWithMembersProvider);
-                if (context.mounted) {
-                  context.push('/home/social/detail/$projectId');
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('수락 중 오류가 발생했습니다: $e')),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.burgundy,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('수락'),
+        ),
+        content: const Text(
+          '독서 모임 초대를 수락하시겠습니까?',
+          style: TextStyle(height: 1.5, color: AppColors.charcoal, fontSize: 16),
+        ),
+        actionsPadding: const EdgeInsets.only(bottom: 24, right: 24, left: 24),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('거절', style: TextStyle(color: AppColors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    try {
+                      final myId = Supabase.instance.client.auth.currentUser!.id;
+                      await ref.read(supabaseRepositoryProvider).joinProject(projectId, myId);
+                      ref.invalidate(myProjectsWithMembersProvider);
+                      if (context.mounted) {
+                        context.push('/home/social/detail/$projectId');
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('수락 중 오류가 발생했습니다: $e')),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.burgundy,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('수락', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ),
+            ],
           ),
         ],
       );
