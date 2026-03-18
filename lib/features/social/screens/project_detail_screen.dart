@@ -1019,6 +1019,17 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => _startTicketFlow(project, me),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.grey,
+              ),
+              child: const Text(
+                '티켓 다시 만들기 (임시/테스트용)',
+                style: TextStyle(decoration: TextDecoration.underline),
+              ),
+            ),
           ],
         ],
       );
