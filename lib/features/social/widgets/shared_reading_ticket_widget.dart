@@ -169,7 +169,16 @@ class SharedReadingTicketWidget extends StatelessWidget {
     int memberIndex,
   ) {
     final nickname = profile?.nickname ?? 'Member ${member.userId.substring(0, 4)}';
-    final bookCover = member.selectedBookCover;
+    
+    // 알라딘 API 썸네일 URL을 고화질(cover500)로 자동 변환
+    String? highResCover = member.selectedBookCover;
+    if (highResCover != null && highResCover.contains('aladin.co.kr')) {
+      highResCover = highResCover.replaceAll(
+        RegExp(r'coversum|cover150|cover200'),
+        'cover500',
+      );
+    }
+    
     final drawingUrl = member.drawingUrl;
     final quote = member.quote ?? '';
     final totalPages = member.totalPages;
@@ -187,9 +196,9 @@ class SharedReadingTicketWidget extends StatelessWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: bookCover != null && bookCover.isNotEmpty
+      child: highResCover != null && highResCover.isNotEmpty
           ? Image.network(
-              bookCover,
+              highResCover,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 color: AppColors.ivory,
@@ -204,17 +213,24 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
     final drawingWidget = Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF9C4),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 8,
+            offset: const Offset(2, 4),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: drawingUrl != null && drawingUrl.isNotEmpty
           ? Image.network(
               drawingUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.brush, color: Colors.orange, size: 28)),
+              errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.brush, color: AppColors.greyLight, size: 28)),
             )
-          : const Center(child: Icon(Icons.brush, color: Colors.orange, size: 28)),
+          : const Center(child: Icon(Icons.brush, color: AppColors.greyLight, size: 28)),
     );
 
     final nicknameBadge = Container(
