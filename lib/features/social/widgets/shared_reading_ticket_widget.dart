@@ -104,7 +104,17 @@ class SharedReadingTicketWidget extends StatelessWidget {
     return ClipPath(
       clipper: const _RowPunchClipper(radius: 12.0),
       child: Container(
-        color: const Color(0xFFF5F0EB),
+        decoration: const BoxDecoration(
+          color: Color(0xFFF5F0EB),
+          boxShadow: [
+            // Sub-pixel 렌더링 시 발생하는 미세한 선(hairline) 결함을 가리기 위한 동일 색상의 미세 번짐 적용
+            BoxShadow(
+              color: Color(0xFFF5F0EB),
+              spreadRadius: 0.5,
+              blurRadius: 0,
+            ),
+          ],
+        ),
         // 높이를 강제하지 않고 child(절취선)의 높이에 맞추되 여유 공간을 둡니다.
         // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백을 더하여 펀칭 원형(지름 24)이 충분히 뚫리게 합니다.
         padding: const EdgeInsets.symmetric(vertical: 9.5), // (24 - 5) / 2
@@ -187,13 +197,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.10),
-            blurRadius: 8,
-            offset: const Offset(2, 4),
-          ),
-        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: highResCover != null && highResCover.isNotEmpty
@@ -213,15 +216,8 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
     final drawingWidget = Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF8F8F8), // 깔끔한 라이트 그레이/화이트 톤
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.10),
-            blurRadius: 8,
-            offset: const Offset(2, 4),
-          ),
-        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: drawingUrl != null && drawingUrl.isNotEmpty
@@ -238,13 +234,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
