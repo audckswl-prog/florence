@@ -15,8 +15,8 @@ class AladinService {
         '$baseUrl/ItemSearch.aspx?ttbkey=$ttbKey&Query=$query&QueryType=Title&MaxResults=10&start=1&SearchTarget=Book&Output=js&Version=20131101';
 
     if (kIsWeb) {
-      // Use corsproxy.io for better stability
-      urlStr = 'https://corsproxy.io/?${Uri.encodeComponent(urlStr)}';
+      // Use codetabs proxy for better stability (corsproxy.io is throwing 403 Forbidden)
+      urlStr = 'https://api.codetabs.com/v1/proxy/?quest=${Uri.encodeComponent(urlStr)}';
     }
 
     final url = Uri.parse(urlStr);
@@ -41,7 +41,7 @@ class AladinService {
         '$baseUrl/ItemLookUp.aspx?ttbkey=$ttbKey&ItemId=$isbn&ItemIdType=ISBN13&Output=js&Version=20131101';
 
     if (kIsWeb) {
-      urlStr = 'https://corsproxy.io/?${Uri.encodeComponent(urlStr)}';
+      urlStr = 'https://api.codetabs.com/v1/proxy/?quest=${Uri.encodeComponent(urlStr)}';
     }
 
     final url = Uri.parse(urlStr);
