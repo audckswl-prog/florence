@@ -322,7 +322,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
           // 인용구: 전체 너비 응답성 유지, 내용은 유동적
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFF0EDE8),
               borderRadius: BorderRadius.circular(6),
@@ -330,11 +330,11 @@ class SharedReadingTicketWidget extends StatelessWidget {
             child: quote.isNotEmpty
                 ? Text(
                     '"$quote"',
-                    style: const TextStyle(fontSize: 11, height: 1.4, color: AppColors.charcoal, fontWeight: FontWeight.w500),
-                    maxLines: 2,
+                    style: const TextStyle(fontSize: 12, height: 1.5, color: AppColors.charcoal, fontWeight: FontWeight.w500),
+                    maxLines: 4,
                     overflow: TextOverflow.ellipsis,
                   )
-                : const SizedBox(height: 30), // 빈 공간 유지
+                : const SizedBox(height: 56), // 빈 공간 유지
           ),
         ],
       ),

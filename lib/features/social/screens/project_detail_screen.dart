@@ -145,10 +145,10 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 const SizedBox(height: 20),
                 TextField(
                   controller: controller,
-                  maxLines: 3,
-                  maxLength: 40,
+                  maxLines: 4,
+                  maxLength: 80,
                   decoration: InputDecoration(
-                    hintText: '구절을 입력해주세요... (최대 40자)',
+                    hintText: '구절을 입력해주세요... (최대 80자)',
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
