@@ -30,13 +30,13 @@ final myProjectsProvider = FutureProvider.autoDispose<List<Project>>((
 });
 
 final projectMembersProvider =
-    FutureProvider.family<List<ProjectMember>, String>((ref, projectId) async {
+    FutureProvider.autoDispose.family<List<ProjectMember>, String>((ref, projectId) async {
       final repository = ref.watch(supabaseRepositoryProvider);
       final data = await repository.getProjectMembers(projectId);
       return data.map((json) => ProjectMember.fromJson(json)).toList();
     });
 
-final projectBooksProvider = FutureProvider.family<List<ProjectBook>, String>((
+final projectBooksProvider = FutureProvider.autoDispose.family<List<ProjectBook>, String>((
   ref,
   projectId,
 ) async {
