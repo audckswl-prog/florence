@@ -26,31 +26,55 @@ class SharedReadingTicketWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final ticketWidgets = <Widget>[];
 
-    // 위쪽 연장 여백 (종이가 위로 이어지는 느낌)
-    ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 30)));
-    ticketWidgets.add(_buildSolidBlock(_buildHeader()));
+    // 첫 번째 파트: 상단 여백 + 헤더
+    ticketWidgets.add(_buildSolidBlock(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 30),
+          _buildHeader(),
+        ],
+      )
+    ));
     
     // 첫 번째 절취선 + 펀칭
     ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
 
+    // 멤버 섹션 (각각의 멤버 콘텐츠를 하나의 큰 Solid 블록으로 묶음)
     for (int index = 0; index < members.length; index++) {
       final member = members[index];
       final profile = memberProfiles[member.userId];
       final isFirst = index % 2 == 0;
       
+      final memberSectionContent = <Widget>[];
+      
       if (index > 0) {
-        // 멤버 사이 절취선 (멤버 섹션 아래 공간 + 절취선 펀칭 + 다음 멤버 섹션 위 공간)
-        ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 12)));
-        ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
-        ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 8)));
+        // 이전 멤버 섹션과 이어지는 맨 윗 공간
+        memberSectionContent.add(const SizedBox(height: 8));
       }
       
-      ticketWidgets.add(_buildSolidBlock(_buildMemberSection(member, profile, isFirst, index + 1)));
-    }
+      memberSectionContent.add(_buildMemberSection(member, profile, isFirst, index + 1));
+      
+      if (index < members.length - 1) {
+        // 다음 절취선 전의 아랫 공간
+        memberSectionContent.add(const SizedBox(height: 12));
+      } else {
+        // 마지막 멤버인 경우 아래쪽 연장 여백 추가
+        memberSectionContent.add(const SizedBox(height: 16));
+        memberSectionContent.add(const SizedBox(height: 30));
+      }
+      
+      ticketWidgets.add(_buildSolidBlock(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: memberSectionContent,
+        )
+      ));
 
-    // 아래쪽 연장 여백 (종이가 아래로 이어지는 느낌)
-    ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 16)));
-    ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 30)));
+      if (index < members.length - 1) {
+        ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
+      }
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -61,7 +85,17 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
   Widget _buildSolidBlock(Widget child) {
     return Container(
-      color: const Color(0xFFF5F0EB),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF5F0EB),
+        boxShadow: [
+          // Sub-pixel 렌더링 시 발생하는 미세한 선(hairline) 결함을 가리기 위한 동일 색상의 미세 번짐 적용
+          BoxShadow(
+            color: Color(0xFFF5F0EB),
+            spreadRadius: 0.5,
+            blurRadius: 0,
+          ),
+        ],
+      ),
       child: child,
     );
   }
