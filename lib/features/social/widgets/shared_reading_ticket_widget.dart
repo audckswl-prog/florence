@@ -94,14 +94,18 @@ class SharedReadingTicketWidget extends StatelessWidget {
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-      child: Text(
-        'Firenze',
-        style: GoogleFonts.greatVibes(
-          fontSize: 36,
-          color: AppColors.burgundy,
-          fontWeight: FontWeight.w400,
+    return SizedBox(
+      height: 50,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+        child: Text(
+          'Firenze',
+          style: GoogleFonts.greatVibes(
+            fontSize: 36,
+            color: AppColors.burgundy,
+            fontWeight: FontWeight.w400,
+            height: 1.0,
+          ),
         ),
       ),
     );
@@ -260,39 +264,45 @@ class SharedReadingTicketWidget extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 12),
-          cardArea,
-          const SizedBox(height: 6),
-          // 페이지 수
-          Text(
-            'P.$totalPages',
-            style: TextStyle(fontSize: 10, color: AppColors.charcoal.withOpacity(0.6), fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 4),
-          // 인용구: 전체 너비, 고정 높이 박스
-          Container(
-            width: double.infinity,
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0EDE8),
-              borderRadius: BorderRadius.circular(6),
+    return SizedBox(
+      height: 274,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 12),
+            cardArea,
+            const SizedBox(height: 6),
+            // 페이지 수
+            SizedBox(
+              height: 14,
+              child: Text(
+                'P.$totalPages',
+                style: TextStyle(fontSize: 10, color: AppColors.charcoal.withOpacity(0.6), fontWeight: FontWeight.w500, height: 1.2),
+              ),
             ),
-            child: quote.isNotEmpty
-                ? Text(
-                    '"$quote"',
-                    style: const TextStyle(fontSize: 11, height: 1.4, color: AppColors.charcoal, fontWeight: FontWeight.w500),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
+            const SizedBox(height: 4),
+            // 인용구: 전체 너비, 고정 높이 박스
+            Container(
+              width: double.infinity,
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0EDE8),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: quote.isNotEmpty
+                  ? Text(
+                      '"$quote"',
+                      style: const TextStyle(fontSize: 11, height: 1.4, color: AppColors.charcoal, fontWeight: FontWeight.w500),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -351,8 +361,9 @@ class _TicketPunchClipper extends CustomClipper<Path> {
 
     if (memberCount <= 0) return path;
 
-    // 첫 번째 절취선 위치: 위 여백(30) + 헤더(~50) + 절취선 padding(2)
-    final firstPunchY = 30.0 + 50.0 + 2.0;
+    // 첫 번째 절취선 위치 (Y축 중앙 기준): 
+    // 위 여백(30) + 헤더 고정높이(50) + 절취선 상단 여백(2) + 점선 두께 절반(0.5)
+    final firstPunchY = 30.0 + 50.0 + 2.5;
 
     // 왼쪽 반원 구멍
     path.addOval(Rect.fromCircle(
@@ -365,19 +376,22 @@ class _TicketPunchClipper extends CustomClipper<Path> {
       radius: punchRadius,
     ));
 
-    // 두 번째 절취선 위치 (멤버 사이): 멤버1 섹션 아래
-    // 첫 절취선(~4) + 멤버1 섹션(~12+180+6+14+4+50+8 ≈ 290) + SizedBox(12)
+    // 멤버 수만큼 반복하여 절취선 펀칭
     if (memberCount > 1) {
-      final secondPunchY = firstPunchY + 4.0 + 290.0 + 12.0;
+      for (int i = 1; i < memberCount; i++) {
+        // 첫 번째 펀치 이후의 거리: 이전 절취선 하단(2.5) + 멤버섹션(274) + Sizedbox(12) + 다음절취선(2.5) = 291
+        final additionalY = 291.0 * i;
+        final punchY = firstPunchY + additionalY;
 
-      path.addOval(Rect.fromCircle(
-        center: Offset(0, secondPunchY),
-        radius: punchRadius,
-      ));
-      path.addOval(Rect.fromCircle(
-        center: Offset(size.width, secondPunchY),
-        radius: punchRadius,
-      ));
+        path.addOval(Rect.fromCircle(
+          center: Offset(0, punchY),
+          radius: punchRadius,
+        ));
+        path.addOval(Rect.fromCircle(
+          center: Offset(size.width, punchY),
+          radius: punchRadius,
+        ));
+      }
     }
 
     path.fillType = PathFillType.evenOdd;
