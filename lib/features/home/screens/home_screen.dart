@@ -513,10 +513,15 @@ class _SharedReadingTab extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
+        // [임시 테스트용] 완료된 카드 클릭 시에도 영수증 말고 상세 화면으로 진입하게 해서 '티켓 다시 만들기' 버튼을 누를 수 있도록 함.
+        context.push('/home/social/detail/${project.id}');
+        
+        /* 
         context.push('/home/social/detail/${project.id}/receipt', extra: {
           'project': project,
           'rate': 1.0,
         });
+        */
       },
       child: Container(
         width: ticketWidth,
