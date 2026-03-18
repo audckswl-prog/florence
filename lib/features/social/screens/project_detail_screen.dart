@@ -756,10 +756,25 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
 
     if (book != null && mounted) {
       try {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => const Center(
+            child: CircularProgressIndicator(color: AppColors.burgundy),
+          ),
+        );
+        
+        final detailedBook = await ref.read(bookRepositoryProvider).getBookDetail(book.isbn);
+        
+        if (mounted) {
+          Navigator.pop(context);
+        }
+        
+        final finalBook = detailedBook ?? book;
         final myId = Supabase.instance.client.auth.currentUser!.id;
         final projectStarted = await ref
             .read(supabaseRepositoryProvider)
-            .selectProjectBook(projectId: projectId, userId: myId, book: book);
+            .selectProjectBook(projectId: projectId, userId: myId, book: finalBook);
         ref.invalidate(myProjectsProvider);
         ref.invalidate(myProjectsWithMembersProvider); // Add missing invalidation for Shared Reading tab
         ref.invalidate(projectMembersProvider(projectId));
