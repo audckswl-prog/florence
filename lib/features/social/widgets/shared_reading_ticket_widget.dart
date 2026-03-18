@@ -24,47 +24,58 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 위젯의 내용물을 먼저 구성하고, ClipPath로 펀칭 구멍을 뚫음
-    final content = Container(
-      color: const Color(0xFFF5F0EB),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // 위쪽 연장 여백 (종이가 위로 이어지는 느낌)
-          const SizedBox(height: 30),
-          _buildHeader(),
-          // 첫 번째 절취선 (펀칭 반원이 이 위치에 맞춰짐)
-          _buildPerforationLine(),
-          ...members.asMap().entries.expand((entry) {
-            final index = entry.key;
-            final member = entry.value;
-            final profile = memberProfiles[member.userId];
-            final isFirst = index % 2 == 0;
-            final widgets = <Widget>[];
-            if (index > 0) {
-              // 멤버 사이 절취선 (펀칭 없음, 살짝 아래에 위치)
-              widgets.add(const SizedBox(height: 12));
-              widgets.add(_buildPerforationLine());
-              widgets.add(const SizedBox(height: 8));
-            }
-            widgets.add(_buildMemberSection(member, profile, isFirst, index + 1));
-            return widgets;
-          }),
-          const SizedBox(height: 16),
-          // 아래쪽 연장 여백 (종이가 아래로 이어지는 느낌)
-          const SizedBox(height: 30),
-        ],
-      ),
-    );
+    final ticketWidgets = <Widget>[];
 
-    // ClipPath로 펀칭 구멍을 실제로 뚫어서 뒤 배경이 보이게 함
+    // 위쪽 연장 여백 (종이가 위로 이어지는 느낌)
+    ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 30)));
+    ticketWidgets.add(_buildSolidBlock(_buildHeader()));
+    
+    // 첫 번째 절취선 + 펀칭
+    ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
+
+    for (int index = 0; index < members.length; index++) {
+      final member = members[index];
+      final profile = memberProfiles[member.userId];
+      final isFirst = index % 2 == 0;
+      
+      if (index > 0) {
+        // 멤버 사이 절취선 (멤버 섹션 아래 공간 + 절취선 펀칭 + 다음 멤버 섹션 위 공간)
+        ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 12)));
+        ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
+        ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 8)));
+      }
+      
+      ticketWidgets.add(_buildSolidBlock(_buildMemberSection(member, profile, isFirst, index + 1)));
+    }
+
+    // 아래쪽 연장 여백 (종이가 아래로 이어지는 느낌)
+    ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 16)));
+    ticketWidgets.add(_buildSolidBlock(const SizedBox(height: 30)));
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: ticketWidgets,
+    );
+  }
+
+  Widget _buildSolidBlock(Widget child) {
+    return Container(
+      color: const Color(0xFFF5F0EB),
+      child: child,
+    );
+  }
+
+  Widget _buildPunchedBlock(Widget child) {
     return ClipPath(
-      clipper: _TicketPunchClipper(
-        punchRadius: 12.0,
-        memberCount: members.length,
+      clipper: const _RowPunchClipper(radius: 12.0),
+      child: Container(
+        color: const Color(0xFFF5F0EB),
+        // 높이를 강제하지 않고 child(절취선)의 높이에 맞추되 여유 공간을 둡니다.
+        // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백을 더하여 펀칭 원형(지름 24)이 충분히 뚫리게 합니다.
+        padding: const EdgeInsets.symmetric(vertical: 9.5), // (24 - 5) / 2
+        child: child,
       ),
-      child: content,
     );
   }
 
@@ -94,18 +105,14 @@ class SharedReadingTicketWidget extends StatelessWidget {
   }
 
   Widget _buildHeader() {
-    return SizedBox(
-      height: 50,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-        child: Text(
-          'Firenze',
-          style: GoogleFonts.greatVibes(
-            fontSize: 36,
-            color: AppColors.burgundy,
-            fontWeight: FontWeight.w400,
-            height: 1.0,
-          ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      child: Text(
+        'Firenze',
+        style: GoogleFonts.greatVibes(
+          fontSize: 36,
+          color: AppColors.burgundy,
+          fontWeight: FontWeight.w400,
         ),
       ),
     );
@@ -264,45 +271,38 @@ class SharedReadingTicketWidget extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      height: 274,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-            cardArea,
-            const SizedBox(height: 6),
-            // 페이지 수
-            SizedBox(
-              height: 14,
-              child: Text(
-                'P.$totalPages',
-                style: TextStyle(fontSize: 10, color: AppColors.charcoal.withOpacity(0.6), fontWeight: FontWeight.w500, height: 1.2),
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          cardArea,
+          const SizedBox(height: 6),
+          // 페이지 수 (반응형 텍스트)
+          Text(
+            'P.$totalPages',
+            style: TextStyle(fontSize: 10, color: AppColors.charcoal.withOpacity(0.6), fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 4),
+          // 인용구: 전체 너비 응답성 유지, 내용은 유동적
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0EDE8),
+              borderRadius: BorderRadius.circular(6),
             ),
-            const SizedBox(height: 4),
-            // 인용구: 전체 너비, 고정 높이 박스
-            Container(
-              width: double.infinity,
-              height: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0EDE8),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: quote.isNotEmpty
-                  ? Text(
-                      '"$quote"',
-                      style: const TextStyle(fontSize: 11, height: 1.4, color: AppColors.charcoal, fontWeight: FontWeight.w500),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        ),
+            child: quote.isNotEmpty
+                ? Text(
+                    '"$quote"',
+                    style: const TextStyle(fontSize: 11, height: 1.4, color: AppColors.charcoal, fontWeight: FontWeight.w500),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : const SizedBox(height: 30), // 빈 공간 유지
+          ),
+        ],
       ),
     );
   }
@@ -345,60 +345,31 @@ class _BarcodePainter extends CustomPainter {
 
 /// ClipPath로 양쪽에 실제 반원 구멍을 뚫어내는 Clipper
 /// 뒤의 배경(블러 이미지)이 보이게 됨
-class _TicketPunchClipper extends CustomClipper<Path> {
-  final double punchRadius;
-  final int memberCount;
+class _RowPunchClipper extends CustomClipper<Path> {
+  final double radius;
 
-  _TicketPunchClipper({
-    required this.punchRadius,
-    required this.memberCount,
-  });
+  const _RowPunchClipper({required this.radius});
 
   @override
   Path getClip(Size size) {
     final path = Path();
     path.addRect(Rect.fromLTWH(0, 0, size.width, size.height));
 
-    if (memberCount <= 0) return path;
+    final centerY = size.height / 2;
 
-    // 첫 번째 절취선 위치 (Y축 중앙 기준): 
-    // 위 여백(30) + 헤더 고정높이(50) + 절취선 상단 여백(2) + 점선 두께 절반(0.5)
-    final firstPunchY = 30.0 + 50.0 + 2.5;
-
-    // 왼쪽 반원 구멍
     path.addOval(Rect.fromCircle(
-      center: Offset(0, firstPunchY),
-      radius: punchRadius,
+      center: Offset(0, centerY),
+      radius: radius,
     ));
-    // 오른쪽 반원 구멍
     path.addOval(Rect.fromCircle(
-      center: Offset(size.width, firstPunchY),
-      radius: punchRadius,
+      center: Offset(size.width, centerY),
+      radius: radius,
     ));
-
-    // 멤버 수만큼 반복하여 절취선 펀칭
-    if (memberCount > 1) {
-      for (int i = 1; i < memberCount; i++) {
-        // 첫 번째 펀치 이후의 거리: 이전 절취선 하단(2.5) + 멤버섹션(274) + Sizedbox(12) + 다음절취선(2.5) = 291
-        final additionalY = 291.0 * i;
-        final punchY = firstPunchY + additionalY;
-
-        path.addOval(Rect.fromCircle(
-          center: Offset(0, punchY),
-          radius: punchRadius,
-        ));
-        path.addOval(Rect.fromCircle(
-          center: Offset(size.width, punchY),
-          radius: punchRadius,
-        ));
-      }
-    }
 
     path.fillType = PathFillType.evenOdd;
     return path;
   }
 
   @override
-  bool shouldReclip(_TicketPunchClipper oldClipper) =>
-      oldClipper.memberCount != memberCount || oldClipper.punchRadius != punchRadius;
+  bool shouldReclip(_RowPunchClipper old) => old.radius != radius;
 }
