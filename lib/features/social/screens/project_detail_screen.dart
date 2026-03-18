@@ -761,6 +761,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
             .read(supabaseRepositoryProvider)
             .selectProjectBook(projectId: projectId, userId: myId, book: book);
         ref.invalidate(myProjectsProvider);
+        ref.invalidate(myProjectsWithMembersProvider); // Add missing invalidation for Shared Reading tab
         ref.invalidate(projectMembersProvider(projectId));
 
         if (mounted && projectStarted) {

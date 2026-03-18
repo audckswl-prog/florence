@@ -663,14 +663,19 @@ class SupabaseRepository {
         final startDate = DateTime.now();
         final endDate = startDate.add(const Duration(days: 14)); // 2주 기한
 
-        await _client
+        final res = await _client
             .from('projects')
             .update({
               'status': 'in_progress',
               'start_date': startDate.toIso8601String(),
               'end_date': endDate.toIso8601String(),
             })
-            .eq('id', projectId);
+            .eq('id', projectId)
+            .select();
+            
+        if (res.isEmpty) {
+          throw Exception('프로젝트 상태 업데이트에 실패했습니다. (RLS 권한 정책을 확인하세요)');
+        }
 
         // Notify both users
         for (var member in members) {
@@ -895,13 +900,18 @@ class SupabaseRepository {
 
       if (allCompleted) {
         // 1. 프로젝트 상태를 completed로 변경 + end_date 기록
-        await _client
+        final res = await _client
             .from('projects')
             .update({
               'status': 'completed',
               'end_date': DateTime.now().toIso8601String(),
             })
-            .eq('id', projectId);
+            .eq('id', projectId)
+            .select();
+            
+        if (res.isEmpty) {
+          throw Exception('프로젝트 완수 업데이트에 실패했습니다. (RLS 권한 정책을 확인하세요)');
+        }
 
         // 2. 각 멤버의 선택 도서를 모든 멤버의 서재에 'read' 상태로 추가
         // (자기 책은 이미 있지만 upsert로 안전하게 처리)
