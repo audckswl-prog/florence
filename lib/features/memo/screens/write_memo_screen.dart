@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
@@ -54,24 +53,7 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImageAndExtractText() async {
-    // Web does not support MLKit OCR
-    if (kIsWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('OCR(텍스트 추출) 기능은 모바일 앱에서만 지원됩니다.')),
-      );
-      return;
-    }
-
-    // Mobile Check (Runtime)
-    if (defaultTargetPlatform != TargetPlatform.android &&
-        defaultTargetPlatform != TargetPlatform.iOS) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('OCR 기능은 현재 모바일에서만 지원됩니다.')));
-      return;
-    }
-
+  Future<void> _pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image == null) return;
@@ -81,45 +63,18 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
       setState(() {
         _selectedImage = image;
         _previewBytes = bytes;
-        _isProcessing = true;
       });
 
-      // NOTE: google_mlkit_text_recognition might allow import on web but fail at runtime.
-      // If build fails here due to InputImage using File internally, we need a conditional import wrapper.
-      // Assuming for now it compiles but throws at runtime if called.
-      // We guarded with kIsWeb above.
-
-      final inputImage = InputImage.fromFilePath(image.path);
-      final textRecognizer = TextRecognizer(
-        script: TextRecognitionScript.korean,
-      );
-      final RecognizedText recognizedText = await textRecognizer.processImage(
-        inputImage,
-      );
-
       if (mounted) {
-        setState(() {
-          final currentDocLength = _quillController.document.length;
-          // insert before the trailing newline
-          _quillController.document.insert(
-            currentDocLength > 1 ? currentDocLength - 1 : 0,
-            '\n${recognizedText.text}\n',
-          );
-          _isProcessing = false;
-        });
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('텍스트를 추출했습니다.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사진이 첨부되었습니다.')),
+        );
       }
-
-      textRecognizer.close();
     } catch (e) {
       if (mounted) {
-        setState(() => _isProcessing = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('텍스트 추출 실패: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('사진 첨부 실패: $e')),
+        );
       }
     }
   }
@@ -323,7 +278,7 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _pickImageAndExtractText,
+        onPressed: _pickImage,
         backgroundColor: AppColors.ivory, // Inverted for contrast
         foregroundColor: AppColors.burgundy,
         child: const Icon(Icons.camera_alt_outlined),
