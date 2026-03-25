@@ -728,6 +728,56 @@ class SupabaseRepository {
     }
   }
 
+  Future<void> cleanupExpiredProjects(String userId) async {
+    try {
+      final nowStr = DateTime.now().toUtc().toIso8601String();
+      
+      // Find expired incomplete projects the user is part of
+      final response = await _client
+          .from('project_members')
+          .select('project_id, projects!inner(id, name, is_completed, end_date)')
+          .eq('user_id', userId)
+          .eq('projects.is_completed', false)
+          .lt('projects.end_date', nowStr);
+
+      final List<dynamic> expiredProjects = response as List<dynamic>;
+      if (expiredProjects.isEmpty) return;
+
+      final projectIds = expiredProjects.map((e) => e['project_id'].toString()).toSet().toList();
+
+      for (var row in expiredProjects) {
+        final project = row['projects'];
+        final projectId = project['id'];
+        final projectName = project['name'];
+
+        // Get all members of this expired project
+        final membersResponse = await _client
+            .from('project_members')
+            .select('user_id')
+            .eq('project_id', projectId);
+
+        final members = membersResponse as List<dynamic>;
+
+        // Notify each member
+        for (var member in members) {
+          final targetUserId = member['user_id'];
+          await createNotification(
+            userId: targetUserId,
+            senderId: targetUserId, // System notification substitute
+            type: 'project_failed',
+            message: '[$projectName] 2주 기한이 지나 프로젝트가 삭제되었습니다.',
+          );
+        }
+      }
+
+      // Delete the expired projects (assuming cascade drops members, otherwise we map delete)
+      await _client.from('projects').delete().inFilter('id', projectIds);
+
+    } catch (e) {
+      debugPrint('Error cleaning up expired projects: $e');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getMyProjects(String userId) async {
     try {
       final response = await _client

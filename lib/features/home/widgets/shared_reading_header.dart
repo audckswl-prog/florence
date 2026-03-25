@@ -327,6 +327,9 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                             case 'project_success':
                               displayMessage = '프로젝트 성공! 독서 티켓이 발급되었습니다.';
                               break;
+                            case 'project_failed':
+                              displayMessage = noti.message ?? '기한 초과로 프로젝트가 삭제되었습니다.';
+                              break;
                             default:
                               displayMessage = noti.message ?? '알림';
                           }
@@ -342,6 +345,9 @@ void showSharedReadingNotifications(BuildContext context, WidgetRef ref) {
                               break;
                             case 'project_success':
                               icon = Icons.emoji_events_outlined;
+                              break;
+                            case 'project_failed':
+                              icon = Icons.cancel_outlined;
                               break;
                             default:
                               icon = Icons.notifications_active;

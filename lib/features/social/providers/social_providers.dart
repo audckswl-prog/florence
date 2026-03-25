@@ -21,6 +21,9 @@ final myProjectsProvider = FutureProvider.autoDispose<List<Project>>((
     return [];
   }
 
+  // Cleanup expired incomplete projects silently
+  await repository.cleanupExpiredProjects(userId);
+
   final data = await repository.getMyProjects(userId);
   // data is list of project_members with joined 'projects'
   return data.map((json) {
@@ -124,6 +127,9 @@ final myProjectsWithMembersProvider =
       final repository = ref.watch(supabaseRepositoryProvider);
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) return [];
+
+      // Cleanup expired incomplete projects silently
+      await repository.cleanupExpiredProjects(userId);
 
       final projectData = await repository.getMyProjects(userId);
       final projects = projectData.map((json) {
