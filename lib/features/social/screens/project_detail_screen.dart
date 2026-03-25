@@ -776,10 +776,12 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     );
 
     if (book != null && mounted) {
+      bool isLoadingDialogOpen = true;
       try {
         showDialog(
           context: context,
           barrierDismissible: false,
+          useRootNavigator: true,
           builder: (ctx) => const Center(
             child: CircularProgressIndicator(color: AppColors.burgundy),
           ),
@@ -788,7 +790,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         final detailedBook = await ref.read(bookRepositoryProvider).getBookDetail(book.isbn);
         
         if (mounted) {
-          Navigator.pop(context);
+          Navigator.of(context, rootNavigator: true).pop();
+          isLoadingDialogOpen = false;
         }
         
         final finalBook = detailedBook ?? book;
@@ -807,6 +810,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           showDialog<void>(
             context: context,
             barrierDismissible: false,
+            useRootNavigator: true,
             builder: (dialogCtx) => AlertDialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -849,7 +853,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () async {
-                      Navigator.pop(dialogCtx);
+                      Navigator.of(dialogCtx, rootNavigator: true).pop();
                       // Refresh everything so the page shows in_progress state
                       ref.invalidate(myProjectsProvider);
                       ref.invalidate(projectMembersProvider(projectId));
@@ -883,14 +887,18 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
+          if (isLoadingDialogOpen) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
           showDialog(
             context: context,
+            useRootNavigator: true,
             builder: (errCtx) => AlertDialog(
               title: const Text('책 선택 실패'),
               content: Text('$e'),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(errCtx),
+                  onPressed: () => Navigator.of(errCtx, rootNavigator: true).pop(),
                   child: const Text('확인'),
                 ),
               ],
