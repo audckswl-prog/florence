@@ -178,6 +178,26 @@ class SupabaseRepository {
     }
   }
 
+  Future<void> updateMemo(Memo memo) async {
+    try {
+      await _client.from('memos').update({
+        'content': memo.content,
+        'image_url': memo.imageUrl,
+        'page_number': memo.pageNumber,
+      }).eq('id', memo.id);
+    } catch (e) {
+      throw Exception('Error updating memo: $e');
+    }
+  }
+
+  Future<void> deleteMemo(String memoId) async {
+    try {
+      await _client.from('memos').delete().eq('id', memoId);
+    } catch (e) {
+      throw Exception('Error deleting memo: $e');
+    }
+  }
+
   Future<List<Memo>> getMemos(String userId, String isbn) async {
     try {
       final response = await _client

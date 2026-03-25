@@ -154,16 +154,32 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'write/:isbn',
                     builder: (context, state) {
                       final isbn = state.pathParameters['isbn']!;
-                      final book = state.extra as Book?;
-                      return WriteMemoScreen(isbn: isbn, book: book);
+                      Book? book;
+                      Memo? existingMemo;
+                      if (state.extra is Book) {
+                        book = state.extra as Book;
+                      } else if (state.extra is Map<String, dynamic>) {
+                        final map = state.extra as Map<String, dynamic>;
+                        book = map['book'] as Book?;
+                        existingMemo = map['memo'] as Memo?;
+                      }
+                      return WriteMemoScreen(isbn: isbn, book: book, existingMemo: existingMemo);
                     },
                   ),
                   GoRoute(
                     path: 'add-photo/:isbn',
                     builder: (context, state) {
                       final isbn = state.pathParameters['isbn']!;
-                      final book = state.extra as Book?;
-                      return AddPhotoMemoScreen(isbn: isbn, book: book);
+                      Book? book;
+                      Memo? existingMemo;
+                      if (state.extra is Book) {
+                        book = state.extra as Book;
+                      } else if (state.extra is Map<String, dynamic>) {
+                        final map = state.extra as Map<String, dynamic>;
+                        book = map['book'] as Book?;
+                        existingMemo = map['memo'] as Memo?;
+                      }
+                      return AddPhotoMemoScreen(isbn: isbn, book: book, existingMemo: existingMemo);
                     },
                   ),
                 ],
