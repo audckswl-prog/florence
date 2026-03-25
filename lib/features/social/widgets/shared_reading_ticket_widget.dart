@@ -56,8 +56,13 @@ class SharedReadingTicketWidget extends StatelessWidget {
       
       memberSectionContent.add(_buildMemberSection(member, profile, isFirst, index + 1));
       
-      // 섹션 하단 공간
-      memberSectionContent.add(const SizedBox(height: 16));
+      if (index < members.length - 1) {
+        // 다음 멤버로 넘어가기 전 하단/상단 여백
+        memberSectionContent.add(const SizedBox(height: 12));
+      } else {
+        // 마지막 멤버인 경우 아래쪽 연장 여백 (티켓이 뚝 끊기지 않게 살짝 연장)
+        memberSectionContent.add(const SizedBox(height: 48));
+      }
       
       ticketWidgets.add(_buildSolidBlock(
         Column(
@@ -66,12 +71,11 @@ class SharedReadingTicketWidget extends StatelessWidget {
         )
       ));
 
-      // 푸터 전 절취선 추가
-      ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
+      if (index < members.length - 1) {
+        // 푸터 대신 다음 멤버 사이에만 절취선
+        ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
+      }
     }
-
-    // 바코드 & 푸터 추가
-    ticketWidgets.add(_buildFooter());
 
     final layeredWidgets = <Widget>[];
     for (int i = 0; i < ticketWidgets.length; i++) {
@@ -135,52 +139,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return _buildSolidBlock(
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            // 시리얼 넘버 & 푸터 텍스트
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  project.id.split('-').first.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    letterSpacing: 2.0,
-                    color: AppColors.charcoal.withOpacity(0.6),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Grazie per la lettura',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.burgundy.withOpacity(0.8),
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // 바코드
-            SizedBox(
-              height: 40,
-              width: double.infinity,
-              child: CustomPaint(
-                painter: _BarcodePainter(),
-              ),
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
       ),
     );
   }
@@ -457,41 +415,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
       ),
     );
   }
-}
-
-/// 실제 바코드처럼 그리는 CustomPainter
-class _BarcodePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF2C2C2C)
-      ..style = PaintingStyle.fill;
-
-    // 바코드 패턴: 바 두께와 간격 (1=얇은, 2=중간, 3=두꺼운)
-    // 실제 Code 128 느낌으로 바-간격-바-간격 반복
-    final List<double> bars = [];
-    // 시드 패턴으로 리얼한 바코드 생성
-    final widths = [1.0, 1.5, 2.0, 2.5, 3.0];
-    final gaps = [0.8, 1.0, 1.5, 2.0];
-    
-    double x = 0;
-    int i = 0;
-    while (x < size.width) {
-      // 바 그리기
-      final barW = widths[i % widths.length];
-      if (x + barW > size.width) break;
-      canvas.drawRect(Rect.fromLTWH(x, 0, barW, size.height), paint);
-      x += barW;
-      
-      // 간격
-      final gapW = gaps[(i * 3 + 1) % gaps.length];
-      x += gapW;
-      i++;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// ClipPath로 양쪽에 실제 반원 구멍을 뚫어내는 Clipper
