@@ -196,7 +196,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       child: highResCover != null && highResCover.isNotEmpty
           ? Image.network(
               highResCover,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               errorBuilder: (_, __, ___) => Container(
                 color: AppColors.ivory,
                 child: const Center(child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 32)),
