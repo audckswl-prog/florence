@@ -210,12 +210,11 @@ class MiniCompletedTicketWidget extends StatelessWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          // 배경: 물들인 듯 연한 두오모 워터마크
+                          // 배경: 물들인 듯 연한 두오모 라인아트 워터마크
                           CustomPaint(
                             size: const Size(40, 40),
-                            painter: FlorenceDomePainter(
-                              progress: 1.0,
-                              color: AppColors.burgundy.withOpacity(0.12), // 잉크 퍼짐 느낌
+                            painter: _DomeStampPainter(
+                              color: AppColors.burgundy.withOpacity(0.2),
                             ),
                           ),
                           // 둥근 소인(우편 씰) 테두리
@@ -300,4 +299,64 @@ class _MiniTicketClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(_MiniTicketClipper oldClipper) => 
       oldClipper.notchRadius != notchRadius || oldClipper.notchY != notchY;
+}
+
+/// A crisp, static line-art painter tailored for vintage stamp rendering
+class _DomeStampPainter extends CustomPainter {
+  final Color color;
+
+  _DomeStampPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final centerX = w / 2;
+
+    final double baseWidth = w * 0.75;
+    final double startX = (w - baseWidth) / 2;
+    final double endX = w - startX;
+
+    final double baseY = h * 0.85;
+    final double drumY = h * 0.55; 
+    final double lanternY = h * 0.25;
+
+    final path = Path();
+    path.moveTo(startX, baseY);
+    path.lineTo(startX, drumY);
+    path.quadraticBezierTo(startX, lanternY * 1.5, centerX, lanternY);
+    path.quadraticBezierTo(endX, lanternY * 1.5, endX, drumY);
+    path.lineTo(endX, baseY);
+    path.close();
+
+    final ribPath = Path();
+    ribPath.moveTo(startX + (baseWidth * 0.25), drumY * 1.02);
+    ribPath.quadraticBezierTo(startX + (baseWidth * 0.28), lanternY * 1.5, centerX, lanternY);
+    ribPath.moveTo(endX - (baseWidth * 0.25), drumY * 1.02);
+    ribPath.quadraticBezierTo(endX - (baseWidth * 0.28), lanternY * 1.5, centerX, lanternY);
+
+    final lanternPath = Path();
+    final double lanternW = baseWidth * 0.15;
+    final double lanternH = (drumY - lanternY) * 0.4;
+    final double lanternTop = lanternY - lanternH;
+    
+    lanternPath.moveTo(centerX - lanternW / 2, lanternY);
+    lanternPath.lineTo(centerX - lanternW / 2, lanternTop);
+    lanternPath.lineTo(centerX + lanternW / 2, lanternTop);
+    lanternPath.lineTo(centerX + lanternW / 2, lanternY);
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    canvas.drawPath(path, paint);
+    canvas.drawPath(ribPath, paint);
+    canvas.drawPath(lanternPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DomeStampPainter oldDelegate) => oldDelegate.color != color;
 }
