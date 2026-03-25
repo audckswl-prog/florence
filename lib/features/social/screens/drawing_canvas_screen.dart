@@ -19,15 +19,11 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
   final GlobalKey _canvasKey = GlobalKey();
 
   static const List<Color> _palette = [
-    Color(0xFF2C2C2C), // charcoal
-    Color(0xFFE53935), // red
-    Color(0xFF1E88E5), // blue
-    Color(0xFF43A047), // green
-    Color(0xFFFDD835), // yellow
-    Color(0xFFFF9800), // orange
-    Color(0xFF8E24AA), // purple
-    Color(0xFF795548), // brown
-    Colors.white,
+    AppColors.charcoal, // Graphite / Black Ink
+    AppColors.burgundy, // Signature Firenze Wine
+    Color(0xFF2B4D6A),  // Vintage Navy Ink
+    Color(0xFF4A5C46),  // Classic Olive Green
+    Color(0xFF987B5B),  // Sepia / Camel Brown
   ];
 
   @override
