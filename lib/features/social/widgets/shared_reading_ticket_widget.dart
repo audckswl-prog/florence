@@ -223,82 +223,75 @@ class SharedReadingTicketWidget extends StatelessWidget {
           : const Center(child: Icon(Icons.brush, color: AppColors.greyLight, size: 28)),
     );
 
-    final nicknameBadge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            radius: 14,
-            backgroundColor: AppColors.ivory,
-            child: Icon(Icons.person, size: 16, color: AppColors.burgundy.withOpacity(0.7)),
+    final profileHeader = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.burgundy.withOpacity(0.3), width: 1.0),
           ),
-          const SizedBox(height: 3),
-          Text(
-            '닉네임 $memberIndex',
-            style: TextStyle(fontSize: 8, color: AppColors.charcoal.withOpacity(0.5)),
+          child: ClipOval(
+            child: profile?.profileUrl != null
+                ? Image.network(profile!.profileUrl!, fit: BoxFit.cover)
+                : Icon(Icons.person, size: 16, color: AppColors.burgundy.withOpacity(0.7)),
           ),
-          Text(
-            nickname,
-            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.charcoal),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'READER.0$memberIndex',
+              style: TextStyle(
+                fontSize: 9,
+                letterSpacing: 1.2,
+                color: AppColors.burgundy.withOpacity(0.7),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              nickname,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.charcoal,
+              ),
+            ),
+          ],
+        ),
+        const Spacer(),
+      ],
     );
 
     // 교차 카드 레이아웃: 책표지(비율 고정) + 그림(공간 차지)
     Widget cardArea;
     if (bookOnLeft) {
-      // 멤버 1: 왼쪽 책표지, 오른쪽 그림 (닉네임 배지가 우상단에 겹침)
+      // 멤버 1: 왼쪽 책표지, 오른쪽 그림
       cardArea = SizedBox(
         height: 180,
-        child: Stack(
-          clipBehavior: Clip.none,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AspectRatio(aspectRatio: 1 / 1.45, child: bookWidget),
-                const SizedBox(width: 8),
-                Expanded(child: drawingWidget),
-              ],
-            ),
-            // 닉네임 배지: 우상단에 겹침
-            Positioned(
-              top: -8,
-              right: 0,
-              child: nicknameBadge,
-            ),
+            AspectRatio(aspectRatio: 1 / 1.45, child: bookWidget),
+            const SizedBox(width: 8),
+            Expanded(child: drawingWidget),
           ],
         ),
       );
     } else {
-      // 멤버 2: 왼쪽 그림, 오른쪽 책표지 (닉네임 배지가 좌상단에 겹침)
+      // 멤버 2: 왼쪽 그림, 오른쪽 책표지
       cardArea = SizedBox(
         height: 180,
-        child: Stack(
-          clipBehavior: Clip.none,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: drawingWidget),
-                const SizedBox(width: 8),
-                AspectRatio(aspectRatio: 1 / 1.45, child: bookWidget),
-              ],
-            ),
-            // 닉네임 배지: 좌상단에 겹침
-            Positioned(
-              top: -8,
-              left: 0,
-              child: nicknameBadge,
-            ),
+            Expanded(child: drawingWidget),
+            const SizedBox(width: 8),
+            AspectRatio(aspectRatio: 1 / 1.45, child: bookWidget),
           ],
         ),
       );
@@ -309,32 +302,44 @@ class SharedReadingTicketWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 8),
+          profileHeader,
           const SizedBox(height: 12),
           cardArea,
-          const SizedBox(height: 6),
-          // 페이지 수 (반응형 텍스트)
-          Text(
-            'P.$totalPages',
-            style: TextStyle(fontSize: 10, color: AppColors.charcoal.withOpacity(0.6), fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 4),
-          // 인용구: 전체 너비 응답성 유지, 내용은 유동적
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0EAE1),
-              borderRadius: BorderRadius.circular(6),
-            ),
+          const SizedBox(height: 16),
+          // 인용구 (박스 없이 깔끔하게)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: quote.isNotEmpty
                 ? Text(
-                    '"$quote"',
-                    style: const TextStyle(fontSize: 12, height: 1.5, color: AppColors.charcoal, fontWeight: FontWeight.w500),
+                    '" $quote "',
+                    style: TextStyle(
+                      fontSize: 13, 
+                      height: 1.6, 
+                      color: AppColors.charcoal.withOpacity(0.9), 
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                    ),
                     maxLines: 4,
                     overflow: TextOverflow.ellipsis,
                   )
-                : const SizedBox(height: 56), // 빈 공간 유지
+                : const SizedBox(height: 48), // 빈 공간 유지
           ),
+          const SizedBox(height: 8),
+          // 페이지 수 
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '— P.$totalPages',
+              style: TextStyle(
+                fontSize: 11, 
+                color: AppColors.burgundy.withOpacity(0.8), 
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
         ],
       ),
     );
