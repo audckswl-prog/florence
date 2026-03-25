@@ -13,6 +13,7 @@ import '../features/memo/screens/memo_list_screen.dart';
 import '../features/memo/screens/write_memo_screen.dart';
 import '../features/memo/screens/add_photo_memo_screen.dart';
 import '../data/models/book_model.dart';
+import '../data/models/memo_model.dart';
 import '../features/mypage/screens/mypage_screen.dart';
 import '../features/social/screens/create_project_screen.dart';
 import '../features/social/screens/project_detail_screen.dart';

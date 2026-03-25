@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neumorphic_container.dart';
 import '../../../core/widgets/florence_loader.dart';
 import '../../../data/models/book_model.dart';
 import '../../../core/utils/rich_text_utils.dart';
 import '../providers/memo_providers.dart';
+import '../../library/providers/book_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../../../core/widgets/image_zoom_viewer.dart';
