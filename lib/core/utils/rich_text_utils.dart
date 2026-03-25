@@ -22,4 +22,18 @@ class RichTextUtils {
       return jsonStr.trim();
     }
   }
+
+  /// Extracts plain text from a Quill Delta JSON string and strips out the legacy
+  /// hardcoded date format ("yyyy. M. d. a h:m") if it appears at the very beginning.
+  static String extractPlainTextWithoutDate(String jsonStr) {
+    String plainText = extractPlainText(jsonStr);
+
+    // Regular Expression to match legacy date format at the start
+    // Matches: "2026. 2. 21. 오후 10:1" or similar variants including linebreaks.
+    final RegExp datePattern = RegExp(
+      r'^\d{4}\.\s?\d{1,2}\.\s?\d{1,2}\.\s?(오전|오후)\s?\d{1,2}:\d{1,2}\s*',
+    );
+
+    return plainText.replaceAll(datePattern, '').trim();
+  }
 }

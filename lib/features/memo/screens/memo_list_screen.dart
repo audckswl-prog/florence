@@ -9,6 +9,7 @@ import '../../../core/utils/rich_text_utils.dart';
 import '../providers/memo_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import '../../../core/widgets/image_zoom_viewer.dart';
 
 class MemoListScreen extends ConsumerWidget {
   final String isbn;
@@ -85,29 +86,48 @@ class MemoListScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (memo.imageUrl != null) ...[
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: CachedNetworkImage(
-                            imageUrl: memo.imageUrl!,
-                            height: 200,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              height: 200,
-                              color: AppColors.ivory,
-                              child: const Center(child: Icon(Icons.image, color: AppColors.greyLight)),
-                            ),
-                            errorWidget: (context, url, err) => Container(
-                              height: 200,
-                              color: AppColors.ivory,
-                              child: const Center(child: Icon(Icons.broken_image, color: AppColors.grey)),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ImageZoomViewer(
+                                  imageUrl: memo.imageUrl!,
+                                  heroTag: 'memo_full_${memo.id}',
+                                ),
+                              ),
+                            );
+                          },
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 400),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                color: AppColors.ivory, // Darker backdrop for odd aspect ratios
+                                width: double.infinity,
+                                child: Hero(
+                                  tag: 'memo_full_${memo.id}',
+                                  child: CachedNetworkImage(
+                                    imageUrl: memo.imageUrl!,
+                                    fit: BoxFit.contain, // Maintain Aspect Ratio
+                                    placeholder: (context, url) => const SizedBox(
+                                      height: 200,
+                                      child: Center(child: Icon(Icons.image, color: AppColors.greyLight)),
+                                    ),
+                                    errorWidget: (context, url, err) => const SizedBox(
+                                      height: 200,
+                                      child: Center(child: Icon(Icons.broken_image, color: AppColors.grey)),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 12),
                       ],
                       Text(
-                        RichTextUtils.extractPlainText(memo.content),
+                        RichTextUtils.extractPlainTextWithoutDate(memo.content),
                         style: Theme.of(
                           context,
                         ).textTheme.bodyMedium?.copyWith(height: 1.5),

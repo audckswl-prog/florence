@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/widgets/image_zoom_viewer.dart';
 import '../../../data/models/user_book_model.dart'; // Fixed path
 import '../../../core/constants/app_colors.dart'; // Fixed path
 import '../../../core/utils/rich_text_utils.dart';
@@ -152,28 +153,45 @@ class MemoBookTile extends ConsumerWidget {
                                                     ),
                                                   ),
                                                   Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                          10.0,
+                                                    padding: const EdgeInsets.only(
+                                                      top: 10.0,
+                                                      left: 10.0,
+                                                      right: 10.0,
+                                                      bottom: 8.0,
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        // Formal UI Date (1 Line)
+                                                        Text(
+                                                          DateFormat('yyyy.MM.dd. a hh:mm').format(memo.createdAt),
+                                                          style: TextStyle(
+                                                            fontSize: 9,
+                                                            color: AppColors.greyLight.withOpacity(0.8),
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow.ellipsis, // Never breaks into two lines
                                                         ),
-                                                    child: Text(
-                                                      RichTextUtils.extractPlainText(
-                                                        memo.content,
-                                                      ),
-                                                      style: const TextStyle(
-                                                        fontSize: 11,
-                                                        color:
-                                                            AppColors.charcoal,
-                                                        height: 1.5,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        fontFamily:
-                                                            'Pretendard',
-                                                      ),
-                                                      maxLines:
-                                                          5, // Allows slightly more text vertically
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
+                                                        const SizedBox(height: 4),
+                                                        // Pure Memo text (Stripped from legacy dates)
+                                                        Expanded(
+                                                          child: Text(
+                                                            RichTextUtils.extractPlainTextWithoutDate(
+                                                              memo.content,
+                                                            ),
+                                                            style: const TextStyle(
+                                                              fontSize: 11,
+                                                              color: AppColors.charcoal,
+                                                              height: 1.5,
+                                                              fontWeight: FontWeight.w400,
+                                                              fontFamily: 'Pretendard',
+                                                            ),
+                                                            maxLines: 4,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ],
