@@ -117,7 +117,7 @@ class _AddPhotoMemoScreenState extends ConsumerState<AddPhotoMemoScreen> {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) throw Exception('User not logged in');
 
-      String imageUrl = await ref
+      String? imageUrl = await ref
           .read(supabaseRepositoryProvider)
           .uploadMemoImage(userId, _selectedImage!);
 
