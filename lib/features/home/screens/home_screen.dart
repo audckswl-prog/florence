@@ -260,8 +260,19 @@ class _SharedReadingTab extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      ...active.map(
-                        (pw) => _buildActiveProjectCard(context, pw),
+                      // 가로 스크롤을 위한 고정 높이 컨테이너
+                      SizedBox(
+                        height: 280, // 세로형 카드를 위한 높이 지정
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: active.length,
+                          separatorBuilder: (context, index) => const SizedBox(width: 16), // 카드 사이 간격
+                          // 카드를 자를 때 패딩이 잘리는 것을 방지하기 위한 여백 추가: top, bottom, right 그림자 영역을 위해 여유분
+                          padding: const EdgeInsets.only(right: 20, bottom: 20, top: 8, left: 4),
+                          itemBuilder: (context, index) {
+                            return _buildActiveProjectCard(context, active[index]);
+                          },
+                        ),
                       ),
                     ],
 
@@ -311,186 +322,184 @@ class _SharedReadingTab extends ConsumerWidget {
     final project = pw.project;
     final coverUrl = pw.firstBookCover;
     final bookTitle = pw.firstBookTitle;
+    
+    // 화면 너비의 특정 비율로 가로폭 설정 (예: 42%)
+    final cardWidth = MediaQuery.of(context).size.width * 0.42;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: GestureDetector(
-        onTap: () {
-          context.push('/home/social/detail/${project.id}', extra: project);
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(color: Colors.black.withOpacity(0.02)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left: Book Cover
-                Container(
-                  width: 65,
-                  height: 95,
-                  decoration: BoxDecoration(
-                    color: AppColors.ivory,
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 6,
-                        offset: const Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: coverUrl != null && coverUrl.isNotEmpty
-                      ? Image.network(
-                          coverUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Center(
-                            child: Icon(
-                              Icons.menu_book,
-                              color: AppColors.greyLight,
-                              size: 28,
-                            ),
-                          ),
-                        )
-                      : const Center(
+    return GestureDetector(
+      onTap: () {
+        context.push('/home/social/detail/${project.id}', extra: project);
+      },
+      child: Container(
+        width: cardWidth,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.black.withOpacity(0.02)),
+        ),
+        clipBehavior: Clip.antiAlias, // 자식 이미지가 둥근 모서리를 넘지 않도록
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Top: Book Cover (Expanded to take up top portion)
+            Expanded(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.ivory,
+                ),
+                child: coverUrl != null && coverUrl.isNotEmpty
+                    ? Image.network(
+                        coverUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Center(
                           child: Icon(
                             Icons.menu_book,
                             color: AppColors.greyLight,
-                            size: 28,
+                            size: 40,
                           ),
                         ),
-                ),
-                const SizedBox(width: 16),
+                      )
+                    : const Center(
+                        child: Icon(
+                          Icons.menu_book,
+                          color: AppColors.greyLight,
+                          size: 40,
+                        ),
+                      ),
+              ),
+            ),
+            
+            // Bottom: Info Section
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Builder(
+                    builder: (context) {
+                      final myId = Supabase.instance.client.auth.currentUser?.id;
+                      final others = pw.members.where((m) => m.userId != myId).toList();
+                      final titleText = others.isNotEmpty 
+                          ? '${others.first.nickname ?? "친구"} 님과 읽기'
+                          : project.name;
+                      return Text(
+                        titleText,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14, // 세로형 카드에 맞춰 폰트 크기 약간 감소
+                          color: AppColors.black,
+                          fontFamily: 'Pretendard',
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    }
+                  ),
+                  if (bookTitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      bookTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: AppColors.grey.withOpacity(0.9),
+                        fontSize: 11,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 10),
 
-                // Right: Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Builder(
-                        builder: (context) {
-                          final myId = Supabase.instance.client.auth.currentUser?.id;
-                          final others = pw.members.where((m) => m.userId != myId).toList();
-                          final titleText = others.isNotEmpty 
-                              ? '${others.first.nickname ?? "친구"} 님과 함께 읽기'
-                              : project.name;
-                          return Text(
-                            titleText,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: AppColors.black,
-                              fontFamily: 'Pretendard',
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          );
+                  // Progress Bar & Status Section
+                  Builder(
+                    builder: (context) {
+                      double progress = 0.5; // Default mockup
+                      String remainingText = '2주 남음'; // Default mockup
+
+                      if (project.startDate != null && project.endDate != null) {
+                        final total = project.endDate!.difference(project.startDate!).inDays;
+                        final current = DateTime.now().difference(project.startDate!).inDays;
+                        if (total > 0) {
+                          progress = (current / total).clamp(0.0, 1.0);
                         }
-                      ),
-                      if (bookTitle != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          bookTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: AppColors.grey.withOpacity(0.9),
-                            fontSize: 12,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 12),
+                        final remaining = project.endDate!.difference(DateTime.now()).inDays;
+                        if (remaining >= 0) {
+                          remainingText = remaining > 14 ? 'D-$remaining' : '${(remaining / 7).ceil()}주 남음';
+                          if (remaining <= 14 && remaining % 7 != 0) {
+                            remainingText = 'D-$remaining';
+                          } else if (remaining == 14) {
+                            remainingText = '2주 남음';
+                          }
+                        } else {
+                          remainingText = '마감됨';
+                          progress = 1.0;
+                        }
+                      }
 
-                      // Member Avatars
-                      Row(
-                        children: pw.members.take(4).map((m) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 6.0),
-                            child: CircleAvatar(
-                              radius: 14,
-                              backgroundColor: AppColors.greyLight.withOpacity(0.3),
-                              backgroundImage: m.profileUrl != null
-                                  ? NetworkImage(m.profileUrl!)
-                                  : null,
-                              child: m.profileUrl == null
-                                  ? const Icon(
-                                      Icons.person,
-                                      size: 16,
-                                      color: Colors.white,
-                                    )
-                                  : null,
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Status badge
-                      Row(
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.ivory,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.people_alt,
-                                  size: 12,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                remainingText,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
                                   color: AppColors.burgundy,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.ivory,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
                                   project.status == 'in_progress'
                                       ? '진행 중'
                                       : project.status == 'pending_books'
-                                      ? '책 선택 중'
-                                      : project.status == 'completed'
-                                      ? '완독'
+                                      ? '도서 선정'
                                       : '진행 중',
                                   style: const TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 9,
                                     color: AppColors.burgundy,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          const Spacer(),
-                          Text(
-                            '상세보기 >',
-                            style: TextStyle(
-                              color: AppColors.greyLight,
-                              fontSize: 11,
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: AppColors.greyLight.withOpacity(0.2),
+                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.burgundy),
+                              minHeight: 4,
                             ),
                           ),
                         ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
