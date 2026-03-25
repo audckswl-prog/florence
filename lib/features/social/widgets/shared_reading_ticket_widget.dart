@@ -76,10 +76,20 @@ class SharedReadingTicketWidget extends StatelessWidget {
       }
     }
 
+    final layeredWidgets = <Widget>[];
+    for (int i = 0; i < ticketWidgets.length; i++) {
+      layeredWidgets.add(
+        Transform.translate(
+          offset: Offset(0, -1.0 * i),
+          child: ticketWidgets[i],
+        ),
+      );
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: ticketWidgets,
+      children: layeredWidgets,
     );
   }
 
@@ -87,18 +97,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFF5F0EB),
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFF5F0EB),
-            width: 1.0,
-            strokeAlign: BorderSide.strokeAlignOutside,
-          ),
-          bottom: BorderSide(
-            color: Color(0xFFF5F0EB),
-            width: 1.0,
-            strokeAlign: BorderSide.strokeAlignOutside,
-          ),
-        ),
       ),
       child: child,
     );
