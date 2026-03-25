@@ -10,7 +10,7 @@ import '../../library/screens/library_stack_view.dart';
 import '../../library/providers/library_providers.dart';
 import '../../library/providers/book_providers.dart';
 import '../../social/providers/social_providers.dart';
-import '../../social/widgets/shared_reading_ticket_widget.dart';
+import '../../social/widgets/mini_completed_ticket_widget.dart';
 import '../../../data/models/profile_model.dart';
 import '../widgets/shared_reading_header.dart';
 
@@ -294,9 +294,11 @@ class _SharedReadingTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
-                        height: 360,
+                        height: 290, // 미니 티켓의 상하 그림자 여백을 고려한 높이
                         child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          padding: const EdgeInsets.only(
+                            left: 24, right: 24, top: 4, bottom: 12
+                          ),
                           scrollDirection: Axis.horizontal,
                           itemCount: completed.length,
                           separatorBuilder: (context, index) => const SizedBox(width: 16),
@@ -523,63 +525,7 @@ class _SharedReadingTab extends ConsumerWidget {
   }
 
   Widget _buildCompletedMiniTicket(BuildContext context, WidgetRef ref, ProjectWithMembers pw) {
-    final project = pw.project;
-    final membersAsync = ref.watch(projectMembersProvider(project.id));
-
-    return GestureDetector(
-      onTap: () {
-        context.push('/home/social/detail/${project.id}');
-      },
-      child: Container(
-        width: 220,
-        height: 360,
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: membersAsync.when(
-            data: (members) {
-              // Build profiles map from member data
-              final profiles = <String, Profile>{};
-              for (final m in members) {
-                if (m.nickname != null) {
-                  profiles[m.userId] = Profile(
-                    id: m.userId,
-                    nickname: m.nickname,
-                    profileUrl: m.profileUrl,
-                    createdAt: DateTime.now(),
-                  );
-                }
-              }
-
-              return FittedBox(
-                fit: BoxFit.contain,
-                alignment: Alignment.topCenter,
-                child: SizedBox(
-                  width: 340,
-                  child: SharedReadingTicketWidget(
-                    project: project,
-                    members: members,
-                    memberProfiles: profiles,
-                  ),
-                ),
-              );
-            },
-            loading: () => const Center(child: FlorenceLoader()),
-            error: (e, _) => Center(
-              child: Text('오류', style: TextStyle(color: AppColors.grey, fontSize: 11)),
-            ),
-          ),
-        ),
-      ),
-    );
+    return MiniCompletedTicketWidget(projectWithMembers: pw);
   }
 }
 
