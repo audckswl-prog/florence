@@ -10,6 +10,8 @@ import '../../library/screens/library_stack_view.dart';
 import '../../library/providers/library_providers.dart';
 import '../../library/providers/book_providers.dart';
 import '../../social/providers/social_providers.dart';
+import '../../social/widgets/shared_reading_ticket_widget.dart';
+import '../../../data/models/profile_model.dart';
 import '../widgets/shared_reading_header.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -292,14 +294,14 @@ class _SharedReadingTab extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       SizedBox(
-                        height: 480, // Height for the mini tickets
+                        height: 360,
                         child: ListView.separated(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           scrollDirection: Axis.horizontal,
                           itemCount: completed.length,
                           separatorBuilder: (context, index) => const SizedBox(width: 16),
                           itemBuilder: (context, index) {
-                            return _buildCompletedMiniTicket(context, completed[index], index);
+                            return _buildCompletedMiniTicket(context, ref, completed[index]);
                           },
                         ),
                       ),
@@ -520,280 +522,59 @@ class _SharedReadingTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildCompletedMiniTicket(BuildContext context, ProjectWithMembers pw, int index) {
+  Widget _buildCompletedMiniTicket(BuildContext context, WidgetRef ref, ProjectWithMembers pw) {
     final project = pw.project;
-    final coverUrl = pw.firstBookCover;
-    
-    // Fake the nationality and year for the UI
-    final nationalityCode = 'US';
-    final publicationYear = '2011';
-    final bookTitle = pw.firstBookTitle ?? 'Unknown Title';
-    
-    // The exact dimensions and proportions of the widget in the screenshot
-    const double ticketWidth = 260.0;
-    const double ticketHeight = 460.0;
-    const double topCutY = 86.0;
-    const double bottomCutY = 80.0;
+    final membersAsync = ref.watch(projectMembersProvider(project.id));
 
     return GestureDetector(
       onTap: () {
-        // [임시 테스트용] 완료된 카드 클릭 시에도 영수증 말고 상세 화면으로 진입하게 해서 '티켓 다시 만들기' 버튼을 누를 수 있도록 함.
         context.push('/home/social/detail/${project.id}');
-        
-        /* 
-        context.push('/home/social/detail/${project.id}/receipt', extra: {
-          'project': project,
-          'rate': 1.0,
-        });
-        */
       },
       child: Container(
-        width: ticketWidth,
-        height: ticketHeight,
+        width: 220,
+        height: 360,
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
-              blurRadius: 10,
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: ClipPath(
-          clipper: TicketClipper(topCutoutY: topCutY, bottomCutoutY: bottomCutY),
-          child: ColoredBox(
-            color: const Color(0xFFF0F0F0), // Paper color
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // ── TOP: Barcode section ──
-                SizedBox(
-                  height: topCutY,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: SizedBox(
-                          height: 36,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: List.generate(40, (i) {
-                              final w = i % 4 == 0 ? 3 : (i % 3 == 0 ? 1 : 2);
-                              return Container(
-                                width: w.toDouble(),
-                                color: AppColors.charcoal,
-                              );
-                            }),
-                          ),
-                        ),
-                      ),
-                      // Dashed line
-                      SizedBox(
-                        height: 1,
-                        child: LayoutBuilder(
-                          builder: (_, constraints) {
-                            const dashW = 6.0, gap = 4.0;
-                            final count = (constraints.maxWidth / (dashW + gap)).floor();
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: List.generate(
-                                count,
-                                (_) => const SizedBox(
-                                  width: dashW,
-                                  height: 1,
-                                  child: ColoredBox(color: AppColors.grey),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: membersAsync.when(
+            data: (members) {
+              // Build profiles map from member data
+              final profiles = <String, Profile>{};
+              for (final m in members) {
+                if (m.nickname != null) {
+                  profiles[m.userId] = Profile(
+                    id: m.userId,
+                    nickname: m.nickname,
+                    profileUrl: m.profileUrl,
+                    createdAt: DateTime.now(),
+                  );
+                }
+              }
 
-                // ── MIDDLE: Content section ──
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header with Flight icon & flag
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                bookTitle,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.charcoal,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Row(
-                                  children: [
-                                    Transform.rotate(
-                                      angle: 3.14159 / 4,
-                                      child: const Icon(Icons.flight, size: 16),
-                                    ),
-                                  ],
-                                ),
-                                const Text(
-                                  'G A T E',
-                                  style: TextStyle(
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 2.0,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                // Dummy flag image
-                                Container(
-                                  width: 24,
-                                  height: 14,
-                                  color: Colors.red.withOpacity(0.5),
-                                  // In real app, you can use flag package
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '미국, $publicationYear년',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 12),
-                        
-                        // Book Cover
-                        Center(
-                          child: Container(
-                            width: 100,
-                            height: 145,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(2, 2),
-                                ),
-                              ],
-                            ),
-                            child: coverUrl != null && coverUrl.isNotEmpty
-                                ? Image.network(coverUrl, fit: BoxFit.cover)
-                                : const SizedBox.shrink(),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 12),
-                        
-                        // Page or identifier
-                        const Text(
-                          'P.???',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppColors.charcoal,
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 12),
-                        
-                        // Quote
-                        const Expanded(
-                          child: Text(
-                            '"행복의 극대화, 자유의 존중, 그리고 미덕의 배양. 정의에 대한 이 세 가지 접근 방식은 서로 다른 방식으로 정의를 바라보게 한다."',
-                            style: TextStyle(
-                              fontSize: 10,
-                              height: 1.5,
-                              color: AppColors.charcoal,
-                            ),
-                            maxLines: 4,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
+              return FittedBox(
+                fit: BoxFit.contain,
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: 340,
+                  child: SharedReadingTicketWidget(
+                    project: project,
+                    members: members,
+                    memberProfiles: profiles,
                   ),
                 ),
-
-                // ── BOTTOM: Firenze logo & button ──
-                SizedBox(
-                  height: bottomCutY,
-                  child: Column(
-                    children: [
-                      // Dashed line
-                      SizedBox(
-                        height: 1,
-                        child: LayoutBuilder(
-                          builder: (_, constraints) {
-                            const dashW = 6.0, gap = 4.0;
-                            final count = (constraints.maxWidth / (dashW + gap)).floor();
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: List.generate(
-                                count,
-                                (_) => const SizedBox(
-                                  width: dashW,
-                                  height: 1,
-                                  child: ColoredBox(color: AppColors.grey),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Firenze',
-                                style: TextStyle(
-                                  fontFamily: 'GreatVibes',
-                                  fontSize: 28,
-                                  color: AppColors.burgundy,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[300],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text(
-                                  '독서앱 설치하기',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              );
+            },
+            loading: () => const Center(child: FlorenceLoader()),
+            error: (e, _) => Center(
+              child: Text('오류', style: TextStyle(color: AppColors.grey, fontSize: 11)),
             ),
           ),
         ),
