@@ -56,14 +56,8 @@ class SharedReadingTicketWidget extends StatelessWidget {
       
       memberSectionContent.add(_buildMemberSection(member, profile, isFirst, index + 1));
       
-      if (index < members.length - 1) {
-        // 다음 절취선 전의 아랫 공간
-        memberSectionContent.add(const SizedBox(height: 12));
-      } else {
-        // 마지막 멤버인 경우 아래쪽 연장 여백 추가
-        memberSectionContent.add(const SizedBox(height: 16));
-        memberSectionContent.add(const SizedBox(height: 30));
-      }
+      // 섹션 하단 공간
+      memberSectionContent.add(const SizedBox(height: 16));
       
       ticketWidgets.add(_buildSolidBlock(
         Column(
@@ -72,10 +66,12 @@ class SharedReadingTicketWidget extends StatelessWidget {
         )
       ));
 
-      if (index < members.length - 1) {
-        ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
-      }
+      // 푸터 전 절취선 추가
+      ticketWidgets.add(_buildPunchedBlock(_buildPerforationLine()));
     }
+
+    // 바코드 & 푸터 추가
+    ticketWidgets.add(_buildFooter());
 
     final layeredWidgets = <Widget>[];
     for (int i = 0; i < ticketWidgets.length; i++) {
@@ -139,6 +135,52 @@ class SharedReadingTicketWidget extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return _buildSolidBlock(
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            // 시리얼 넘버 & 푸터 텍스트
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  project.id.split('-').first.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    letterSpacing: 2.0,
+                    color: AppColors.charcoal.withOpacity(0.6),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  'Grazie per la lettura',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppColors.burgundy.withOpacity(0.8),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // 바코드
+            SizedBox(
+              height: 40,
+              width: double.infinity,
+              child: CustomPaint(
+                painter: _BarcodePainter(),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
