@@ -983,7 +983,29 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       final hasMyTicketData = me.quote != null && me.drawingUrl != null;
       return Column(
         children: [
-          const Icon(Icons.workspace_premium, color: AppColors.burgundy, size: 72),
+          SizedBox(
+            width: 84,
+            height: 72,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  left: 4,
+                  child: Transform.rotate(
+                    angle: 0.25, // 약간 우측으로 기울임
+                    child: const Icon(Icons.wine_bar, color: AppColors.burgundy, size: 52),
+                  ),
+                ),
+                Positioned(
+                  right: 4,
+                  child: Transform.rotate(
+                    angle: -0.25, // 약간 좌측으로 기울임
+                    child: const Icon(Icons.wine_bar, color: AppColors.burgundy, size: 52),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
           const Text(
             '프로젝트 성공!',
