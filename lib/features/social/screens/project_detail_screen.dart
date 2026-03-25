@@ -986,24 +986,8 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
           SizedBox(
             width: 84,
             height: 72,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Positioned(
-                  left: 4,
-                  child: Transform.rotate(
-                    angle: 0.25, // 약간 우측으로 기울임
-                    child: const Icon(Icons.wine_bar, color: AppColors.burgundy, size: 52),
-                  ),
-                ),
-                Positioned(
-                  right: 4,
-                  child: Transform.rotate(
-                    angle: -0.25, // 약간 좌측으로 기울임
-                    child: const Icon(Icons.wine_bar, color: AppColors.burgundy, size: 52),
-                  ),
-                ),
-              ],
+            child: CustomPaint(
+              painter: _CheersPainter(color: AppColors.burgundy),
             ),
           ),
           const SizedBox(height: 16),
@@ -1303,6 +1287,84 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
       ),
     );
   }
+}
 
+/// A custom painter that draws two elegant, filled wine glasses clinking.
+/// This provides a premium, classic silhouette look instead of thick icons.
+class _CheersPainter extends CustomPainter {
+  final Color color;
 
+  _CheersPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    
+    final double w = size.width;
+    final double h = size.height;
+    
+    // We will draw one glass and mirror+rotate it to create the clinking effect.
+    // Glass dimensions
+    final double glassW = w * 0.35;
+    final double glassH = h * 0.85;
+    
+    void drawGlass(Canvas c, Offset center, double angle) {
+      c.save();
+      c.translate(center.dx, center.dy);
+      c.rotate(angle);
+      
+      final path = Path();
+      // Start from the base (bottom)
+      final double baseW = glassW * 0.6;
+      final double stemW = glassW * 0.08;
+      
+      final double topY = -glassH / 2;
+      final double bottomY = glassH / 2;
+      
+      final double bowlBottomY = 0.0;
+      final double stemTopY = bowlBottomY;
+      
+      // Base
+      path.moveTo(-baseW / 2, bottomY);
+      path.lineTo(baseW / 2, bottomY);
+      path.lineTo(stemW / 2, bottomY - glassH * 0.05);
+      
+      // Stem right
+      path.lineTo(stemW / 2, stemTopY);
+      
+      // Bowl right curve (elegant wine/champagne glass)
+      path.quadraticBezierTo(
+        glassW / 2, stemTopY + glassH * 0.1, 
+        glassW / 2, topY + glassH * 0.2
+      );
+      path.lineTo(glassW / 2, topY);
+      
+      // Top lip
+      path.lineTo(-glassW / 2, topY);
+      
+      // Bowl left curve
+      path.lineTo(-glassW / 2, topY + glassH * 0.2);
+      path.quadraticBezierTo(
+        -glassW / 2, stemTopY + glassH * 0.1, 
+        -stemW / 2, stemTopY
+      );
+      
+      // Stem left
+      path.lineTo(-stemW / 2, bottomY - glassH * 0.05);
+      path.close();
+      
+      c.drawPath(path, paint);
+      c.restore();
+    }
+    
+    // Left glass
+    drawGlass(canvas, Offset(w * 0.35, h * 0.5), 0.25);
+    // Right glass
+    drawGlass(canvas, Offset(w * 0.65, h * 0.5), -0.25);
+  }
+
+  @override
+  bool shouldRepaint(covariant _CheersPainter oldDelegate) => oldDelegate.color != color;
 }
