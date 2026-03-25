@@ -2,12 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
 import '../../../data/models/book_model.dart';
-import '../../../data/models/memo_model.dart';
 import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import '../../library/providers/book_providers.dart';
@@ -27,10 +25,6 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
   final quill.QuillController _quillController = quill.QuillController.basic();
   final TextEditingController _pageController = TextEditingController();
   bool _isProcessing = false;
-  XFile? _selectedImage;
-  Uint8List? _previewBytes;
-
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -53,32 +47,6 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image == null) return;
-
-      final bytes = await image.readAsBytes();
-
-      setState(() {
-        _selectedImage = image;
-        _previewBytes = bytes;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('사진이 첨부되었습니다.')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('사진 첨부 실패: $e')),
-        );
-      }
-    }
-  }
-
   Future<void> _saveMemo() async {
     if (_quillController.document.isEmpty() ||
         _quillController.document.toPlainText().trim().isEmpty) {
@@ -94,13 +62,6 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) throw Exception('User not logged in');
 
-      String? imageUrl;
-      if (_selectedImage != null) {
-        imageUrl = await ref
-            .read(supabaseRepositoryProvider)
-            .uploadMemoImage(userId, _selectedImage!);
-      }
-
       final jsonDelta = jsonEncode(
         _quillController.document.toDelta().toJson(),
       );
@@ -110,7 +71,7 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
         userId: userId,
         isbn: widget.isbn,
         content: jsonDelta,
-        imageUrl: imageUrl,
+        imageUrl: null, // Text memos no longer hold images here
         pageNumber: int.tryParse(_pageController.text),
         createdAt: DateTime.now(),
       );
@@ -228,20 +189,6 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
                 ],
               ),
               const Divider(),
-              // Image Preview
-              if (_previewBytes != null)
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    image: DecorationImage(
-                      image: MemoryImage(_previewBytes!),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
               // Content Input
               Expanded(
                 child: quill.QuillEditor.basic(
@@ -276,12 +223,6 @@ class _WriteMemoScreenState extends ConsumerState<WriteMemoScreen> {
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickImage,
-        backgroundColor: AppColors.ivory, // Inverted for contrast
-        foregroundColor: AppColors.burgundy,
-        child: const Icon(Icons.camera_alt_outlined),
       ),
     );
   }

@@ -229,9 +229,9 @@ class MemoBookTile extends ConsumerWidget {
                                 // Photo Button
                                 GestureDetector(
                                   onTap: () {
-                                    // Navigate to write screen (User can add photo there)
+                                    // Navigate to pure photo attachment screen
                                     context.push(
-                                      '/memo/write/${userBook.isbn}',
+                                      '/memo/add-photo/${userBook.isbn}',
                                       extra: userBook.book,
                                     );
                                   },

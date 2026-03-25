@@ -11,6 +11,7 @@ import '../features/library/screens/reading_list_screen.dart';
 import '../features/memo/screens/memo_screen.dart';
 import '../features/memo/screens/memo_list_screen.dart';
 import '../features/memo/screens/write_memo_screen.dart';
+import '../features/memo/screens/add_photo_memo_screen.dart';
 import '../data/models/book_model.dart';
 import '../features/mypage/screens/mypage_screen.dart';
 import '../features/social/screens/create_project_screen.dart';
@@ -155,6 +156,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                       final isbn = state.pathParameters['isbn']!;
                       final book = state.extra as Book?;
                       return WriteMemoScreen(isbn: isbn, book: book);
+                    },
+                  ),
+                  GoRoute(
+                    path: 'add-photo/:isbn',
+                    builder: (context, state) {
+                      final isbn = state.pathParameters['isbn']!;
+                      final book = state.extra as Book?;
+                      return AddPhotoMemoScreen(isbn: isbn, book: book);
                     },
                   ),
                 ],
