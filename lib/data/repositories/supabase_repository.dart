@@ -728,56 +728,6 @@ class SupabaseRepository {
     }
   }
 
-  Future<void> cleanupExpiredProjects(String userId) async {
-    try {
-      final nowStr = DateTime.now().toUtc().toIso8601String();
-      
-      // Find expired incomplete projects the user is part of
-      final response = await _client
-          .from('project_members')
-          .select('project_id, projects!inner(id, name, is_completed, end_date)')
-          .eq('user_id', userId)
-          .eq('projects.is_completed', false)
-          .lt('projects.end_date', nowStr);
-
-      final List<dynamic> expiredProjects = response as List<dynamic>;
-      if (expiredProjects.isEmpty) return;
-
-      final projectIds = expiredProjects.map((e) => e['project_id'].toString()).toSet().toList();
-
-      for (var row in expiredProjects) {
-        final project = row['projects'];
-        final projectId = project['id'];
-        final projectName = project['name'];
-
-        // Get all members of this expired project
-        final membersResponse = await _client
-            .from('project_members')
-            .select('user_id')
-            .eq('project_id', projectId);
-
-        final members = membersResponse as List<dynamic>;
-
-        // Notify each member
-        for (var member in members) {
-          final targetUserId = member['user_id'];
-          await createNotification(
-            userId: targetUserId,
-            senderId: targetUserId, // System notification substitute
-            type: 'project_failed',
-            message: '[$projectName] 2주 기한이 지나 프로젝트가 삭제되었습니다.',
-          );
-        }
-      }
-
-      // Delete the expired projects (assuming cascade drops members, otherwise we map delete)
-      await _client.from('projects').delete().inFilter('id', projectIds);
-
-    } catch (e) {
-      debugPrint('Error cleaning up expired projects: $e');
-    }
-  }
-
   Future<List<Map<String, dynamic>>> getMyProjects(String userId) async {
     try {
       final response = await _client
@@ -1160,6 +1110,64 @@ class SupabaseRepository {
       return true;
     } catch (e) {
       throw Exception('Error checking ticket readiness: $e');
+    }
+  }
+
+  /// 2주 기한이 지난 미완료 프로젝트를 자동 삭제하고 멤버들에게 알림을 보냄
+  /// 중요: status == 'completed' 인 프로젝트는 절대 삭제하지 않음
+  Future<void> cleanupExpiredProjects(String userId) async {
+    try {
+      // 1. 내가 속한 프로젝트 중, 완료되지 않았고 end_date가 지난 것들 찾기
+      final myMemberships = await _client
+          .from('project_members')
+          .select('project_id, projects!inner(id, status, end_date, name)')
+          .eq('user_id', userId);
+
+      final now = DateTime.now();
+      final expiredProjectIds = <String>[];
+
+      for (final row in myMemberships) {
+        final project = row['projects'] as Map<String, dynamic>?;
+        if (project == null) continue;
+
+        final status = project['status'] as String?;
+        final endDateStr = project['end_date'] as String?;
+
+        // ✅ 완료된 프로젝트는 절대 건드리지 않음
+        if (status == 'completed') continue;
+
+        // end_date가 없으면 (아직 시작 안 한 프로젝트) 스킵
+        if (endDateStr == null) continue;
+
+        final endDate = DateTime.parse(endDateStr);
+        if (endDate.isBefore(now)) {
+          expiredProjectIds.add(project['id'] as String);
+        }
+      }
+
+      // 2. 만료된 프로젝트 각각에 대해: 멤버 알림 → 프로젝트 삭제
+      for (final projectId in expiredProjectIds) {
+        // 모든 멤버에게 알림 전송
+        final members = await _client
+            .from('project_members')
+            .select('user_id')
+            .eq('project_id', projectId);
+
+        for (final m in members) {
+          await createNotification(
+            userId: m['user_id'] as String,
+            type: 'project_expired',
+            message: '2주 기한이 지나 함께 읽기 프로젝트가 삭제되었습니다.',
+            relatedId: projectId,
+          );
+        }
+
+        // 프로젝트 삭제 (cascade로 project_members도 함께 삭제됨)
+        await _client.from('projects').delete().eq('id', projectId);
+      }
+    } catch (e) {
+      // 클린업 실패는 앱 크래시로 이어지면 안 되므로 조용히 무시
+      debugPrint('cleanupExpiredProjects error: $e');
     }
   }
 }

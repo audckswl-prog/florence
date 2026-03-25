@@ -21,9 +21,6 @@ final myProjectsProvider = FutureProvider.autoDispose<List<Project>>((
     return [];
   }
 
-  // Cleanup expired incomplete projects silently
-  await repository.cleanupExpiredProjects(userId);
-
   final data = await repository.getMyProjects(userId);
   // data is list of project_members with joined 'projects'
   return data.map((json) {
@@ -128,7 +125,7 @@ final myProjectsWithMembersProvider =
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) return [];
 
-      // Cleanup expired incomplete projects silently
+      // 2주 기한 초과 미완료 프로젝트 자동 정리 (completed 프로젝트는 보호됨)
       await repository.cleanupExpiredProjects(userId);
 
       final projectData = await repository.getMyProjects(userId);
