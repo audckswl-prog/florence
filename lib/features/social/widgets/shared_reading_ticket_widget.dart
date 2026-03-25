@@ -190,16 +190,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBarcode() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-      child: CustomPaint(
-        size: const Size(double.infinity, 36),
-        painter: _BarcodePainter(),
-      ),
-    );
-  }
-
   Widget _buildMemberSection(
     ProjectMember member,
     Profile? profile,
