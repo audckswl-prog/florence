@@ -87,6 +87,18 @@ class SharedReadingTicketWidget extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFF5F0EB),
+        border: Border(
+          top: BorderSide(
+            color: Color(0xFFF5F0EB),
+            width: 1.0,
+            strokeAlign: BorderSide.strokeAlignOutside,
+          ),
+          bottom: BorderSide(
+            color: Color(0xFFF5F0EB),
+            width: 1.0,
+            strokeAlign: BorderSide.strokeAlignOutside,
+          ),
+        ),
       ),
       child: child,
     );
@@ -200,7 +212,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
     final drawingWidget = Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFEBE6DF), // 깔끔한 색상으로 티켓 배경(Color(0xFFF5F0EB))과 자연스럽게 어우러지도록 조정
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.antiAlias,
