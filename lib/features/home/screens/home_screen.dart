@@ -356,7 +356,7 @@ class _SharedReadingTab extends ConsumerWidget {
                 ),
                 child: coverUrl != null && coverUrl.isNotEmpty
                     ? Image.network(
-                        coverUrl,
+                        coverUrl.replaceAll('coversum', 'cover200'),
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Center(
                           child: CustomPaint(
@@ -425,26 +425,37 @@ class _SharedReadingTab extends ConsumerWidget {
                   // Progress Bar & Status Section
                   Builder(
                     builder: (context) {
-                      double progress = 0.5; // Default mockup
-                      String remainingText = '2주 남음'; // Default mockup
+                      double progress = 1.0;
+                      String remainingText = '2주 남음';
+                      Color textColor = AppColors.burgundy;
+                      Color barColor = AppColors.burgundy;
 
-                      if (project.startDate != null && project.endDate != null) {
-                        final total = project.endDate!.difference(project.startDate!).inDays;
-                        final current = DateTime.now().difference(project.startDate!).inDays;
-                        if (total > 0) {
-                          progress = (current / total).clamp(0.0, 1.0);
-                        }
-                        final remaining = project.endDate!.difference(DateTime.now()).inDays;
-                        if (remaining >= 0) {
-                          remainingText = remaining > 14 ? 'D-$remaining' : '${(remaining / 7).ceil()}주 남음';
-                          if (remaining <= 14 && remaining % 7 != 0) {
-                            remainingText = 'D-$remaining';
-                          } else if (remaining == 14) {
-                            remainingText = '2주 남음';
+                      if (project.status == 'pending_books') {
+                        progress = 1.0;
+                        remainingText = '도서 선정 전';
+                        textColor = AppColors.grey;
+                        barColor = AppColors.greyLight.withOpacity(0.5);
+                      } else {
+                        if (project.startDate != null && project.endDate != null) {
+                          final total = project.endDate!.difference(project.startDate!).inDays;
+                          final remaining = project.endDate!.difference(DateTime.now()).inDays;
+                          if (total > 0) {
+                            progress = (remaining / total).clamp(0.0, 1.0); // 처음에 1.0(꽉 참) -> 0.0으로 줄어듦
                           }
-                        } else {
-                          remainingText = '마감됨';
-                          progress = 1.0;
+                          
+                          if (remaining >= 0) {
+                            remainingText = remaining > 14 ? 'D-$remaining' : '${(remaining / 7).ceil()}주 남음';
+                            if (remaining <= 14 && remaining % 7 != 0) {
+                              remainingText = 'D-$remaining';
+                            } else if (remaining == 14) {
+                              remainingText = '2주 남음';
+                            }
+                          } else {
+                            remainingText = '마감됨';
+                            progress = 0.0;
+                            textColor = AppColors.grey;
+                            barColor = AppColors.greyLight;
+                          }
                         }
                       }
 
@@ -456,10 +467,10 @@ class _SharedReadingTab extends ConsumerWidget {
                             children: [
                               Text(
                                 remainingText,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.burgundy,
+                                  color: textColor,
                                 ),
                               ),
                               Container(
@@ -492,7 +503,7 @@ class _SharedReadingTab extends ConsumerWidget {
                             child: LinearProgressIndicator(
                               value: progress,
                               backgroundColor: AppColors.greyLight.withOpacity(0.2),
-                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.burgundy),
+                              valueColor: AlwaysStoppedAnimation<Color>(barColor),
                               minHeight: 4,
                             ),
                           ),
