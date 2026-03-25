@@ -183,20 +183,13 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
                 );
               }
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Center(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width - 40,
-                      child: SharedReadingTicketWidget(
-                        project: widget.project,
-                        members: members,
-                        memberProfiles: _profiles,
-                      ),
-                    ),
-                  ),
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+                physics: const BouncingScrollPhysics(),
+                child: SharedReadingTicketWidget(
+                  project: widget.project,
+                  members: members,
+                  memberProfiles: _profiles,
                 ),
               );
             },
