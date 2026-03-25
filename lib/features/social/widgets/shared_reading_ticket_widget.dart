@@ -96,7 +96,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
   Widget _buildSolidBlock(Widget child) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFF5F0EB),
+        color: Colors.white,
       ),
       child: child,
     );
@@ -107,7 +107,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       clipper: const _RowPunchClipper(radius: 12.0),
       child: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFFF5F0EB),
+          color: Colors.white,
         ),
         // 높이를 강제하지 않고 child(절취선)의 높이에 맞추되 여유 공간을 둡니다.
         // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백을 더하여 펀칭 원형(지름 24)이 충분히 뚫리게 합니다.
@@ -196,7 +196,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       child: highResCover != null && highResCover.isNotEmpty
           ? Image.network(
               highResCover,
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 color: AppColors.ivory,
                 child: const Center(child: Icon(Icons.menu_book, color: AppColors.greyLight, size: 32)),
@@ -252,7 +252,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       ),
     );
 
-    // 교차 카드 레이아웃: 책표지(4) + 그림(6)
+    // 교차 카드 레이아웃: 책표지(비율 고정) + 그림(공간 차지)
     Widget cardArea;
     if (bookOnLeft) {
       // 멤버 1: 왼쪽 책표지, 오른쪽 그림 (닉네임 배지가 우상단에 겹침)
@@ -264,9 +264,9 @@ class SharedReadingTicketWidget extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(flex: 4, child: bookWidget),
+                AspectRatio(aspectRatio: 1 / 1.45, child: bookWidget),
                 const SizedBox(width: 8),
-                Expanded(flex: 6, child: drawingWidget),
+                Expanded(child: drawingWidget),
               ],
             ),
             // 닉네임 배지: 우상단에 겹침
@@ -288,9 +288,9 @@ class SharedReadingTicketWidget extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(flex: 6, child: drawingWidget),
+                Expanded(child: drawingWidget),
                 const SizedBox(width: 8),
-                Expanded(flex: 4, child: bookWidget),
+                AspectRatio(aspectRatio: 1 / 1.45, child: bookWidget),
               ],
             ),
             // 닉네임 배지: 좌상단에 겹침
