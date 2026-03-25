@@ -7,6 +7,7 @@ import '../../../core/constants/app_colors.dart'; // Fixed path
 import '../../../core/utils/rich_text_utils.dart';
 import '../providers/memo_providers.dart';
 import '../../library/widgets/generic_book_cover.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MemoBookTile extends ConsumerWidget {
   final UserBook userBook;
@@ -124,11 +125,11 @@ class MemoBookTile extends ConsumerWidget {
                                         clipBehavior: Clip
                                             .antiAlias, // Clip image to rounded corners
                                         child: isImage
-                                            ? Image.network(
-                                                memo.imageUrl!,
+                                            ? CachedNetworkImage(
+                                                imageUrl: memo.imageUrl!,
                                                 fit: BoxFit.cover,
-                                                errorBuilder: (_, __, ___) =>
-                                                    const Center(
+                                                placeholder: (context, url) => Container(color: AppColors.ivory),
+                                                errorWidget: (context, url, err) => const Center(
                                                       child: Icon(
                                                         Icons.broken_image,
                                                         size: 20,

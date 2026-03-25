@@ -7,6 +7,7 @@ import '../../../core/widgets/florence_loader.dart';
 import '../../../data/models/book_model.dart';
 import '../../../core/utils/rich_text_utils.dart';
 import '../providers/memo_providers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 
 class MemoListScreen extends ConsumerWidget {
@@ -86,11 +87,21 @@ class MemoListScreen extends ConsumerWidget {
                       if (memo.imageUrl != null) ...[
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            memo.imageUrl!,
+                          child: CachedNetworkImage(
+                            imageUrl: memo.imageUrl!,
                             height: 200,
                             width: double.infinity,
                             fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              height: 200,
+                              color: AppColors.ivory,
+                              child: const Center(child: Icon(Icons.image, color: AppColors.greyLight)),
+                            ),
+                            errorWidget: (context, url, err) => Container(
+                              height: 200,
+                              color: AppColors.ivory,
+                              child: const Center(child: Icon(Icons.broken_image, color: AppColors.grey)),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),

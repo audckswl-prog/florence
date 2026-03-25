@@ -65,7 +65,10 @@ class GenericBookCover extends StatelessWidget {
                 ? CachedNetworkImage(
                     imageUrl: highQualityCoverUrl,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => _buildFallbackCover(),
+                    fadeInDuration: const Duration(milliseconds: 400),
+                    placeholder: (context, url) => Container(
+                      color: AppColors.ivory, // 조용한 빈 공간 로딩
+                    ),
                     errorWidget: (context, url, error) => _buildFallbackCover(),
                   )
                 : _buildFallbackCover(),

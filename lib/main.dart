@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'config/router.dart';
 import 'config/theme.dart';
@@ -11,6 +12,15 @@ import 'data/services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    GoogleFonts.config.allowRuntimeFetching = true;
+    await GoogleFonts.pendingFonts([
+      GoogleFonts.greatVibesTextTheme(),
+    ]);
+  } catch (e) {
+    debugPrint('Google Fonts loading failed: $e');
+  }
 
   // Load environment variables (native 빌드용)
   await dotenv.load(fileName: ".env").catchError((_) {

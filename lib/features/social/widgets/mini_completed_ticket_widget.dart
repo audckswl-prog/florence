@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
 import '../../social/providers/social_providers.dart';
@@ -138,9 +139,13 @@ class MiniCompletedTicketWidget extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(6),
                             child: coverUrl != null && coverUrl.isNotEmpty
-                                ? Image.network(
-                                    coverUrl.replaceAll('coversum', 'cover200'),
+                                ? CachedNetworkImage(
+                                    imageUrl: coverUrl.replaceAll('coversum', 'cover200'),
                                     fit: BoxFit.cover,
+                                    fadeInDuration: const Duration(milliseconds: 300),
+                                    placeholder: (context, url) => Container(color: AppColors.ivory),
+                                    errorWidget: (context, url, err) =>
+                                        const Icon(Icons.book, color: AppColors.burgundy),
                                   )
                                 : Container(
                                     color: AppColors.ivory,
