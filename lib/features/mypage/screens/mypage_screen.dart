@@ -280,160 +280,132 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
                 return Column(
                   children: [
-                    // Monthly Bar Chart
+                    // ──── 선호 장르 (위로 이동) ────
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFFE0E0E0),
-                          width: 1.0,
-                        ),
-                        boxShadow: const [
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
                           BoxShadow(
-                            color: Color(0x0D000000), // Very subtle shadow
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
+                            color: AppColors.burgundy.withOpacity(0.06),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            '월별 독서량',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 24),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: monthlyCounts.map((data) {
-                              final count = data['count'] as int;
-                              final month = data['month'] as int;
-                              final maxCount = monthlyCounts
-                                  .map((e) => e['count'] as int)
-                                  .reduce((a, b) => a > b ? a : b);
-                              final height = maxCount == 0
-                                  ? 0.0
-                                  : (count / maxCount) * 100.0;
-
-                              return Column(
-                                children: [
-                                  Text(
-                                    '$count',
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.burgundy.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.auto_stories, color: AppColors.burgundy, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '선호 장르',
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.charcoal,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const Spacer(),
+                              if (totalRead > 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.burgundy.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    '총 $totalRead권',
                                     style: const TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.burgundy,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.bold,
+                                      color: AppColors.burgundy,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    width: 12,
-                                    height: height == 0
-                                        ? 4
-                                        : height, // Min height 4
-                                    decoration: BoxDecoration(
-                                      color: AppColors.burgundy.withOpacity(
-                                        0.8,
-                                      ),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '$month월',
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.grey,
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }).toList(),
+                                ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Genre Distribution
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFFE0E0E0),
-                          width: 1.0,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x0D000000), // Very subtle shadow
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '선호 장르',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           if (sortedGenres.isEmpty)
                             const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
+                              padding: EdgeInsets.symmetric(vertical: 24),
                               child: Center(
-                                child: Text(
-                                  '아직 읽은 책이 없습니다.',
-                                  style: TextStyle(color: AppColors.grey),
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.menu_book, size: 36, color: AppColors.greyLight),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '아직 읽은 책이 없습니다.',
+                                      style: TextStyle(color: AppColors.grey, fontSize: 13),
+                                    ),
+                                  ],
                                 ),
                               ),
                             )
                           else
-                            ...sortedGenres.take(5).map((entry) {
-                              final percentage = (entry.value / totalRead);
+                            ...sortedGenres.take(5).toList().asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final genre = entry.value;
+                              final percentage = (genre.value / totalRead);
+                              // 3 app-themed colors cycling
+                              final barColors = [
+                                AppColors.burgundy,
+                                AppColors.charcoal,
+                                const Color(0xFF9A2024), // burgundyLight
+                              ];
+                              final barColor = barColors[index % barColors.length];
+
                               return Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
+                                padding: const EdgeInsets.only(bottom: 14.0),
                                 child: Row(
                                   children: [
                                     SizedBox(
-                                      width: 60,
+                                      width: 72,
                                       child: Text(
-                                        entry.key,
+                                        genre.key,
                                         style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.charcoal,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 12),
                                     Expanded(
                                       child: Stack(
                                         children: [
                                           Container(
-                                            height: 8,
+                                            height: 10,
                                             decoration: BoxDecoration(
-                                              color: AppColors.greyLight
-                                                  .withOpacity(0.3),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
+                                              color: AppColors.ivory,
+                                              borderRadius: BorderRadius.circular(5),
                                             ),
                                           ),
                                           FractionallySizedBox(
                                             widthFactor: percentage,
                                             child: Container(
-                                              height: 8,
+                                              height: 10,
                                               decoration: BoxDecoration(
-                                                color: AppColors.burgundy,
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
+                                                color: barColor,
+                                                borderRadius: BorderRadius.circular(5),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: barColor.withOpacity(0.3),
+                                                    blurRadius: 4,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ),
@@ -441,17 +413,145 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 12),
-                                    Text(
-                                      '${(percentage * 100).toStringAsFixed(0)}%',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.grey,
+                                    SizedBox(
+                                      width: 42,
+                                      child: Text(
+                                        '${(percentage * 100).toStringAsFixed(0)}%',
+                                        textAlign: TextAlign.end,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: barColor,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
                               );
                             }),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ──── 월별 독서량 (아래로 이동) ────
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.burgundy.withOpacity(0.06),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: AppColors.charcoal.withOpacity(0.06),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.bar_chart_rounded, color: AppColors.charcoal, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                '월별 독서량',
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.charcoal,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 28),
+                          SizedBox(
+                            height: 160,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: monthlyCounts.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final data = entry.value;
+                                final count = data['count'] as int;
+                                final month = data['month'] as int;
+                                final maxCount = monthlyCounts
+                                    .map((e) => e['count'] as int)
+                                    .reduce((a, b) => a > b ? a : b);
+                                final barHeight = maxCount == 0
+                                    ? 6.0
+                                    : (count / maxCount) * 120.0;
+
+                                // 3 app colors assigned randomly per bar
+                                final barColors = [
+                                  AppColors.burgundy,
+                                  AppColors.charcoal,
+                                  const Color(0xFF9A2024), //burgundyLight
+                                ];
+                                final barColor = barColors[index % barColors.length];
+
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        // Count label
+                                        Text(
+                                          count > 0 ? '$count' : '',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: barColor,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        // Bar
+                                        AnimatedContainer(
+                                          duration: const Duration(milliseconds: 500),
+                                          curve: Curves.easeOutCubic,
+                                          width: 28,
+                                          height: barHeight < 6 ? 6 : barHeight,
+                                          decoration: BoxDecoration(
+                                            color: count == 0
+                                                ? AppColors.greyLight.withOpacity(0.3)
+                                                : barColor,
+                                            borderRadius: BorderRadius.circular(6),
+                                            boxShadow: count > 0
+                                                ? [
+                                                    BoxShadow(
+                                                      color: barColor.withOpacity(0.25),
+                                                      blurRadius: 6,
+                                                      offset: const Offset(0, 3),
+                                                    ),
+                                                  ]
+                                                : null,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 10),
+                                        // Month label
+                                        Text(
+                                          '$month월',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
                         ],
                       ),
                     ),
