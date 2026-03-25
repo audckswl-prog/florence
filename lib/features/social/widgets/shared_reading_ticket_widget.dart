@@ -96,7 +96,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
   Widget _buildSolidBlock(Widget child) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFFF5F0EB),
+        color: Color(0xFFF9F6F0),
       ),
       child: child,
     );
@@ -107,7 +107,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       clipper: const _RowPunchClipper(radius: 12.0),
       child: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFFF5F0EB),
+          color: Color(0xFFF9F6F0),
         ),
         // 높이를 강제하지 않고 child(절취선)의 높이에 맞추되 여유 공간을 둡니다.
         // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백을 더하여 펀칭 원형(지름 24)이 충분히 뚫리게 합니다.
@@ -210,7 +210,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
     final drawingWidget = Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF0EAE1),
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.antiAlias,
@@ -323,7 +323,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0EDE8),
+              color: const Color(0xFFF0EAE1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: quote.isNotEmpty

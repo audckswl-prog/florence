@@ -71,7 +71,7 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
             child: Container(
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFFF0EAE1),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -86,7 +86,7 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
                 child: RepaintBoundary(
                   key: _canvasKey,
                   child: Container(
-                    color: Colors.white,
+                    color: const Color(0xFFF0EAE1),
                     child: GestureDetector(
                       onPanStart: (details) {
                         setState(() {
