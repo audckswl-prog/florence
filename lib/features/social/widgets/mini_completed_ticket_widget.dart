@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/florence_loader.dart';
+import '../../social/providers/social_providers.dart';
 import '../../social/providers/social_providers.dart';
 
 class MiniCompletedTicketWidget extends StatelessWidget {
@@ -58,11 +61,10 @@ class MiniCompletedTicketWidget extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Firenze',
-                            style: TextStyle(
-                              fontFamily: 'PinyonScript',
-                              fontSize: 24,
+                            style: GoogleFonts.greatVibes(
+                              fontSize: 28,
                               color: AppColors.burgundy,
                               height: 1.0,
                             ),
@@ -196,30 +198,50 @@ class MiniCompletedTicketWidget extends StatelessWidget {
                   ],
                 ),
                 
-                // --- 'READ' 도장 효과 ---
+                // --- 'READ' 엽서 소인(우표) 스탬프 효과 ---
                 Positioned(
                   right: 12,
                   bottom: 12,
                   child: Transform.rotate(
                     angle: -0.15,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: AppColors.burgundy.withOpacity(0.85), 
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'READ',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.burgundy.withOpacity(0.85),
-                          letterSpacing: 2.0,
-                          fontFamily: 'Pretendard',
-                        ),
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // 배경: 물들인 듯 연한 두오모 워터마크
+                          CustomPaint(
+                            size: const Size(40, 40),
+                            painter: FlorenceDomePainter(
+                              progress: 1.0,
+                              color: AppColors.burgundy.withOpacity(0.12), // 잉크 퍼짐 느낌
+                            ),
+                          ),
+                          // 둥근 소인(우편 씰) 테두리
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.burgundy.withOpacity(0.35),
+                                width: 1.2,
+                              ),
+                            ),
+                          ),
+                          // 가운데 문자
+                          Text(
+                            'READ',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.burgundy.withOpacity(0.85),
+                              letterSpacing: 2.0,
+                              fontFamily: 'Pretendard',
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
