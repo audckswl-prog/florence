@@ -87,14 +87,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFF5F0EB),
-        boxShadow: [
-          // Sub-pixel 렌더링 시 발생하는 미세한 선(hairline) 결함을 가리기 위한 동일 색상의 미세 번짐 적용
-          BoxShadow(
-            color: Color(0xFFF5F0EB),
-            spreadRadius: 0.5,
-            blurRadius: 0,
-          ),
-        ],
       ),
       child: child,
     );
@@ -106,14 +98,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
       child: Container(
         decoration: const BoxDecoration(
           color: Color(0xFFF5F0EB),
-          boxShadow: [
-            // Sub-pixel 렌더링 시 발생하는 미세한 선(hairline) 결함을 가리기 위한 동일 색상의 미세 번짐 적용
-            BoxShadow(
-              color: Color(0xFFF5F0EB),
-              spreadRadius: 0.5,
-              blurRadius: 0,
-            ),
-          ],
         ),
         // 높이를 강제하지 않고 child(절취선)의 높이에 맞추되 여유 공간을 둡니다.
         // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백을 더하여 펀칭 원형(지름 24)이 충분히 뚫리게 합니다.
@@ -216,7 +200,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
     final drawingWidget = Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F8F8), // 깔끔한 라이트 그레이/화이트 톤
+        color: const Color(0xFFEBE6DF), // 깔끔한 색상으로 티켓 배경(Color(0xFFF5F0EB))과 자연스럽게 어우러지도록 조정
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.antiAlias,
