@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/project_model.dart';
 import '../../../data/models/profile_model.dart';
@@ -143,15 +144,48 @@ class SharedReadingTicketWidget extends StatelessWidget {
   }
 
   Widget _buildHeader() {
+    final String dateString = DateFormat('yyyy.MM.dd').format(project.endDate ?? project.createdAt);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-      child: Text(
-        'Firenze',
-        style: GoogleFonts.greatVibes(
-          fontSize: 36,
-          color: AppColors.burgundy,
-          fontWeight: FontWeight.w400,
-        ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            'Firenze',
+            style: GoogleFonts.greatVibes(
+              fontSize: 36,
+              color: AppColors.burgundy,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'DATE',
+                style: TextStyle(
+                  fontSize: 7,
+                  letterSpacing: 2.0,
+                  color: AppColors.burgundy.withOpacity(0.5),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                dateString,
+                style: const TextStyle(
+                  fontSize: 10,
+                  letterSpacing: 1.0,
+                  color: AppColors.charcoal,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -306,6 +340,43 @@ class SharedReadingTicketWidget extends StatelessWidget {
           profileHeader,
           const SizedBox(height: 12),
           cardArea,
+          const SizedBox(height: 12),
+          // Book Title Row
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.burgundy.withOpacity(0.1), width: 1.0),
+                bottom: BorderSide(color: AppColors.burgundy.withOpacity(0.1), width: 1.0),
+              )
+            ),
+            child: Row(
+              children: [
+                Text(
+                  'BOOK',
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: AppColors.burgundy.withOpacity(0.6),
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    member.selectedBookTitle ?? '제목 없음',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.charcoal,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
           // 인용구 (박스 없이 깔끔하게)
           Padding(
