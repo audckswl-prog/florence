@@ -358,19 +358,23 @@ class _SharedReadingTab extends ConsumerWidget {
                     ? Image.network(
                         coverUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(
-                            Icons.menu_book,
-                            color: AppColors.greyLight,
-                            size: 40,
+                        errorBuilder: (_, __, ___) => Center(
+                          child: CustomPaint(
+                            size: const Size(48, 48),
+                            painter: FlorenceDomePainter(
+                              progress: 1.0,
+                              color: AppColors.greyLight.withOpacity(0.8),
+                            ),
                           ),
                         ),
                       )
-                    : const Center(
-                        child: Icon(
-                          Icons.menu_book,
-                          color: AppColors.greyLight,
-                          size: 40,
+                    : Center(
+                        child: CustomPaint(
+                          size: const Size(48, 48),
+                          painter: FlorenceDomePainter(
+                            progress: 1.0,
+                            color: AppColors.greyLight.withOpacity(0.8),
+                          ),
                         ),
                       ),
               ),
