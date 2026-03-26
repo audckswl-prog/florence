@@ -185,19 +185,32 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
 
               final isScrollable = members.length >= 3;
 
-              return SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20, 
-                  vertical: isScrollable ? 60 : 15, // 2인일 때 상하 여백을 더 극단적으로 축소
-                ),
-                physics: isScrollable 
-                    ? const BouncingScrollPhysics() 
-                    : const NeverScrollableScrollPhysics(),
-                child: SharedReadingTicketWidget(
-                  project: widget.project,
-                  members: members,
-                  memberProfiles: _profiles,
-                ),
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final double screenWidth = constraints.maxWidth;
+                  final double ticketWidth = screenWidth * 0.82; // 80%~85% 사이의 적절한 비율
+
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.zero, // 상하 여백 제거하여 위아래로 이어지게 함
+                    physics: isScrollable 
+                        ? const BouncingScrollPhysics() 
+                        : const NeverScrollableScrollPhysics(),
+                    child: Center(
+                      child: Container(
+                        width: ticketWidth,
+                        // 최소 높이를 화면 높이만큼 확보하여 '연결된' 느낌 유지
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: SharedReadingTicketWidget(
+                          project: widget.project,
+                          members: members,
+                          memberProfiles: _profiles,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               );
             },
             loading: () => const Center(child: FlorenceLoader()),

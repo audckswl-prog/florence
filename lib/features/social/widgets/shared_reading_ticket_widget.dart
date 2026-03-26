@@ -32,7 +32,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(height: members.length <= 2 ? 32 : 40), // 2인일 때 '끊긴 느낌' 없도록 여백 살짝 확보
+          SizedBox(height: members.length <= 2 ? 48 : 40), // 2인일 때 '이어져 보이게' 충분한 상단 공간 확보
           _buildHeader(),
         ],
       )
@@ -58,10 +58,10 @@ class SharedReadingTicketWidget extends StatelessWidget {
       
       if (index < members.length - 1) {
         // 다음 멤버로 넘어가기 전 하단/상단 여백
-        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 6 : 12));
+        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 16 : 12));
       } else {
-        // 마지막 멤버인 경우 아래쪽 연장 여백 (기존 16에서 8로 더 축소하여 하단 탭 바 회피)
-        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 8 : 48));
+        // 마지막 멤버인 경우 아래쪽 연장 여백 (하단 탭 바 위까지 길게 연장)
+        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 60 : 48));
       }
       
       ticketWidgets.add(_buildSolidBlock(
@@ -156,7 +156,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
           Text(
             'Firenze',
             style: GoogleFonts.greatVibes(
-              fontSize: isCompact ? 30 : 36, // 폰트 크기 살짝 축소
+              fontSize: 36, // 원본 크기 복구
               color: AppColors.burgundy,
               fontWeight: FontWeight.w400,
             ),
@@ -293,7 +293,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
     );
 
     final isCompact = members.length <= 2;
-    final cardHeight = isCompact ? 115.0 : 175.0; // 2인일 때 카드 높이 대폭 축소
+    final cardHeight = isCompact ? 155.0 : 175.0; // 좁은 폭에 맞춰 세로로 긴 비율로 복구
     
     // 교차 카드 레이아웃: 책표지(비율 고정) + 그림(공간 차지)
     Widget cardArea;
@@ -333,11 +333,11 @@ class SharedReadingTicketWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: isCompact ? 2 : 8),
+          SizedBox(height: isCompact ? 8 : 8),
           profileHeader,
-          SizedBox(height: isCompact ? 4 : 12),
+          SizedBox(height: isCompact ? 12 : 12),
           cardArea,
-          SizedBox(height: isCompact ? 4 : 12),
+          SizedBox(height: isCompact ? 12 : 12),
           // Book Title Row
           Container(
             padding: EdgeInsets.symmetric(vertical: isCompact ? 4 : 8, horizontal: 4),
@@ -363,18 +363,18 @@ class SharedReadingTicketWidget extends StatelessWidget {
                   child: Text(
                     member.selectedBookTitle ?? '제목 없음',
                     style: TextStyle(
-                      fontSize: isCompact ? 10 : 11,
+                      fontSize: 11,
                       color: AppColors.charcoal,
                       fontWeight: FontWeight.w600,
                     ),
-                    maxLines: 1, // 2인일 때 제목 한 줄로 제한
+                    maxLines: 2, // 2인일 때도 제목 2줄까지 허용하여 여백 확보
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: isCompact ? 4 : 16),
+          SizedBox(height: isCompact ? 12 : 16),
           // 인용구 (박스 없이 깔끔하게)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -382,16 +382,16 @@ class SharedReadingTicketWidget extends StatelessWidget {
                 ? Text(
                     '" $quote "',
                     style: TextStyle(
-                      fontSize: isCompact ? 11 : 13, 
-                      height: 1.4, 
+                      fontSize: 13, 
+                      height: 1.5, 
                       color: AppColors.charcoal.withOpacity(0.9), 
                       fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.w500,
                     ),
-                    maxLines: isCompact ? 2 : 3, // 2인일 때 인용구 줄 수 축소
+                    maxLines: 3, // 원본 줄 수 복구
                     overflow: TextOverflow.ellipsis,
                   )
-                : SizedBox(height: isCompact ? 10 : 48), // 빈 공간 유지
+                : SizedBox(height: isCompact ? 32 : 48), // 빈 공간 유지
           ),
           SizedBox(height: isCompact ? 2 : 8),
           // 페이지 수 
