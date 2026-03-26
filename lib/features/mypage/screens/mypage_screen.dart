@@ -175,21 +175,17 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
             const SizedBox(height: 16),
             booksAsync.when(
               data: (books) {
-                // ── 12개월 월별 통계 ──
+                // ── 12개월 월별 통계 (1~12월 고정) ──
                 final now = DateTime.now();
                 final monthlyCounts = List.generate(12, (index) {
-                  final targetMonth = DateTime(
-                    now.year,
-                    now.month - (11 - index),
-                    1,
-                  );
+                  final month = index + 1; // 1월~12월
                   final count = books.where((b) {
                     if (b.status != 'read' || b.finishedAt == null)
                       return false;
-                    return b.finishedAt!.year == targetMonth.year &&
-                        b.finishedAt!.month == targetMonth.month;
+                    return b.finishedAt!.year == now.year &&
+                        b.finishedAt!.month == month;
                   }).length;
-                  return {'month': targetMonth.month, 'count': count};
+                  return {'month': month, 'count': count};
                 });
 
                 // ── 장르 통계 ──
@@ -402,8 +398,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
                   color: AppColors.burgundy.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.auto_stories,
-                    color: AppColors.burgundy, size: 20),
+                child: CustomPaint(
+                  size: const Size(20, 20),
+                  painter: _ReadingPersonIconPainter(
+                    color: AppColors.burgundy,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -514,8 +514,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
                     color: AppColors.charcoal.withOpacity(0.06),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.bar_chart_rounded,
-                      color: AppColors.charcoal, size: 20),
+                  child: CustomPaint(
+                    size: const Size(20, 20),
+                    painter: _BookStackIconPainter(
+                      color: AppColors.charcoal,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -814,9 +818,15 @@ class _RadarChartPainter extends CustomPainter {
       }
     }
 
+    // ── Determine top 3 genres ──
+    final sortedIndices = List.generate(sides, (i) => i);
+    sortedIndices.sort((a, b) => genreCounts[b].compareTo(genreCounts[a]));
+    final top3Set = sortedIndices.take(3).where((i) => genreCounts[i] > 0).toSet();
+
     // ── Genre labels ──
     for (int i = 0; i < sides; i++) {
       final angle = startAngle + angleStep * i;
+      final isTop3 = top3Set.contains(i);
       final labelRadius = radius + 24;
       final labelPos = Offset(
         center.dx + labelRadius * cos(angle),
@@ -827,12 +837,15 @@ class _RadarChartPainter extends CustomPainter {
       final textSpan = TextSpan(
         text: genres[i] + countText,
         style: TextStyle(
-          fontSize: 10.5,
-          fontWeight:
-              genreCounts[i] > 0 ? FontWeight.w700 : FontWeight.w400,
-          color: genreCounts[i] > 0
-              ? AppColors.charcoal
-              : AppColors.greyLight,
+          fontSize: isTop3 ? 12.5 : 10.5,
+          fontWeight: isTop3
+              ? FontWeight.w900
+              : (genreCounts[i] > 0 ? FontWeight.w700 : FontWeight.w400),
+          color: isTop3
+              ? AppColors.burgundy
+              : (genreCounts[i] > 0
+                  ? AppColors.charcoal
+                  : AppColors.greyLight),
         ),
       );
       final textPainter = TextPainter(
@@ -855,4 +868,171 @@ class _RadarChartPainter extends CustomPainter {
     return oldDelegate.animationValue != animationValue ||
         oldDelegate.values != values;
   }
+}
+
+// ═══════════════════════════════════════════════════════
+// Custom Icon: Reading Person (선호 장르)
+// 의자에 앉아 책을 읽고 있는 사람의 상반신 선형 아이콘
+// ═══════════════════════════════════════════════════════
+class _ReadingPersonIconPainter extends CustomPainter {
+  final Color color;
+  _ReadingPersonIconPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Head (circle)
+    canvas.drawCircle(Offset(w * 0.42, h * 0.18), w * 0.1, paint);
+
+    // Body (torso line)
+    final bodyPath = Path()
+      ..moveTo(w * 0.42, h * 0.28)
+      ..lineTo(w * 0.42, h * 0.55);
+    canvas.drawPath(bodyPath, paint);
+
+    // Left arm (holding book)
+    final leftArm = Path()
+      ..moveTo(w * 0.42, h * 0.36)
+      ..lineTo(w * 0.25, h * 0.45)
+      ..lineTo(w * 0.28, h * 0.55);
+    canvas.drawPath(leftArm, paint);
+
+    // Right arm (holding book)
+    final rightArm = Path()
+      ..moveTo(w * 0.42, h * 0.36)
+      ..lineTo(w * 0.60, h * 0.45)
+      ..lineTo(w * 0.57, h * 0.55);
+    canvas.drawPath(rightArm, paint);
+
+    // Book (open book shape)
+    final book = Path()
+      ..moveTo(w * 0.22, h * 0.50)
+      ..lineTo(w * 0.22, h * 0.62)
+      ..quadraticBezierTo(w * 0.42, h * 0.58, w * 0.42, h * 0.62)
+      ..quadraticBezierTo(w * 0.42, h * 0.58, w * 0.62, h * 0.62)
+      ..lineTo(w * 0.62, h * 0.50);
+    canvas.drawPath(book, paint);
+
+    // Book spine
+    canvas.drawLine(
+      Offset(w * 0.42, h * 0.55),
+      Offset(w * 0.42, h * 0.62),
+      paint,
+    );
+
+    // Chair seat
+    final chair = Path()
+      ..moveTo(w * 0.22, h * 0.72)
+      ..lineTo(w * 0.62, h * 0.72);
+    canvas.drawPath(chair, paint);
+
+    // Legs (sitting)
+    final legs = Path()
+      ..moveTo(w * 0.42, h * 0.55)
+      ..lineTo(w * 0.32, h * 0.72)
+      ..moveTo(w * 0.42, h * 0.55)
+      ..lineTo(w * 0.52, h * 0.72);
+    canvas.drawPath(legs, paint);
+
+    // Chair legs
+    canvas.drawLine(
+      Offset(w * 0.25, h * 0.72),
+      Offset(w * 0.22, h * 0.88),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(w * 0.59, h * 0.72),
+      Offset(w * 0.62, h * 0.88),
+      paint,
+    );
+
+    // Chair back
+    final chairBack = Path()
+      ..moveTo(w * 0.62, h * 0.72)
+      ..lineTo(w * 0.62, h * 0.35)
+      ..quadraticBezierTo(w * 0.62, h * 0.28, w * 0.58, h * 0.25);
+    canvas.drawPath(chairBack, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ═══════════════════════════════════════════════════════
+// Custom Icon: Book Stack (월별 독서량)
+// 아래에서 위로 책이 차곡차곡 쌓여 올라가는 모습의 선형 아이콘
+// ═══════════════════════════════════════════════════════
+class _BookStackIconPainter extends CustomPainter {
+  final Color color;
+  _BookStackIconPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Bottom book (widest, slightly tilted)
+    final book1 = RRect.fromLTRBR(
+      w * 0.12, h * 0.72, w * 0.88, h * 0.88, const Radius.circular(1.5),
+    );
+    canvas.drawRRect(book1, paint);
+    // Spine line
+    canvas.drawLine(
+      Offset(w * 0.18, h * 0.72),
+      Offset(w * 0.18, h * 0.88),
+      paint,
+    );
+
+    // Second book
+    final book2 = RRect.fromLTRBR(
+      w * 0.16, h * 0.54, w * 0.84, h * 0.70, const Radius.circular(1.5),
+    );
+    canvas.drawRRect(book2, paint);
+    canvas.drawLine(
+      Offset(w * 0.22, h * 0.54),
+      Offset(w * 0.22, h * 0.70),
+      paint,
+    );
+
+    // Third book (narrower)
+    final book3 = RRect.fromLTRBR(
+      w * 0.20, h * 0.36, w * 0.80, h * 0.52, const Radius.circular(1.5),
+    );
+    canvas.drawRRect(book3, paint);
+    canvas.drawLine(
+      Offset(w * 0.26, h * 0.36),
+      Offset(w * 0.26, h * 0.52),
+      paint,
+    );
+
+    // Top book (smallest)
+    final book4 = RRect.fromLTRBR(
+      w * 0.24, h * 0.18, w * 0.76, h * 0.34, const Radius.circular(1.5),
+    );
+    canvas.drawRRect(book4, paint);
+    canvas.drawLine(
+      Offset(w * 0.30, h * 0.18),
+      Offset(w * 0.30, h * 0.34),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
