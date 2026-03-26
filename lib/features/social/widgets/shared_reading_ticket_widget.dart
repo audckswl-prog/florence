@@ -32,7 +32,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 30),
+          SizedBox(height: members.length <= 2 ? 16 : 30),
           _buildHeader(),
         ],
       )
@@ -61,7 +61,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
         memberSectionContent.add(const SizedBox(height: 12));
       } else {
         // 마지막 멤버인 경우 아래쪽 연장 여백 (티켓이 뚝 끊기지 않게 살짝 연장)
-        memberSectionContent.add(const SizedBox(height: 48));
+        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 16 : 48));
       }
       
       ticketWidgets.add(_buildSolidBlock(
@@ -112,7 +112,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
         ),
         // 높이를 강제하지 않고 child(절취선)의 높이에 맞추되 여유 공간을 둡니다.
         // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백을 더하여 펀칭 원형(지름 24)이 충분히 뚫리게 합니다.
-        padding: const EdgeInsets.symmetric(vertical: 9.5), // (24 - 5) / 2
+        padding: const EdgeInsets.symmetric(vertical: 8.5), // 9.5에서 8.5로 살짝 축소
         child: child,
       ),
     );
@@ -145,9 +145,10 @@ class SharedReadingTicketWidget extends StatelessWidget {
 
   Widget _buildHeader() {
     final String dateString = DateFormat('yyyy.MM.dd').format(project.endDate ?? project.createdAt);
+    final isCompact = members.length <= 2;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+      padding: EdgeInsets.fromLTRB(24, isCompact ? 8 : 16, 24, isCompact ? 4 : 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -291,12 +292,15 @@ class SharedReadingTicketWidget extends StatelessWidget {
       ],
     );
 
+    final isCompact = members.length <= 2;
+    final cardHeight = isCompact ? 145.0 : 175.0; // 2인일 때 카드 높이 축소
+    
     // 교차 카드 레이아웃: 책표지(비율 고정) + 그림(공간 차지)
     Widget cardArea;
     if (bookOnLeft) {
       // 멤버 1: 왼쪽 책표지, 오른쪽 그림
       cardArea = SizedBox(
-        height: 180,
+        height: cardHeight,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -309,7 +313,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
     } else {
       // 멤버 2: 왼쪽 그림, 오른쪽 책표지
       cardArea = SizedBox(
-        height: 180,
+        height: cardHeight,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -322,15 +326,18 @@ class SharedReadingTicketWidget extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: 20, 
+        vertical: isCompact ? 2 : 4,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 8),
+          SizedBox(height: isCompact ? 4 : 8),
           profileHeader,
-          const SizedBox(height: 12),
+          SizedBox(height: isCompact ? 8 : 12),
           cardArea,
-          const SizedBox(height: 12),
+          SizedBox(height: isCompact ? 8 : 12),
           // Book Title Row
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
@@ -367,7 +374,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isCompact ? 8 : 16),
           // 인용구 (박스 없이 깔끔하게)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -381,12 +388,12 @@ class SharedReadingTicketWidget extends StatelessWidget {
                       fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.w500,
                     ),
-                    maxLines: 4,
+                    maxLines: 3, // 2인일 때를 고려해 줄 정렬 최적화
                     overflow: TextOverflow.ellipsis,
                   )
-                : const SizedBox(height: 48), // 빈 공간 유지
+                : SizedBox(height: isCompact ? 32 : 48), // 빈 공간 유지
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: isCompact ? 4 : 8),
           // 페이지 수 
           Align(
             alignment: Alignment.centerRight,
@@ -400,7 +407,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: isCompact ? 2 : 4),
         ],
       ),
     );

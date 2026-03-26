@@ -183,9 +183,16 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
                 );
               }
 
+              final isScrollable = members.length >= 3;
+
               return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
-                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20, 
+                  vertical: isScrollable ? 60 : 40, // 2인일 때 상하 여백 축소
+                ),
+                physics: isScrollable 
+                    ? const BouncingScrollPhysics() 
+                    : const NeverScrollableScrollPhysics(),
                 child: SharedReadingTicketWidget(
                   project: widget.project,
                   members: members,
