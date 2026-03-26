@@ -430,7 +430,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
                 ),
                 child: CustomPaint(
                   size: const Size(20, 20),
-                  painter: _ReadingPersonIconPainter(
+                  painter: _DuomoIconPainter(
                     color: AppColors.burgundy,
                   ),
                 ),
@@ -546,7 +546,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
                   ),
                   child: CustomPaint(
                     size: const Size(20, 20),
-                    painter: _BookStackIconPainter(
+                    painter: _DuomoIconPainter(
                       color: AppColors.charcoal,
                     ),
                   ),
@@ -567,11 +567,28 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
           AnimatedBuilder(
             animation: _barAnimation,
             builder: (context, child) {
+              // Book-inspired color palette (12 muted, warm tones)
+              const barColors = [
+                Color(0xFF8B4513), // saddle brown
+                Color(0xFF5B7065), // sage green
+                Color(0xFFA0522D), // sienna
+                Color(0xFF4A6274), // steel blue
+                Color(0xFF6B4226), // dark wood
+                Color(0xFF7B6B5A), // warm taupe
+                Color(0xFF8E735B), // camel
+                Color(0xFF556B5E), // forest
+                Color(0xFF9C6644), // copper
+                Color(0xFF5D4E60), // dusty plum
+                Color(0xFF7D6E5C), // khaki
+                Color(0xFF7A5C47), // cocoa
+              ];
+
               return SizedBox(
                 height: 180,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: monthlyCounts.asMap().entries.map((entry) {
+                    final index = entry.key;
                     final data = entry.value;
                     final count = data['count'] as int;
                     final month = data['month'] as int;
@@ -591,67 +608,35 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            // Count label (only for non-zero)
+                            // Count label (classic text, no bubble)
                             if (count > 0)
                               Opacity(
                                 opacity: _barAnimation.value,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
+                                child: Text(
+                                  '$count',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: isCurrentMonth
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
                                     color: isCurrentMonth
                                         ? AppColors.burgundy
                                         : AppColors.charcoal,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    '$count',
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
                                   ),
                                 ),
                               )
                             else
-                              const SizedBox(height: 18),
+                              const SizedBox(height: 14),
                             const SizedBox(height: 4),
-                            // Bar
+                            // Bar (solid color, no gradient/glow)
                             Container(
                               width: double.infinity,
                               height: animatedHeight < 4 ? 4 : animatedHeight,
                               decoration: BoxDecoration(
-                                gradient: count > 0
-                                    ? LinearGradient(
-                                        begin: Alignment.bottomCenter,
-                                        end: Alignment.topCenter,
-                                        colors: isCurrentMonth
-                                            ? [
-                                                AppColors.burgundy,
-                                                const Color(0xFFB83A3E),
-                                              ]
-                                            : [
-                                                AppColors.charcoal
-                                                    .withOpacity(0.7),
-                                                AppColors.charcoal,
-                                              ],
-                                      )
-                                    : null,
-                                color: count == 0
-                                    ? AppColors.greyLight.withOpacity(0.2)
-                                    : null,
-                                borderRadius: BorderRadius.circular(6),
-                                boxShadow: count > 0 && isCurrentMonth
-                                    ? [
-                                        BoxShadow(
-                                          color: AppColors.burgundy
-                                              .withOpacity(0.3),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ]
-                                    : null,
+                                color: count > 0
+                                    ? barColors[index % barColors.length]
+                                    : AppColors.greyLight.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -901,168 +886,93 @@ class _RadarChartPainter extends CustomPainter {
 }
 
 // ═══════════════════════════════════════════════════════
-// Custom Icon: Reading Person (선호 장르)
-// 의자에 앉아 책을 읽고 있는 사람의 상반신 선형 아이콘
+// Custom Icon: Florence Duomo Cathedral (Line Art)
+// 피렌체 두오모 성당의 심플한 선형 아이콘
 // ═══════════════════════════════════════════════════════
-class _ReadingPersonIconPainter extends CustomPainter {
+class _DuomoIconPainter extends CustomPainter {
   final Color color;
-  _ReadingPersonIconPainter({required this.color});
+  _DuomoIconPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
+      ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
     final w = size.width;
     final h = size.height;
 
-    // Head (circle)
-    canvas.drawCircle(Offset(w * 0.42, h * 0.18), w * 0.1, paint);
+    // Main dome (large arc)
+    final dome = Path()
+      ..moveTo(w * 0.18, h * 0.55)
+      ..quadraticBezierTo(w * 0.18, h * 0.18, w * 0.50, h * 0.15)
+      ..quadraticBezierTo(w * 0.82, h * 0.18, w * 0.82, h * 0.55);
+    canvas.drawPath(dome, paint);
 
-    // Body (torso line)
-    final bodyPath = Path()
-      ..moveTo(w * 0.42, h * 0.28)
-      ..lineTo(w * 0.42, h * 0.55);
-    canvas.drawPath(bodyPath, paint);
-
-    // Left arm (holding book)
-    final leftArm = Path()
-      ..moveTo(w * 0.42, h * 0.36)
-      ..lineTo(w * 0.25, h * 0.45)
-      ..lineTo(w * 0.28, h * 0.55);
-    canvas.drawPath(leftArm, paint);
-
-    // Right arm (holding book)
-    final rightArm = Path()
-      ..moveTo(w * 0.42, h * 0.36)
-      ..lineTo(w * 0.60, h * 0.45)
-      ..lineTo(w * 0.57, h * 0.55);
-    canvas.drawPath(rightArm, paint);
-
-    // Book (open book shape)
-    final book = Path()
-      ..moveTo(w * 0.22, h * 0.50)
-      ..lineTo(w * 0.22, h * 0.62)
-      ..quadraticBezierTo(w * 0.42, h * 0.58, w * 0.42, h * 0.62)
-      ..quadraticBezierTo(w * 0.42, h * 0.58, w * 0.62, h * 0.62)
-      ..lineTo(w * 0.62, h * 0.50);
-    canvas.drawPath(book, paint);
-
-    // Book spine
+    // Lantern (small tower on top of dome)
     canvas.drawLine(
-      Offset(w * 0.42, h * 0.55),
-      Offset(w * 0.42, h * 0.62),
+      Offset(w * 0.50, h * 0.15),
+      Offset(w * 0.50, h * 0.05),
+      paint,
+    );
+    // Cross on top
+    canvas.drawLine(
+      Offset(w * 0.46, h * 0.07),
+      Offset(w * 0.54, h * 0.07),
       paint,
     );
 
-    // Chair seat
-    final chair = Path()
-      ..moveTo(w * 0.22, h * 0.72)
-      ..lineTo(w * 0.62, h * 0.72);
-    canvas.drawPath(chair, paint);
-
-    // Legs (sitting)
-    final legs = Path()
-      ..moveTo(w * 0.42, h * 0.55)
-      ..lineTo(w * 0.32, h * 0.72)
-      ..moveTo(w * 0.42, h * 0.55)
-      ..lineTo(w * 0.52, h * 0.72);
-    canvas.drawPath(legs, paint);
-
-    // Chair legs
+    // Drum (base of dome)
     canvas.drawLine(
-      Offset(w * 0.25, h * 0.72),
-      Offset(w * 0.22, h * 0.88),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(w * 0.59, h * 0.72),
-      Offset(w * 0.62, h * 0.88),
+      Offset(w * 0.14, h * 0.55),
+      Offset(w * 0.86, h * 0.55),
       paint,
     );
 
-    // Chair back
-    final chairBack = Path()
-      ..moveTo(w * 0.62, h * 0.72)
-      ..lineTo(w * 0.62, h * 0.35)
-      ..quadraticBezierTo(w * 0.62, h * 0.28, w * 0.58, h * 0.25);
-    canvas.drawPath(chairBack, paint);
+    // Building body walls
+    canvas.drawLine(
+      Offset(w * 0.14, h * 0.55),
+      Offset(w * 0.14, h * 0.88),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(w * 0.86, h * 0.55),
+      Offset(w * 0.86, h * 0.88),
+      paint,
+    );
+
+    // Base line
+    canvas.drawLine(
+      Offset(w * 0.08, h * 0.88),
+      Offset(w * 0.92, h * 0.88),
+      paint,
+    );
+
+    // Left small window
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.24, h * 0.64, w * 0.12, h * 0.14),
+      paint,
+    );
+
+    // Right small window
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.64, h * 0.64, w * 0.12, h * 0.14),
+      paint,
+    );
+
+    // Center door (arch)
+    final door = Path()
+      ..moveTo(w * 0.40, h * 0.88)
+      ..lineTo(w * 0.40, h * 0.68)
+      ..quadraticBezierTo(w * 0.50, h * 0.60, w * 0.60, h * 0.68)
+      ..lineTo(w * 0.60, h * 0.88);
+    canvas.drawPath(door, paint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ═══════════════════════════════════════════════════════
-// Custom Icon: Book Stack (월별 독서량)
-// 아래에서 위로 책이 차곡차곡 쌓여 올라가는 모습의 선형 아이콘
-// ═══════════════════════════════════════════════════════
-class _BookStackIconPainter extends CustomPainter {
-  final Color color;
-  _BookStackIconPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final w = size.width;
-    final h = size.height;
-
-    // Bottom book (widest, slightly tilted)
-    final book1 = RRect.fromLTRBR(
-      w * 0.12, h * 0.72, w * 0.88, h * 0.88, const Radius.circular(1.5),
-    );
-    canvas.drawRRect(book1, paint);
-    // Spine line
-    canvas.drawLine(
-      Offset(w * 0.18, h * 0.72),
-      Offset(w * 0.18, h * 0.88),
-      paint,
-    );
-
-    // Second book
-    final book2 = RRect.fromLTRBR(
-      w * 0.16, h * 0.54, w * 0.84, h * 0.70, const Radius.circular(1.5),
-    );
-    canvas.drawRRect(book2, paint);
-    canvas.drawLine(
-      Offset(w * 0.22, h * 0.54),
-      Offset(w * 0.22, h * 0.70),
-      paint,
-    );
-
-    // Third book (narrower)
-    final book3 = RRect.fromLTRBR(
-      w * 0.20, h * 0.36, w * 0.80, h * 0.52, const Radius.circular(1.5),
-    );
-    canvas.drawRRect(book3, paint);
-    canvas.drawLine(
-      Offset(w * 0.26, h * 0.36),
-      Offset(w * 0.26, h * 0.52),
-      paint,
-    );
-
-    // Top book (smallest)
-    final book4 = RRect.fromLTRBR(
-      w * 0.24, h * 0.18, w * 0.76, h * 0.34, const Radius.circular(1.5),
-    );
-    canvas.drawRRect(book4, paint);
-    canvas.drawLine(
-      Offset(w * 0.30, h * 0.18),
-      Offset(w * 0.30, h * 0.34),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
