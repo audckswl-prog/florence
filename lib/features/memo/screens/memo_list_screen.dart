@@ -40,14 +40,6 @@ class MemoListScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.push('/memo/write/$isbn', extra: book);
-        },
-        backgroundColor: AppColors.burgundy,
-        label: const Text('메모 작성'),
-        icon: const Icon(Icons.edit),
-      ),
       body: memosAsync.when(
         data: (memos) {
           if (memos.isEmpty) {

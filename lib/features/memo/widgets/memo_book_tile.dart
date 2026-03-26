@@ -282,24 +282,7 @@ class MemoBookTile extends ConsumerWidget {
                               ],
                             ),
 
-                            // View Detail
-                            Row(
-                              children: [
-                                Text(
-                                  '펼쳐보기',
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(
-                                        color: AppColors.grey,
-                                        fontSize: 11,
-                                      ),
-                                ),
-                                const Icon(
-                                  Icons.chevron_right,
-                                  size: 14,
-                                  color: AppColors.grey,
-                                ),
-                              ],
-                            ),
+                            const SizedBox.shrink(),
                           ],
                         ),
                       ],
