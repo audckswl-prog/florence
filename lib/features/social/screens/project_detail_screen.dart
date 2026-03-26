@@ -1300,15 +1300,15 @@ class _CheersPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..style = PaintingStyle.fill;
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
     
     final double w = size.width;
     final double h = size.height;
     
-    // We will draw one glass and mirror+rotate it to create the clinking effect.
-    // Glass dimensions
-    final double glassW = w * 0.35;
-    final double glassH = h * 0.85;
+    // Glass basic dimensions
+    final double glassW = w * 0.38;
+    final double glassH = h * 0.9;
     
     void drawGlass(Canvas c, Offset center, double angle) {
       c.save();
@@ -1316,53 +1316,55 @@ class _CheersPainter extends CustomPainter {
       c.rotate(angle);
       
       final path = Path();
-      // Start from the base (bottom)
-      final double baseW = glassW * 0.6;
-      final double stemW = glassW * 0.08;
       
-      final double topY = -glassH / 2;
-      final double bottomY = glassH / 2;
+      // Bowl part (Tulip/Bordeaux style)
+      // center of the glass is at (0,0) in translated space
+      final double bW = glassW * 0.9;
+      final double bH = glassH * 0.55;
+      final double topY = -glassH * 0.5;
+      final double bowlBottomY = topY + bH;
       
-      final double bowlBottomY = 0.0;
+      // Stem & Base
       final double stemTopY = bowlBottomY;
+      final double stemBottomY = glassH * 0.42;
+      final double stemW = 1.8;
+      final double baseW = glassW * 0.75;
       
-      // Base
-      path.moveTo(-baseW / 2, bottomY);
-      path.lineTo(baseW / 2, bottomY);
-      path.lineTo(stemW / 2, bottomY - glassH * 0.05);
-      
-      // Stem right
-      path.lineTo(stemW / 2, stemTopY);
-      
-      // Bowl right curve (elegant wine/champagne glass)
+      // 1. Draw Bowl Silhouette
+      path.moveTo(-bW * 0.45, topY); // top left lip
+      path.lineTo(-bW * 0.45, topY + bH * 0.2); // slight vertical drop
+      // Bottom curve
       path.quadraticBezierTo(
-        glassW / 2, stemTopY + glassH * 0.1, 
-        glassW / 2, topY + glassH * 0.2
+        -bW * 0.45, bowlBottomY, 
+        0, bowlBottomY
       );
-      path.lineTo(glassW / 2, topY);
-      
-      // Top lip
-      path.lineTo(-glassW / 2, topY);
-      
-      // Bowl left curve
-      path.lineTo(-glassW / 2, topY + glassH * 0.2);
       path.quadraticBezierTo(
-        -glassW / 2, stemTopY + glassH * 0.1, 
-        -stemW / 2, stemTopY
+        bW * 0.45, bowlBottomY, 
+        bW * 0.45, topY + bH * 0.2
       );
+      path.lineTo(bW * 0.45, topY); // up to top right lip
+      path.close(); // lip line (straight)
       
-      // Stem left
-      path.lineTo(-stemW / 2, bottomY - glassH * 0.05);
-      path.close();
+      // 2. Draw Stem (Rectangle)
+      path.addRect(Rect.fromLTRB(-stemW/2, stemTopY - 1, stemW/2, stemBottomY));
+      
+      // 3. Draw Base (Thin Oval)
+      final baseRect = Rect.fromCenter(
+        center: Offset(0, stemBottomY + 1), 
+        width: baseW, 
+        height: 3.5
+      );
+      path.addOval(baseRect);
       
       c.drawPath(path, paint);
       c.restore();
     }
     
-    // Left glass
-    drawGlass(canvas, Offset(w * 0.35, h * 0.5), 0.25);
-    // Right glass
-    drawGlass(canvas, Offset(w * 0.65, h * 0.5), -0.25);
+    // Position and tilt to simulate clinking at the top
+    // Left glass: tilt slightly right (top moves right)
+    drawGlass(canvas, Offset(w * 0.38, h * 0.5), 0.15);
+    // Right glass: tilt slightly left (top moves left)
+    drawGlass(canvas, Offset(w * 0.62, h * 0.5), -0.15);
   }
 
   @override
