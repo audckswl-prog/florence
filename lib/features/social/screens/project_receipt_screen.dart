@@ -188,7 +188,7 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
               return SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
                   horizontal: 20, 
-                  vertical: isScrollable ? 60 : 40, // 2인일 때 상하 여백 축소
+                  vertical: isScrollable ? 60 : 15, // 2인일 때 상하 여백을 더 극단적으로 축소
                 ),
                 physics: isScrollable 
                     ? const BouncingScrollPhysics() 
