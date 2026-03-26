@@ -62,38 +62,68 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
     super.dispose();
   }
 
-  // Fixed 8 genre categories (same as existing logic)
+  // Fixed 8 genre categories
   static const List<String> _allGenres = [
-    '소설',
-    '경제·경영',
+    '문학',
+    '경제경영',
     '자기계발',
-    '에세이·시',
-    '인문·사회',
-    'IT·과학',
-    '인물·전기',
-    '기타 도서',
+    '인문/사회/역사',
+    '과학/IT',
+    '라이프/예술',
+    '유아/학습',
+    '기타',
   ];
 
   String _getSimpleCategory(String rawCategory) {
-    if (rawCategory.contains('소설')) return '소설';
-    if (rawCategory.contains('경제') || rawCategory.contains('경영'))
-      return '경제·경영';
-    if (rawCategory.contains('자기계발')) return '자기계발';
-    if (rawCategory.contains('에세이') || rawCategory.contains('시'))
-      return '에세이·시';
+    // 1. 문학 (소설/시/에세이)
+    if (rawCategory.contains('소설') ||
+        rawCategory.contains('에세이') ||
+        rawCategory.contains('시') ||
+        rawCategory.contains('희곡')) return '문학';
+    // 2. 경제경영
+    if (rawCategory.contains('경제') ||
+        rawCategory.contains('경영') ||
+        rawCategory.contains('투자') ||
+        rawCategory.contains('재테크') ||
+        rawCategory.contains('마케팅')) return '경제경영';
+    // 3. 자기계발
+    if (rawCategory.contains('자기계발') ||
+        rawCategory.contains('성공') ||
+        rawCategory.contains('처세') ||
+        rawCategory.contains('인간관계')) return '자기계발';
+    // 4. 인문/사회/역사
     if (rawCategory.contains('인문') ||
         rawCategory.contains('사회') ||
-        rawCategory.contains('역사'))
-      return '인문·사회';
-    if (rawCategory.contains('IT') ||
+        rawCategory.contains('역사') ||
+        rawCategory.contains('철학') ||
+        rawCategory.contains('심리')) return '인문/사회/역사';
+    // 5. 과학/IT/컴퓨터
+    if (rawCategory.contains('과학') ||
+        rawCategory.contains('수학') ||
+        rawCategory.contains('IT') ||
         rawCategory.contains('컴퓨터') ||
-        rawCategory.contains('과학'))
-      return 'IT·과학';
-    if (rawCategory.contains('인물') ||
-        rawCategory.contains('전기') ||
-        rawCategory.contains('자서전'))
-      return '인물·전기';
-    return '기타 도서';
+        rawCategory.contains('프로그래밍') ||
+        rawCategory.contains('모바일')) return '과학/IT';
+    // 6. 라이프/예술/취미
+    if (rawCategory.contains('건강') ||
+        rawCategory.contains('취미') ||
+        rawCategory.contains('요리') ||
+        rawCategory.contains('여행') ||
+        rawCategory.contains('예술') ||
+        rawCategory.contains('스포츠') ||
+        rawCategory.contains('대중문화') ||
+        rawCategory.contains('가정') ||
+        rawCategory.contains('살림')) return '라이프/예술';
+    // 7. 유아/학습/외국어
+    if (rawCategory.contains('유아') ||
+        rawCategory.contains('어린이') ||
+        rawCategory.contains('청소년') ||
+        rawCategory.contains('외국어') ||
+        rawCategory.contains('사전') ||
+        rawCategory.contains('자격증') ||
+        rawCategory.contains('수험서')) return '유아/학습';
+    // 8. 기타 (종교, 만화, 잡지, 고전 등)
+    return '기타';
   }
 
   Future<void> _pickAndUploadImage() async {
