@@ -206,6 +206,7 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
                           project: widget.project,
                           members: members,
                           memberProfiles: _profiles,
+                          availableHeight: constraints.maxHeight, // 가용 높이 전달
                         ),
                       ),
                     ),

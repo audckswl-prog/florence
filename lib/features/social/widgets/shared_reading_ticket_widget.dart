@@ -15,12 +15,14 @@ class SharedReadingTicketWidget extends StatelessWidget {
   final Project project;
   final List<ProjectMember> members;
   final Map<String, Profile> memberProfiles;
+  final double? availableHeight; // 기기별 가용 높이 전달
 
   const SharedReadingTicketWidget({
     super.key,
     required this.project,
     required this.members,
     required this.memberProfiles,
+    this.availableHeight,
   });
 
   @override
@@ -58,10 +60,11 @@ class SharedReadingTicketWidget extends StatelessWidget {
       
       if (index < members.length - 1) {
         // 다음 멤버로 넘어가기 전 하단/상단 여백
-        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 16 : 12));
+        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 8 : 12));
       } else {
-        // 마지막 멤버인 경우 아래쪽 연장 여백 (하단 탭 바 위까지 길게 연장)
-        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 60 : 48));
+        // 마지막 멤버인 경우 아래쪽 연장 여백 (화면 끝까지 닿게 함)
+        // 만약 가용 높이가 있다면 최소 높이가 보장되므로 여기선 빡빡하게 8만 줍니다.
+        memberSectionContent.add(SizedBox(height: members.length <= 2 ? 8 : 48));
       }
       
       ticketWidgets.add(_buildSolidBlock(
@@ -293,7 +296,16 @@ class SharedReadingTicketWidget extends StatelessWidget {
     );
 
     final isCompact = members.length <= 2;
-    final cardHeight = isCompact ? 155.0 : 175.0; // 좁은 폭에 맞춰 세로로 긴 비율로 복구
+    // 가용 높이가 있을 경우, 텍스트/여백 공간(약 520px)을 제외한 나머지 공간을 카드에 배분
+    double cardHeight;
+    if (isCompact && availableHeight != null) {
+      // (가용높이 - 고정된 텍스트/여백) / 2 = 카드 1개의 가변 높이
+      // 520px은 헤더, 펀칭, 모든 텍스트 영역의 합산 근사값
+      cardHeight = (availableHeight! - 510) / 2;
+      cardHeight = cardHeight.clamp(110.0, 180.0);
+    } else {
+      cardHeight = isCompact ? 155.0 : 175.0;
+    }
     
     // 교차 카드 레이아웃: 책표지(비율 고정) + 그림(공간 차지)
     Widget cardArea;
