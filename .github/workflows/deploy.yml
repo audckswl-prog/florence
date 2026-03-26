@@ -40,6 +40,7 @@ jobs:
           flutter build web \
             --release \
             --base-href /florence/ \
+            --pwa-strategy=none \
             --dart-define-from-file=.env
 
       - name: Upload artifact
