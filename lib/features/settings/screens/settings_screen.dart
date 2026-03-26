@@ -56,7 +56,7 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _launchEmail() async {
     final uri = Uri(
       scheme: 'mailto',
-      path: 'audckswl@naver.com',
+      path: 'audckswl@gmail.com',
       queryParameters: {
         'subject': '[Firenze] 문의사항',
         'body': '앱 버전: 1.0.0\n\n문의 내용을 작성해주세요.\n',
