@@ -7,8 +7,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/user_book_model.dart';
-import '../../../data/models/book_model.dart';
-import '../providers/ai_ticket_provider.dart';
 import '../providers/library_providers.dart';
 
 class ReadingTicketScreen extends ConsumerStatefulWidget {
@@ -60,7 +58,6 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
   @override
   Widget build(BuildContext context) {
     final book = widget.userBook.book;
-    final aiDataAsync = ref.watch(aiTicketFutureProvider(book));
     final readCountThisYear = ref.watch(readBooksThisYearProvider).value ?? 1;
 
     return Scaffold(
@@ -104,33 +101,11 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Hero(
                       tag: 'ticket_${book.isbn}',
-                      child: aiDataAsync.when(
-                        data: (aiData) => ReadingTicketWidget(
-                          userBook: widget.userBook,
-                          quote: widget.quote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: aiData.nationalityCode,
-                          nationalityName: aiData.nationalityName,
-                          publicationYear: aiData.publicationYear != '연도 미상'
-                              ? aiData.publicationYear
-                              : book.publicationYear,
-                        ),
-                        loading: () => ReadingTicketWidget(
-                          userBook: widget.userBook,
-                          quote: widget.quote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: 'UN',
-                          nationalityName: '분석 중',
-                          publicationYear: book.publicationYear,
-                        ),
-                        error: (e, st) => ReadingTicketWidget(
-                          userBook: widget.userBook,
-                          quote: widget.quote,
-                          readCountThisYear: readCountThisYear,
-                          nationalityCode: 'UN',
-                          nationalityName: '알 수 없음',
-                          publicationYear: book.publicationYear,
-                        ),
+                      child: ReadingTicketWidget(
+                        userBook: widget.userBook,
+                        quote: widget.quote,
+                        readCountThisYear: readCountThisYear,
+                        publicationYear: book.publicationYear,
                       ),
                     ),
                   ),
@@ -144,36 +119,18 @@ class _ReadingTicketScreenState extends ConsumerState<ReadingTicketScreen> {
   }
 }
 
-final aiTicketFutureProvider = FutureProvider.family.autoDispose((
-  ref,
-  Book book,
-) {
-  final repo = ref.watch(aiTicketRepositoryProvider);
-  return repo.getTicketMetadata(book.isbn, book.title, book.author);
-});
-
 class ReadingTicketWidget extends StatelessWidget {
   final UserBook userBook;
   final String quote;
   final int readCountThisYear;
-  final String nationalityCode;
-  final String nationalityName;
   final String publicationYear;
 
   const ReadingTicketWidget({
     required this.userBook,
     required this.quote,
     required this.readCountThisYear,
-    required this.nationalityCode,
-    required this.nationalityName,
     required this.publicationYear,
   });
-
-  String _flagEmoji(String code) {
-    if (code.length != 2) return '🌐';
-    return String.fromCharCode(code.codeUnitAt(0) - 0x41 + 0x1F1E6) +
-        String.fromCharCode(code.codeUnitAt(1) - 0x41 + 0x1F1E6);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,44 +240,18 @@ class ReadingTicketWidget extends StatelessWidget {
 
                       const SizedBox(height: 6),
 
-                      // Flag + country / year
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.black12,
-                                    width: 0.5,
-                                  ),
-                                ),
-                                child: Image.network(
-                                  'https://flagcdn.com/w80/${nationalityCode.toLowerCase()}.png',
-                                  width: 40,
-                                  height: 26,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Text(
-                                    _flagEmoji(nationalityCode),
-                                    style: const TextStyle(fontSize: 24),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '$nationalityName, $publicationYear',
-                                style: const TextStyle(
-                                  fontFamily: 'Pretendard',
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.charcoal,
-                                ),
-                              ),
-                            ],
+                      // Publication year (right-aligned)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          publicationYear,
+                          style: const TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.charcoal,
                           ),
-                        ],
+                        ),
                       ),
 
                       const Spacer(flex: 1),
