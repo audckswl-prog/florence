@@ -188,12 +188,16 @@ class LibraryStackView extends ConsumerWidget {
                 // 화면 가장 밑바닥(하단바)과 두 번째 선반의 바닥이 띄워져야 할 최종 목표 여백
                 const double bottomTargetGap = 12.0;
 
-                // 기기 화면 높이(constraints.maxHeight) 내에서 2개의 선반이 완벽하게 12px 간격으로 하단에 배치되기 위한 동적 간격(황금비율)을 계산합니다.
-                double dynamicGap =
+                // 기기 화면 높이(constraints.maxHeight) 내에서 2개의 선반이 들어갈 때의 기기 맞춤 간격을 구한 뒤,
+                // 너무 멀게 떨어져 보이지 않도록 선반 사이 간격을 원래 계산된 값의 절반으로 줄입니다.
+                double originalGap =
                     constraints.maxHeight -
                     topPadding -
                     (shelfHeight * 2) -
                     bottomTargetGap;
+                
+                double dynamicGap = originalGap / 2;
+
                 if (dynamicGap < 24.0) {
                   dynamicGap =
                       24.0; // 세로로 매우 짧은 화면일 경우 아이템이 겹치지 않도록 최소 24px 간격을 보장합니다.

@@ -148,7 +148,7 @@ class LibraryArchiveScreen extends StatelessWidget {
                             'Firenze',
                             style: GoogleFonts.greatVibes(
                               fontSize: 34,
-                              color: AppColors.charcoal,
+                              color: AppColors.burgundy,
                               shadows: [
                                 Shadow(
                                   color: Colors.black.withOpacity(0.1),
