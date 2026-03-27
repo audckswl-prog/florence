@@ -21,6 +21,8 @@ import '../data/models/project_model.dart';
 import '../features/social/screens/project_receipt_screen.dart';
 import '../features/social/screens/ai_chat_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
+import '../features/onboarding/providers/onboarding_provider.dart';
+import '../features/onboarding/screens/onboarding_screen.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -56,14 +58,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggingIn =
           state.uri.toString() == '/login' || state.uri.toString() == '/signup';
       final isSplash = state.uri.toString() == '/splash';
+      final isOnboarding = state.uri.toString() == '/onboarding';
 
       // 1. Force redirect from Splash
       if (isSplash) {
+        final hasSeenOnboarding = ref.read(onboardingProvider);
+        if (!isLoggedIn && !hasSeenOnboarding) {
+          return '/onboarding';
+        }
         return isLoggedIn ? '/home' : '/login';
       }
 
       // 2. Protect routes
-      if (!isLoggedIn && !isLoggingIn) {
+      if (!isLoggedIn && !isLoggingIn && !isOnboarding) {
         return '/login';
       }
 
@@ -78,6 +85,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(

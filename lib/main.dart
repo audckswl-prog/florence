@@ -9,9 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'config/router.dart';
 import 'config/theme.dart';
 import 'data/services/supabase_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'features/onboarding/providers/onboarding_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
 
   try {
     GoogleFonts.config.allowRuntimeFetching = true;
@@ -48,7 +51,14 @@ void main() async {
     debugPrint('Supabase initialization failed: $e');
   }
 
-  runApp(const ProviderScope(child: FlorenceApp()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const FlorenceApp(),
+    ),
+  );
 }
 
 class FlorenceApp extends ConsumerWidget {
