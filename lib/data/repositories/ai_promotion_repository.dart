@@ -120,7 +120,13 @@ class AIPromotionRepository {
       );
 
       // 3. Save to Supabase for future use
-      await _supabase.from('book_promotions').insert(newPromotion.toJson());
+      // 중복 생성(Race condition)이나 RLS 권한 문제로 insert가 실패하더라도, 
+      // 이미 생성된 프롬프트 데이터는 사용자에게 정상적으로 보여주도록 try-catch로 감싸고 upsert를 사용합니다.
+      try {
+        await _supabase.from('book_promotions').upsert(newPromotion.toJson());
+      } catch (dbError) {
+        debugPrint('Warning: Failed to cache promotion in Supabase (Non-fatal): $dbError');
+      }
 
       return newPromotion;
     } catch (e) {
