@@ -19,7 +19,12 @@ class AIPromotionRepository {
         : const String.fromEnvironment('GEMINI_API_KEY');
         
     if (apiKey.isEmpty) {
-      debugPrint('Warning: GEMINI_API_KEY is not set in .env');
+      debugPrint('Warning: GEMINI_API_KEY is not set in .env or dart-define');
+    } else {
+      final maskedKey = apiKey.length > 8 
+          ? '${apiKey.substring(0, 4)}...${apiKey.substring(apiKey.length - 4)}' 
+          : '***';
+      debugPrint('✅ [Florence Docent] 성공적으로 API 키를 가져왔습니다. Key 형태: $maskedKey');
     }
 
     _model = GenerativeModel(
