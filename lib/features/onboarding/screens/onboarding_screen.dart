@@ -5,13 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../providers/onboarding_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
-import '../../library/screens/library_stack_view.dart';
-import '../../library/providers/library_providers.dart';
 import '../../social/widgets/shared_reading_ticket_widget.dart';
+import '../../../data/models/project_model.dart';
+import '../../../data/models/profile_model.dart';
+import '../../library/widgets/book_spine_widget.dart';
 import '../../../data/models/book_model.dart';
 import '../../../data/models/user_book_model.dart';
-import '../../../data/models/project_model.dart';
-import '../../../data/models/project_member_model.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -46,11 +45,54 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  // --- Mock Data Generators ---
+  // --- Mock Data ---
+  Project _generateMockProject() {
+    return Project(
+      id: 'onboard_proj',
+      ownerId: 'user1',
+      isbn: '9788932036733',
+      name: '고전문학 함께 읽기',
+      status: 'in_progress',
+      startDate: DateTime.now().subtract(const Duration(days: 3)),
+      createdAt: DateTime.now(),
+    );
+  }
+
+  List<ProjectMember> _generateMockMembers() {
+    return [
+      ProjectMember(
+        id: '1',
+        projectId: 'onboard_proj',
+        userId: 'user1',
+        role: 'owner',
+        readingStatus: 'completed',
+        aiQuestionCount: 0,
+        nickname: '레오나르도',
+        quote: '새는 알에서 나오려고 투쟁한다. 알은 세계이다.',
+        joinedAt: DateTime.now(),
+        readPages: 230,
+        totalPages: 230,
+      ),
+      ProjectMember(
+        id: '2',
+        projectId: 'onboard_proj',
+        userId: 'user2',
+        role: 'member',
+        readingStatus: 'reading',
+        aiQuestionCount: 0,
+        nickname: '단테',
+        quote: '결국 나는 내 속에서 솟아나오려는 것, 그것을 살아보려 했다.',
+        joinedAt: DateTime.now(),
+        readPages: 180,
+        totalPages: 230,
+      ),
+    ];
+  }
+
   List<UserBook> _generateMockBooks() {
     final books = <UserBook>[];
     for (int i = 0; i < 28; i++) {
-      int pageCount = 200 + Random().nextInt(400); // 200~600 pages
+      int pageCount = 200 + Random(i).nextInt(400);
       books.add(UserBook(
         id: 'mock_$i',
         userId: '1',
@@ -60,8 +102,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         totalPages: pageCount,
         startedAt: DateTime.now().subtract(Duration(days: 30 - i)),
         finishedAt: DateTime.now().subtract(Duration(days: 28 - i)),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
         book: Book(
           isbn: 'isbn_$i',
           title: '피렌체 베스트 $i',
@@ -71,58 +111,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           description: '',
           coverUrl: '',
           categoryName: '소설',
+          link: '',
           pageCount: pageCount,
         ),
       ));
     }
     return books;
-  }
-
-  Project _generateMockProject() {
-    return Project(
-      id: 'onboard_proj',
-      creatorId: 'user1',
-      bookIsbn: '9788932036733',
-      name: '고전문학 함께 읽기',
-      description: '',
-      status: 'active',
-      startDate: DateTime.now().subtract(const Duration(days: 3)),
-      createdAt: DateTime.now(),
-      coverUrl: '',
-      bookTitle: '데미안',
-      bookAuthor: '헤르만 헤세',
-    );
-  }
-
-  Map<String, ProjectMember> _generateMockMembers() {
-    return {
-      'user1': ProjectMember(
-        id: '1',
-        projectId: 'onboard_proj',
-        userId: 'user1',
-        role: 'admin',
-        nickname: '레오나르도',
-        profileUrl: null,
-        progress: 100,
-        lastReadPage: 230,
-        lastReadAt: DateTime.now(),
-        quote: '새는 알에서 나오려고 투쟁한다. 알은 세계이다.',
-        quotePage: 154,
-      ),
-      'user2': ProjectMember(
-        id: '2',
-        projectId: 'onboard_proj',
-        userId: 'user2',
-        role: 'member',
-        nickname: '단테',
-        profileUrl: null,
-        progress: 80,
-        lastReadPage: 180,
-        lastReadAt: DateTime.now(),
-        quote: '결국 나는 내 속에서 솟아나오려는 것, 그것을 살아보려 했다.',
-        quotePage: 121,
-      ),
-    };
   }
 
   // --- Page Builders ---
@@ -138,7 +132,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           decoration: BoxDecoration(
             color: _currentPage == index
                 ? AppColors.burgundy
-                : AppColors.burgundy.withOpacity(0.2),
+                : AppColors.burgundy.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(4),
           ),
         );
@@ -175,30 +169,104 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
+  // 1. 서재 페이지 (BookSpineWidget 직접 사용)
   Widget _buildLibraryPage() {
+    final mockBooks = _generateMockBooks();
+    // 선반으로 묶기
+    final double maxShelfWidth = 250;
+    final List<List<UserBook>> shelves = [];
+    List<UserBook> currentRow = [];
+    double currentRowWidth = 0;
+    for (var ub in mockBooks) {
+      int pages = ub.book.pageCount;
+      if (pages == 0) pages = 300;
+      double bookWidth = ((18.0 + (pages * 0.08)) * 1.0).clamp(14.0, 70.0);
+      if (currentRowWidth + bookWidth + 1 > maxShelfWidth && currentRow.isNotEmpty) {
+        shelves.add(currentRow);
+        currentRow = [];
+        currentRowWidth = 0;
+      }
+      currentRow.add(ub);
+      currentRowWidth += bookWidth + 1;
+    }
+    if (currentRow.isNotEmpty) shelves.add(currentRow);
+
     return Column(
       children: [
         Expanded(
           flex: 6,
-          child: ClipRect(
-            child: ProviderScope(
-              overrides: [
-                readBooksProvider.overrideWith(
-                    (ref) => AsyncValue.data(_generateMockBooks())),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                // 총 권수 헤더
+                Padding(
+                  padding: const EdgeInsets.only(top: 24, bottom: 8),
+                  child: Text(
+                    '총 ${mockBooks.length}권',
+                    style: const TextStyle(
+                      color: AppColors.burgundy,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                ),
+                Container(height: 1, color: AppColors.burgundy),
+                const SizedBox(height: 8),
+                // 선반들
+                Expanded(
+                  child: ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: shelves.reversed.toList().length.clamp(0, 3),
+                    itemBuilder: (context, index) {
+                      final shelfBooks = shelves.reversed.toList()[index];
+                      return Column(
+                        children: [
+                          SizedBox(
+                            height: 120,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: shelfBooks
+                                  .map((b) => BookSpineWidget(key: ValueKey(b.isbn), userBook: b))
+                                  .toList(),
+                            ),
+                          ),
+                          Container(
+                            height: 10,
+                            margin: const EdgeInsets.only(bottom: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF5A1E1E),
+                              borderRadius: BorderRadius.circular(3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ],
-              child: const IgnorePointer(child: LibraryStackView()),
             ),
           ),
         ),
         Expanded(
           flex: 4,
           child: _buildTextSection('내 손안의 작은 서재',
-              '자신의 서재에 다수의 책이 예쁘게 쌓여있는 모습을 한눈에 볼 수 있습니다. 실제 책 두께에 비례하여 꽂히는 책장의 성취감을 느껴보세요.'),
+              '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.'),
         ),
       ],
     );
   }
 
+  // 2. 독서 티켓 페이지
   Widget _buildTicketPage() {
     return Column(
       children: [
@@ -213,15 +281,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   duration: const Duration(seconds: 1),
                   curve: Curves.elasticOut,
                   builder: (context, scale, child) {
-                    return Transform.scale(
-                      scale: scale,
-                      child: child,
-                    );
+                    return Transform.scale(scale: scale, child: child);
                   },
                   child: SharedReadingTicketWidget(
                     project: _generateMockProject(),
-                    members: _generateMockMembers().values.toList(),
-                    memberProfiles: const {},
+                    members: _generateMockMembers(),
+                    memberProfiles: <String, Profile>{},
                   ),
                 ),
               ),
@@ -237,6 +302,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
+  // 3. 메모 페이지
   Widget _buildMemoPage() {
     return Column(
       children: [
@@ -251,7 +317,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   )
@@ -264,7 +330,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Container(
                     height: 200,
                     decoration: BoxDecoration(
-                      color: AppColors.greyLight.withOpacity(0.3),
+                      color: AppColors.greyLight.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Center(
@@ -298,62 +364,55 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         Expanded(
           flex: 4,
           child: _buildTextSection('인상적인 문장을 사진과 함께',
-              '오래도록 기억에 남고 싶은 감명 깊었던 문장과 페이지는 메모 탭에서 깔끔한 사진 카드 형태로 정리해두실 수 있습니다.'),
+              '감명 깊었던 문장과 페이지는 메모 탭에서 깔끔한 사진 카드 형태로 정리해두세요.'),
         ),
       ],
     );
   }
 
+  // 4. 통계 페이지
   Widget _buildGraphPage() {
     return Column(
       children: [
         Expanded(
           flex: 6,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                  child: Container(
-                    height: 280,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.burgundy.withOpacity(0.05),
-                          blurRadius: 30,
-                          spreadRadius: 10,
-                        )
-                      ],
-                    ),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      duration: const Duration(seconds: 1),
-                      builder: (context, value, child) {
-                        return CustomPaint(
-                          painter: _OnboardingRadarChartPainter(
-                            animationValue: value,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+          child: Center(
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.burgundy.withValues(alpha: 0.05),
+                    blurRadius: 30,
+                    spreadRadius: 10,
+                  )
+                ],
               ),
-            ],
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(seconds: 1),
+                builder: (context, value, child) {
+                  return CustomPaint(
+                    painter: _OnboardingRadarChartPainter(animationValue: value),
+                  );
+                },
+              ),
+            ),
           ),
         ),
         Expanded(
           flex: 4,
           child: _buildTextSection('나의 독서 취향 발견',
-              '레이더 차트 등 선호 장르와 월간 독서량을 수치로 보여주는 통계 기능을 통해 자신이 어떤 취향의 독자인지 마이페이지에서 우아하게 확인해 보세요.'),
+              '레이더 차트와 월간 독서량 통계로 나의 독서 취향을 우아하게 확인해보세요.'),
         ),
       ],
     );
   }
 
+  // 5. 도슨트 페이지
   Widget _buildDocentPage() {
     return Column(
       children: [
@@ -370,12 +429,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  '피렌체의 도슨트가\\n당신을 위한 이야기를 고르고 있습니다...',
+                  '피렌체의 도슨트가\n당신을 위한 이야기를 고르고 있습니다...',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
                     height: 1.8,
-                    color: AppColors.charcoal.withOpacity(0.8),
+                    color: AppColors.charcoal.withValues(alpha: 0.8),
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -386,7 +445,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         Expanded(
           flex: 4,
           child: _buildTextSection('나만의 전담 AI 도슨트',
-              '피렌체 도슨트가 매력적인 책 소개 문구를 만들어 줍니다. 이 책이 집필될 당시의 흥미로운 사회적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공받아보세요.'),
+              '피렌체 도슨트가 책의 시대적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공합니다.'),
         ),
       ],
     );
@@ -399,7 +458,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // 앱 로고 (상단 헤더)
             Padding(
               padding: const EdgeInsets.only(top: 24.0, bottom: 8.0),
               child: Text(
@@ -411,8 +469,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
               ),
             ),
-            
-            // 핵심 뷰 페이저
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -428,8 +484,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ],
               ),
             ),
-
-            // 하단 인디케이터 및 버튼 구역
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
@@ -471,7 +525,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                     )
                   else
-                    const SizedBox(height: 48), // 영역 고정
+                    const SizedBox(height: 48),
                 ],
               ),
             ),
@@ -482,7 +536,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-// ── 통계 화면용 약식 커스텀 페인터 복사본 ──
+// ── 통계 레이더 차트 ──
 class _OnboardingRadarChartPainter extends CustomPainter {
   final double animationValue;
   _OnboardingRadarChartPainter({required this.animationValue});
@@ -496,7 +550,7 @@ class _OnboardingRadarChartPainter extends CustomPainter {
     const startAngle = -pi / 2;
 
     final gridPaint = Paint()
-      ..color = AppColors.greyLight.withOpacity(0.3)
+      ..color = AppColors.greyLight.withValues(alpha: 0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -506,14 +560,16 @@ class _OnboardingRadarChartPainter extends CustomPainter {
       for (int i = 0; i < sides; i++) {
         final angle = startAngle + angleStep * i;
         final point = Offset(center.dx + levelRadius * cos(angle), center.dy + levelRadius * sin(angle));
-        if (i == 0) path.moveTo(point.dx, point.dy);
-        else path.lineTo(point.dx, point.dy);
+        if (i == 0) {
+          path.moveTo(point.dx, point.dy);
+        } else {
+          path.lineTo(point.dx, point.dy);
+        }
       }
       path.close();
       canvas.drawPath(path, gridPaint);
     }
 
-    // 모의 데이터 육각형
     final values = [0.8, 0.4, 0.9, 0.3, 0.6, 0.5, 0.2, 0.7];
     final dataPath = Path();
     for (int i = 0; i < sides; i++) {
@@ -522,12 +578,15 @@ class _OnboardingRadarChartPainter extends CustomPainter {
         center.dx + radius * (values[i] * animationValue) * cos(angle),
         center.dy + radius * (values[i] * animationValue) * sin(angle),
       );
-      if (i == 0) dataPath.moveTo(point.dx, point.dy);
-      else dataPath.lineTo(point.dx, point.dy);
+      if (i == 0) {
+        dataPath.moveTo(point.dx, point.dy);
+      } else {
+        dataPath.lineTo(point.dx, point.dy);
+      }
     }
     dataPath.close();
 
-    canvas.drawPath(dataPath, Paint()..color = AppColors.burgundy.withOpacity(0.2)..style = PaintingStyle.fill);
+    canvas.drawPath(dataPath, Paint()..color = AppColors.burgundy.withValues(alpha: 0.2)..style = PaintingStyle.fill);
     canvas.drawPath(dataPath, Paint()..color = AppColors.burgundy..style = PaintingStyle.stroke..strokeWidth = 2.0);
   }
 

@@ -6,19 +6,20 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('sharedPreferencesProvider must be overridden');
 });
 
-class OnboardingStateNotifier extends StateNotifier<bool> {
-  final SharedPreferences _prefs;
+final onboardingProvider = NotifierProvider<OnboardingNotifier, bool>(OnboardingNotifier.new);
+
+class OnboardingNotifier extends Notifier<bool> {
   static const _key = 'has_seen_onboarding';
 
-  OnboardingStateNotifier(this._prefs) : super(_prefs.getBool(_key) ?? false);
+  @override
+  bool build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return prefs.getBool(_key) ?? false;
+  }
 
   Future<void> completeOnboarding() async {
-    await _prefs.setBool(_key, true);
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setBool(_key, true);
     state = true;
   }
 }
-
-final onboardingProvider = StateNotifierProvider<OnboardingStateNotifier, bool>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return OnboardingStateNotifier(prefs);
-});
