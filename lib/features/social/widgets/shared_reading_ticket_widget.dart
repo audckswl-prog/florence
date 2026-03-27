@@ -398,10 +398,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11, // BOOK 글자 크기에 맞춰 축소
                       height: 1.5, 
-                      // 1번째(홀수)는 기존 차콜색, 2번째(짝수)는 버건디색 교차 적용
-                      color: memberIndex % 2 == 0 
-                          ? AppColors.burgundy.withOpacity(0.9) 
-                          : AppColors.charcoal.withOpacity(0.9), 
+                      color: AppColors.charcoal.withOpacity(0.9), // 모든 구절을 기존 차콜색으로 통일
                       fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.w500,
                     ),
