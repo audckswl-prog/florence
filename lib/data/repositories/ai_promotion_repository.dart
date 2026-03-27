@@ -19,9 +19,9 @@ class AIPromotionRepository {
     }
 
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash', // 구글 API에 존재하지 않는 2.5 오타 수정
+      // 앱 내 설치된 구버전 SDK(v1beta)에서도 완벽하게 동작하는 기본 프로 모델로 변경
+      model: 'gemini-pro',
       apiKey: apiKey ?? '',
-      generationConfig: GenerationConfig(responseMimeType: 'application/json'),
     );
   }
 
@@ -119,7 +119,7 @@ class AIPromotionRepository {
       return AIPromotionModel(
         isbn: isbn,
         hookTitle: '에러 발생 알림',
-        historicalBackground: '데이터베이스나 API 연동 과정에서 문자가 발생했습니다:\n$e',
+        historicalBackground: '데이터베이스나 API 연동 과정에서 문제가 발생했습니다:\n$e',
         closingQuestion: '해결이 필요합니다.',
       );
     }
