@@ -196,7 +196,7 @@ class LibraryStackView extends ConsumerWidget {
                     (shelfHeight * 2) -
                     bottomTargetGap;
                 
-                double dynamicGap = originalGap / 2;
+                double dynamicGap = originalGap / 10;
 
                 if (dynamicGap < 24.0) {
                   dynamicGap =

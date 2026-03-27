@@ -183,8 +183,6 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
                 );
               }
 
-              final isScrollable = members.length >= 3;
-
               return LayoutBuilder(
                 builder: (context, constraints) {
                   final double screenWidth = constraints.maxWidth;
@@ -192,9 +190,7 @@ class _ProjectReceiptScreenState extends ConsumerState<ProjectReceiptScreen> {
 
                   return SingleChildScrollView(
                     padding: EdgeInsets.zero, // 상하 여백 제거하여 위아래로 이어지게 함
-                    physics: isScrollable 
-                        ? const BouncingScrollPhysics() 
-                        : const NeverScrollableScrollPhysics(),
+                    physics: const BouncingScrollPhysics(), // 2인 화면 하단캡처를 위한 상시 스크롤 허용
                     child: Center(
                       child: Container(
                         width: ticketWidth,
