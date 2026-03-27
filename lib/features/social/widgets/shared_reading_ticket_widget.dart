@@ -113,9 +113,10 @@ class SharedReadingTicketWidget extends StatelessWidget {
         decoration: const BoxDecoration(
           color: Color(0xFFF9F6F0),
         ),
-        // 높이를 강제하지 않고 child(절취선)의 높이에 맞추되 여유 공간을 둡니다.
-        // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백을 더하여 펀칭 원형(지름 24)이 충분히 뚫리게 합니다.
-        padding: const EdgeInsets.symmetric(vertical: 8.0), // 8.5에서 8.0으로 극미량 추가 축소
+        // 절취선의 높이(Padding 2 + Line 1 + Padding 2 = 5)에 위아래 여백 12를 더해 총 29px 높이를 확보합니다.
+        // 이렇게 하면 반경 12(지름 24)인 펀칭 원형이 온전히 그려지면서 위아래로 2.5px의 마진이 생기므로,
+        // 블록 간의 1px 겹침 로직(잔선 제거용)이 둥근 펀칭 구멍 안으로 절대로 침범하지 않게 됩니다.
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
         child: child,
       ),
     );
