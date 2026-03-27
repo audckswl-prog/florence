@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -437,20 +438,33 @@ class _RowPunchClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
-    path.addRect(Rect.fromLTWH(0, 0, size.width, size.height));
-
     final centerY = size.height / 2;
 
-    path.addOval(Rect.fromCircle(
-      center: Offset(0, centerY),
-      radius: radius,
-    ));
-    path.addOval(Rect.fromCircle(
-      center: Offset(size.width, centerY),
-      radius: radius,
-    ));
+    path.moveTo(0, 0); // Top-left
+    path.lineTo(size.width, 0); // Top-right
 
-    path.fillType = PathFillType.evenOdd;
+    // Right-edge punch hole (inward curve)
+    path.lineTo(size.width, centerY - radius);
+    path.arcTo(
+      Rect.fromCircle(center: Offset(size.width, centerY), radius: radius),
+      -pi / 2,
+      -pi,
+      false,
+    );
+
+    path.lineTo(size.width, size.height); // Bottom-right
+    path.lineTo(0, size.height); // Bottom-left
+
+    // Left-edge punch hole (inward curve)
+    path.lineTo(0, centerY + radius);
+    path.arcTo(
+      Rect.fromCircle(center: Offset(0, centerY), radius: radius),
+      pi / 2,
+      -pi,
+      false,
+    );
+
+    path.close(); // Back to top-left
     return path;
   }
 
