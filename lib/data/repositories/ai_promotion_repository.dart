@@ -10,18 +10,22 @@ class AIPromotionRepository {
   late final GenerativeModel _model;
 
   AIPromotionRepository(this._supabase) {
-    final apiKey = const String.fromEnvironment('GEMINI_API_KEY').isNotEmpty
-        ? const String.fromEnvironment('GEMINI_API_KEY')
-        : (dotenv.isInitialized ? dotenv.env['GEMINI_API_KEY'] : '');
+    // 플러터 런타임 환경(launch.json 등)에서 과거의 잘못된 --dart-define 캐시 키가
+    // 우선 주입되어 API 권한 및 최신 모델 접근 에러가 나는 것을 방지합니다. 
+    // 파일 시스템 상의 가장 최신 정상인증키인 .env 파일의 값을 최우선으로 강제합니다.
+    final envKey = dotenv.isInitialized ? dotenv.env['GEMINI_API_KEY'] : null;
+    final apiKey = (envKey != null && envKey.isNotEmpty) 
+        ? envKey 
+        : const String.fromEnvironment('GEMINI_API_KEY');
         
-    if (apiKey == null || apiKey.isEmpty) {
+    if (apiKey.isEmpty) {
       debugPrint('Warning: GEMINI_API_KEY is not set in .env');
     }
 
     _model = GenerativeModel(
-      // 앱 내 설치된 구버전 SDK(v1beta)에서도 완벽하게 동작하는 기본 프로 모델로 변경
-      model: 'gemini-pro',
+      model: 'gemini-2.5-flash',
       apiKey: apiKey ?? '',
+      generationConfig: GenerationConfig(responseMimeType: 'application/json'),
     );
   }
 
