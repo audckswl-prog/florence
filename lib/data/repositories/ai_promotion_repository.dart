@@ -19,7 +19,7 @@ class AIPromotionRepository {
     }
 
     _model = GenerativeModel(
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash', // 구글 API에 존재하지 않는 2.5 오타 수정
       apiKey: apiKey ?? '',
       generationConfig: GenerationConfig(responseMimeType: 'application/json'),
     );
