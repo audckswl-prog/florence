@@ -35,7 +35,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < 4) {
+    if (_currentPage < 5) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -120,10 +120,43 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // --- Page Builders ---
+  Widget _buildWelcomePage() {
+    return Column(
+      children: [
+        Expanded(
+          flex: 7,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.auto_awesome, size: 64, color: AppColors.burgundy),
+                const SizedBox(height: 24),
+                Text(
+                  'Florence',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                        color: AppColors.burgundy,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2.0,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: _buildTextSection(
+              '피렌체에 오신 것을 환영합니다',
+              '피렌체를 통해 편리하게 독서를 기록해보세요.\n자랑하는 것 같아서 맘 편히 독서경험을 공유하지 못했던 분들, 혹은 친구와 함께 독서하고 싶은 분들, 아울러 독서를 사랑하는 분들께 피렌체를 전합니다.'),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(5, (index) {
+      children: List.generate(6, (index) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -173,7 +206,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildLibraryPage() {
     final mockBooks = _generateMockBooks();
     // 선반으로 묶기
-    final double maxShelfWidth = 250;
+    final double maxShelfWidth = MediaQuery.of(context).size.width - 32;
     final List<List<UserBook>> shelves = [];
     List<UserBook> currentRow = [];
     double currentRowWidth = 0;
@@ -194,9 +227,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 6,
+          flex: 7,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
                 // 총 권수 헤더
@@ -258,7 +291,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         Expanded(
-          flex: 4,
+          flex: 3,
           child: _buildTextSection('내 손안의 작은 서재',
               '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.'),
         ),
@@ -271,10 +304,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 6,
+          flex: 7,
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: IgnorePointer(
                 child: TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.9, end: 1.0),
@@ -294,9 +327,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         Expanded(
-          flex: 4,
+          flex: 3,
           child: _buildTextSection('함께 읽고 개성을 남기다',
-              '주변 친구와 책을 함께 읽고, 각자의 개성이 담긴 감명 깊은 구절을 기록하여 세상에 하나뿐인 아름다운 빈티지 독서 티켓을 받아보세요.'),
+              '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아보세요!'),
         ),
       ],
     );
@@ -307,10 +340,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 6,
+          flex: 7,
           child: Center(
             child: Container(
-              width: 280,
+              width: MediaQuery.of(context).size.width - 48,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -328,7 +361,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    height: 200,
+                    height: 240,
                     decoration: BoxDecoration(
                       color: AppColors.greyLight.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
@@ -362,7 +395,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         Expanded(
-          flex: 4,
+          flex: 3,
           child: _buildTextSection('인상적인 문장을 사진과 함께',
               '감명 깊었던 문장과 페이지는 메모 탭에서 깔끔한 사진 카드 형태로 정리해두세요.'),
         ),
@@ -375,11 +408,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 6,
+          flex: 7,
           child: Center(
             child: Container(
-              width: 280,
-              height: 280,
+              width: MediaQuery.of(context).size.width - 64,
+              height: MediaQuery.of(context).size.width - 64,
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
@@ -404,7 +437,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         Expanded(
-          flex: 4,
+          flex: 3,
           child: _buildTextSection('나의 독서 취향 발견',
               '레이더 차트와 월간 독서량 통계로 나의 독서 취향을 우아하게 확인해보세요.'),
         ),
@@ -417,14 +450,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 6,
+          flex: 7,
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(
-                  width: 80,
-                  height: 80,
+                  width: 120,
+                  height: 120,
                   child: FlorenceLoader(),
                 ),
                 const SizedBox(height: 32),
@@ -443,7 +476,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         Expanded(
-          flex: 4,
+          flex: 3,
           child: _buildTextSection('나만의 전담 AI 도슨트',
               '피렌체 도슨트가 책의 시대적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공합니다.'),
         ),
@@ -476,6 +509,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   setState(() => _currentPage = index);
                 },
                 children: [
+                  _buildWelcomePage(),
                   _buildLibraryPage(),
                   _buildTicketPage(),
                   _buildMemoPage(),
@@ -485,11 +519,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              padding: EdgeInsets.fromLTRB(24, 0, 24, max(16, MediaQuery.of(context).padding.bottom + 16)),
               child: Column(
                 children: [
                   _buildPageIndicator(),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -504,7 +538,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                       onPressed: _nextPage,
                       child: Text(
-                        _currentPage == 4 ? '피렌체 시작하기' : '다음',
+                        _currentPage == 5 ? '피렌체 시작하기' : '다음',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -512,20 +546,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  if (_currentPage < 4)
-                    TextButton(
-                      onPressed: _finishOnboarding,
-                      child: const Text(
-                        '건너뛰기',
-                        style: TextStyle(
-                          color: AppColors.grey,
-                          fontSize: 15,
-                        ),
-                      ),
-                    )
-                  else
-                    const SizedBox(height: 48),
                 ],
               ),
             ),
