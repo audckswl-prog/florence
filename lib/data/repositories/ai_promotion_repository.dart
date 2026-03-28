@@ -29,8 +29,14 @@ class AIPromotionRepository {
 
     _model = GenerativeModel(
       model: 'gemini-2.5-flash',
-      apiKey: apiKey ?? '',
+      apiKey: apiKey,
       generationConfig: GenerationConfig(responseMimeType: 'application/json'),
+      safetySettings: [
+        SafetySetting(HarmCategory.harassment, HarmBlockThreshold.none),
+        SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.none),
+        SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.none),
+        SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.none),
+      ],
     );
   }
 
@@ -92,7 +98,12 @@ class AIPromotionRepository {
 
       // Parse JSON from Gemini
       String jsonString = aiResponse.text!;
-      // Clean up markdown quotes if Gemini wrapped the JSON
+      // Extract exact JSON block ignoring any trailing/leading conversational text
+      final jsonBlockMatch = RegExp(r'\{[\s\S]*\}').firstMatch(jsonString);
+      if (jsonBlockMatch != null) {
+        jsonString = jsonBlockMatch.group(0)!;
+      }
+      
       jsonString = jsonString
           .replaceAll('```json', '')
           .replaceAll('```', '')

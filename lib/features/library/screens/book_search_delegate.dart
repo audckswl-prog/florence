@@ -57,13 +57,39 @@ class BookSearchDelegate extends SearchDelegate<Book?> {
         }
 
         if (snapshot.hasError) {
-          return Center(child: Text('오류가 발생했습니다: ${snapshot.error}'));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                '앗, 도서 정보를 불러오지 못했어요.\n일시적인 네트워크 문제이거나 찾을 수 없는 도서일 수 있습니다.\n스페이싱 등 오탈자를 확인 후 다시 검색해주세요.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.grey,
+                  fontSize: 15,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          );
         }
 
         final books = snapshot.data ?? [];
 
         if (books.isEmpty) {
-          return const Center(child: Text('검색 결과가 없습니다.'));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                '입력하신 검색어와 일치하는 책이 피렌체에 등록되어 있지 않습니다.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.grey,
+                  fontSize: 15,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          );
         }
 
         return ListView.builder(
