@@ -90,14 +90,31 @@ class AIPromotionRepository {
 """;
 
       final content = [Content.text(prompt)];
-      final aiResponse = await _model.generateContent(content);
+      
+      // 지수 백오프 재시도 로직 (최대 3회, 1초→2초→4초)
+      GenerateContentResponse? aiResponse;
+      const maxRetries = 3;
+      for (int attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          aiResponse = await _model.generateContent(content);
+          if (aiResponse.text != null) break; // 성공 시 루프 탈출
+        } catch (retryError) {
+          if (attempt == maxRetries) {
+            debugPrint('❌ [Florence Docent] $maxRetries회 재시도 후에도 실패: $retryError');
+            rethrow;
+          }
+          final waitSeconds = 1 << attempt; // 1, 2, 4초
+          debugPrint('⚠️ [Florence Docent] 시도 ${attempt + 1} 실패, $waitSeconds초 후 재시도... ($retryError)');
+          await Future.delayed(Duration(seconds: waitSeconds));
+        }
+      }
 
-      if (aiResponse.text == null) {
-        throw Exception('AI returned empty response');
+      if (aiResponse?.text == null) {
+        throw Exception('AI returned empty response after $maxRetries retries');
       }
 
       // Parse JSON from Gemini
-      String jsonString = aiResponse.text!;
+      String jsonString = aiResponse!.text!;
       // Extract exact JSON block ignoring any trailing/leading conversational text
       final jsonBlockMatch = RegExp(r'\{[\s\S]*\}').firstMatch(jsonString);
       if (jsonBlockMatch != null) {
