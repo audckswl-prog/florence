@@ -135,16 +135,19 @@ class AIPromotionCard extends ConsumerWidget {
                 color: AppColors.burgundy,
               ),
               const SizedBox(height: 16),
-              Text(
-                '피렌체의 도슨트가 당신을 위한 이야기를 고르고 있습니다...',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.charcoal),
-                textAlign: TextAlign.center,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '도슨트가 당신에게 알맞은 이야기를 고르고 있습니다...',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.charcoal),
+                  textAlign: TextAlign.center,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
-                '약 10초 이내에 완료됩니다.',
+                '약 10초 정도 소요됩니다.',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: AppColors.grey),

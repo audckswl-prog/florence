@@ -65,12 +65,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
   // Fixed 8 genre categories
   static const List<String> _allGenres = [
     '문학',
+    '인문/사회/역사',
     '경제경영',
     '자기계발',
-    '인문/사회/역사',
     '과학/IT',
-    '라이프/예술',
     '유아/학습',
+    '라이프/예술',
     '기타',
   ];
 

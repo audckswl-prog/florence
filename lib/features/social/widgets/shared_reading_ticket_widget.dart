@@ -238,19 +238,22 @@ class SharedReadingTicketWidget extends StatelessWidget {
             ),
     );
 
-    final drawingWidget = Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0EAE1),
-        borderRadius: BorderRadius.circular(8),
+    final drawingWidget = AspectRatio(
+      aspectRatio: 4 / 3,
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0EAE1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: drawingUrl != null && drawingUrl.isNotEmpty
+            ? Image.network(
+                drawingUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.brush, color: AppColors.greyLight, size: 28)),
+              )
+            : const Center(child: Icon(Icons.brush, color: AppColors.greyLight, size: 28)),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: drawingUrl != null && drawingUrl.isNotEmpty
-          ? Image.network(
-              drawingUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.brush, color: AppColors.greyLight, size: 28)),
-            )
-          : const Center(child: Icon(Icons.brush, color: AppColors.greyLight, size: 28)),
     );
 
     final profileHeader = Row(
