@@ -38,7 +38,7 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
       DeviceOrientation.landscapeRight,
     ]);
     // 상단바/네비바 숨기기 (옵션 - 몰입감 증대)
-    SystemChrome.setEnabledSystemUIMode(SystemUIMode.immersiveSticky);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
   @override
@@ -48,7 +48,7 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
       DeviceOrientation.portraitUp,
     ]);
     // 시스템 UI 복구
-    SystemChrome.setEnabledSystemUIMode(SystemUIMode.edgeToEdge);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
