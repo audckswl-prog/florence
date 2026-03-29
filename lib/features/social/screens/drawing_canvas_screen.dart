@@ -230,7 +230,6 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
       ),
     );
   }
-  }
 
   Future<void> _saveAndReturn() async {
     if (_strokes.isEmpty) {
