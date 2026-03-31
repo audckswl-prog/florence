@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/onboarding_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
-import '../widgets/writing_text.dart';
+import '../widgets/shimmer_text.dart';
 import 'dart:ui';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -39,7 +39,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         Expanded(
           flex: 4,
           child: Center(
-            child: WritingText(
+            child: ShimmerText(
               text: 'Firenze',
               style: GoogleFonts.greatVibes(
                 fontSize: 84,
