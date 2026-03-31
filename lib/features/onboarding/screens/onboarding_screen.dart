@@ -7,7 +7,6 @@ import '../providers/onboarding_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
 import '../widgets/shimmer_text.dart';
-import 'dart:ui';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -135,16 +134,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: Container(
                   height: sh(260),
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        const Color(0xFFFAF9F6).withValues(alpha: 0.0), // 0 opacity at top
-                        const Color(0xFFFAF9F6).withValues(alpha: 0.8), // 80 opacity at bottom
-                      ],
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Transparent until middle
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Transition starts at 60%
+                          const Color(0xFFFAF9F6), // Fully opaque at bottom (1.0)
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      ),
                     ),
-                  ),
                 ),
               ),
               Padding(
