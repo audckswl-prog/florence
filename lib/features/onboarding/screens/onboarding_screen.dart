@@ -83,7 +83,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildTextSection(String title, String subtitle, {EdgeInsetsGeometry? padding, Color titleColor = AppColors.charcoal, Color subtitleColor = AppColors.grey, required double Function(double) sh}) {
     return Container(
-      padding: padding ?? EdgeInsets.fromLTRB(sh(32), sh(8), sh(32), sh(8)),
+      padding: padding ?? EdgeInsets.fromLTRB(sh(32), sh(0), sh(32), sh(8)), // Reduced top margin for better scaling
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -97,7 +97,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: sh(8)),
+          SizedBox(height: sh(6)), // Slightly reduced for more compact layout
           Text(
             subtitle,
             style: TextStyle(
@@ -116,25 +116,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildOverlayPage(String imagePath, String title, String subtitle, double Function(double) sh) {
     return Stack(
       children: [
-        // 1. Background Image (Keep current size but allow overflow/placement)
+        // 1. Background Image (Restored to larger size and not stuck to top)
         Positioned.fill(
+          top: sh(20), // Top margin to prevent sticking to ceiling
           child: Container(
-            padding: EdgeInsets.only(bottom: sh(180)), // Adjusted bottom for image
+            padding: EdgeInsets.only(bottom: sh(120)), // Reduced bottom padding to grow image size
             child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
-        // 2. Blurred Arc Overlay at the bottom
+        // 2. Blurred Arc Overlay at the bottom (Optimized proportions)
         Align(
           alignment: Alignment.bottomCenter,
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
               ClipPath(
-                clipper: _TopArcClipper(arcStart: sh(60)),
+                clipper: _TopArcClipper(arcStart: sh(40)), // Sleeker arc
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    height: sh(340), // Fully raised to red arc line
+                    height: sh(260), // Reduced height to match 4th photo proportion
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -142,17 +143,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at top
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.3), // More visibility at upper part
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.2), // Very subtle shimmer
                           const Color(0xFFFAF9F6), // Opaque at bottom
                         ],
-                        stops: const [0.0, 0.3, 0.6],
+                        stops: const [0.0, 0.5, 0.9], // Wider transparent section
                       ),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: sh(120)), // Title/Subtitle positioned precisely
+                padding: EdgeInsets.only(bottom: sh(100)), // Adjusted for lower height
                 child: _buildTextSection(title, subtitle, sh: sh),
               ),
             ],
@@ -261,7 +262,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             // 1. Background Content (PageView)
             Positioned.fill(
-              bottom: sh(100), // Leave some space for global indicator/button
+              top: sh(20), // Top padding for whole PageView
+              bottom: sh(80), // Balanced bottom space
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (index) {
