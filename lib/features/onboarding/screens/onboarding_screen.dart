@@ -81,27 +81,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildTextSection(String title, String subtitle) {
+  Widget _buildTextSection(String title, String subtitle, {EdgeInsetsGeometry? padding}) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(32, 24, 32, 48), // Bottom padding increased to avoid indicator overlap
+      padding: padding ?? const EdgeInsets.fromLTRB(32, 8, 32, 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             title,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: AppColors.charcoal,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Text(
             subtitle,
             style: const TextStyle(
-              fontSize: 15,
-              height: 1.6,
+              fontSize: 14,
+              height: 1.4,
               color: AppColors.grey,
             ),
             textAlign: TextAlign.center,
@@ -116,14 +117,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 8,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+          flex: 9,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
             child: Image.asset('assets/images/onboarding/page2.png', fit: BoxFit.contain),
           ),
         ),
         Expanded(
-          flex: 2,
+          flex: 1,
           child: _buildTextSection('내 손안의 작은 서재',
               '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.'),
         ),
@@ -136,15 +137,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 8,
+          flex: 9,
           child: Container(
-            padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+            padding: const EdgeInsets.all(0),
             alignment: Alignment.center,
             child: Image.asset('assets/images/onboarding/page3.png', fit: BoxFit.contain),
           ),
         ),
         Expanded(
-          flex: 2,
+          flex: 1,
           child: _buildTextSection('함께 읽고 개성을 남기다',
               '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아보세요!'),
         ),
@@ -157,14 +158,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 8,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+          flex: 9,
+          child: Container(
+            padding: const EdgeInsets.all(0),
             child: Image.asset('assets/images/onboarding/page4.png', fit: BoxFit.contain),
           ),
         ),
         Expanded(
-          flex: 2,
+          flex: 1,
           child: _buildTextSection('인상적인 문장을 사진과 함께',
               '감명 깊었던 문장과 페이지는 메모탭에 정리해두세요.'),
         ),
@@ -177,14 +178,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 8,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+          flex: 9,
+          child: Container(
+            padding: const EdgeInsets.all(0),
             child: Image.asset('assets/images/onboarding/page5.png', fit: BoxFit.contain),
           ),
         ),
         Expanded(
-          flex: 2,
+          flex: 1,
           child: _buildTextSection('나의 독서 취향 발견',
               '나의 독서 취향을 확인해보세요.'),
         ),
@@ -224,8 +225,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         Expanded(
           flex: 3,
-          child: _buildTextSection('나만의 전담 AI 도슨트',
-              '피렌체 도슨트가 책의 시대적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공합니다.'),
+          child: _buildTextSection(
+              '나만의 전담 AI 도슨트',
+              '피렌체 도슨트가 책의 시대적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공합니다.',
+              padding: const EdgeInsets.fromLTRB(32, 24, 32, 24)),
         ),
       ],
     );
@@ -256,40 +259,36 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(24, 0, 24, max(16, MediaQuery.of(context).padding.bottom + 16)),
+              padding: EdgeInsets.fromLTRB(24, 0, 24, max(8, MediaQuery.of(context).padding.bottom + 8)),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildPageIndicator(),
-                  const SizedBox(height: 24),
-                  AnimatedOpacity(
-                    opacity: _currentPage == 5 ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: IgnorePointer(
-                      ignoring: _currentPage != 5,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.burgundy,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 0,
+                  if (_currentPage == 5) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.burgundy,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          onPressed: _currentPage == 5 ? _finishOnboarding : null,
-                          child: const Text(
-                            '피렌체 시작하기',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          elevation: 0,
+                        ),
+                        onPressed: _finishOnboarding,
+                        child: const Text(
+                          '피렌체 시작하기',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
