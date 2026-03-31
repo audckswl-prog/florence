@@ -130,42 +130,51 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              ShaderMask(
-                shaderCallback: (rect) {
-                  return const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black],
-                    stops: [0.0, 0.4], // Gradual fade-in of the blur effect
-                  ).createShader(rect);
-                },
-                blendMode: BlendMode.dstIn,
-                child: ClipPath(
-                  clipper: _TopArcClipper(arcStart: sh(40)), // Sleeker arc
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      height: sh(300), // Slightly increased to allow smoother fade-out
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent start
-                            const Color(0xFFFAF9F6).withValues(alpha: 0.02), // Very subtle shimmer entry
-                            const Color(0xFFFAF9F6).withValues(alpha: 0.1), // Entering visible range
-                            const Color(0xFFFAF9F6).withValues(alpha: 0.4), // Mid-level coverage
-                            const Color(0xFFFAF9F6).withValues(alpha: 0.8), // Strongly opaque
-                            const Color(0xFFFAF9F6), // 100% opaque at bottom
-                          ],
-                          stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0], // Fine-tuned multi-step fade
+              ClipPath(
+                clipper: _TopArcClipper(arcStart: sh(40)), // Arc shape boundary
+                  child: Stack(
+                    children: [
+                      // Layer 1: Gradient Blur Layer
+                      ShaderMask(
+                        shaderCallback: (rect) {
+                          return const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black, Colors.black],
+                            stops: [0.0, 0.6, 1.0], // More gradual fade-in for the blur
+                          ).createShader(rect);
+                        },
+                        blendMode: BlendMode.dstIn,
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18), // Stronger blur
+                          child: Container(
+                            height: sh(300),
+                            width: double.infinity,
+                            color: Colors.transparent, // Must have a child
+                          ),
                         ),
                       ),
-                    ),
+                      // Layer 2: Ivory Tint Layer (provides the shape and text background)
+                      Container(
+                        height: sh(300),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at peak
+                              const Color(0xFFFAF9F6).withValues(alpha: 0.2), // Early hint of shape
+                              const Color(0xFFFAF9F6).withValues(alpha: 0.8), // Solidifying near text
+                              const Color(0xFFFAF9F6), // Fully opaque at bottom
+                            ],
+                            stops: const [0.0, 0.3, 0.7, 1.0], // Sync with blur but slightly earlier
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
               Padding(
                 padding: EdgeInsets.only(bottom: sh(100)), // Adjusted for lower height
                 child: _buildTextSection(title, subtitle, sh: sh),
