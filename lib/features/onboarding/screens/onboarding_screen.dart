@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/onboarding_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
+import '../widgets/writing_text.dart';
+import 'dart:ui';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -33,24 +35,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildWelcomePage() {
     return Column(
       children: [
+        const Expanded(flex: 2, child: SizedBox()),
         Expanded(
-          flex: 7,
+          flex: 4,
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Firenze',
-                  style: GoogleFonts.greatVibes(
-                    fontSize: 72,
-                    color: AppColors.burgundy,
-                    height: 1.0,
-                  ),
-                ),
-              ],
+            child: WritingText(
+              text: 'Firenze',
+              style: GoogleFonts.greatVibes(
+                fontSize: 84,
+                color: AppColors.burgundy,
+                height: 1.0,
+              ),
             ),
           ),
         ),
+        const Expanded(flex: 1, child: SizedBox()),
         Expanded(
           flex: 3,
           child: _buildTextSection(
@@ -81,7 +80,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Widget _buildTextSection(String title, String subtitle, {EdgeInsetsGeometry? padding}) {
+  Widget _buildTextSection(String title, String subtitle, {EdgeInsetsGeometry? padding, Color titleColor = AppColors.charcoal, Color subtitleColor = AppColors.grey}) {
     return Container(
       padding: padding ?? const EdgeInsets.fromLTRB(32, 8, 32, 8),
       child: Column(
@@ -90,20 +89,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.charcoal,
+              color: titleColor,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 1.4,
-              color: AppColors.grey,
+              color: subtitleColor,
             ),
             textAlign: TextAlign.center,
           ),
@@ -112,84 +111,87 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  // 1. 서재 페이지
-  Widget _buildLibraryPage() {
-    return Column(
+  // --- Overlay Page Builder (Pages 2-5) ---
+  Widget _buildOverlayPage(String imagePath, String title, String subtitle) {
+    return Stack(
       children: [
-        Expanded(
-          flex: 9,
+        // 1. Background Image (Keep current size but allow overflow/placement)
+        Positioned.fill(
           child: Container(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-            child: Image.asset('assets/images/onboarding/page2.png', fit: BoxFit.contain),
+            padding: const EdgeInsets.only(bottom: 120), // Leave some space for text background
+            child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
-        Expanded(
-          flex: 1,
-          child: _buildTextSection('내 손안의 작은 서재',
-              '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.'),
+        // 2. Blurred Arc Overlay at the bottom
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              ClipPath(
+                clipper: _TopArcClipper(),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    height: 220,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.7),
+                          const Color(0xFFFAF9F6),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: _buildTextSection(title, subtitle),
+              ),
+            ],
+          ),
         ),
       ],
+    );
+  }
+
+  // 1. 서재 페이지
+  Widget _buildLibraryPage() {
+    return _buildOverlayPage(
+      'assets/images/onboarding/page2.png',
+      '내 손안의 작은 서재',
+      '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.',
     );
   }
 
   // 2. 독서 티켓 페이지
   Widget _buildTicketPage() {
-    return Column(
-      children: [
-        Expanded(
-          flex: 9,
-          child: Container(
-            padding: const EdgeInsets.all(0),
-            alignment: Alignment.center,
-            child: Image.asset('assets/images/onboarding/page3.png', fit: BoxFit.contain),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: _buildTextSection('함께 읽고 개성을 남기다',
-              '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아보세요!'),
-        ),
-      ],
+    return _buildOverlayPage(
+      'assets/images/onboarding/page3.png',
+      '함께 읽고 개성을 남기다',
+      '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아보세요!',
     );
   }
 
   // 3. 메모 페이지
   Widget _buildMemoPage() {
-    return Column(
-      children: [
-        Expanded(
-          flex: 9,
-          child: Container(
-            padding: const EdgeInsets.all(0),
-            child: Image.asset('assets/images/onboarding/page4.png', fit: BoxFit.contain),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: _buildTextSection('인상적인 문장을 사진과 함께',
-              '감명 깊었던 문장과 페이지는 메모탭에 정리해두세요.'),
-        ),
-      ],
+    return _buildOverlayPage(
+      'assets/images/onboarding/page4.png',
+      '인상적인 문장을 사진과 함께',
+      '감명 깊었던 문장과 페이지는 메모탭에 정리해두세요.',
     );
   }
 
   // 4. 통계 페이지
   Widget _buildGraphPage() {
-    return Column(
-      children: [
-        Expanded(
-          flex: 9,
-          child: Container(
-            padding: const EdgeInsets.all(0),
-            child: Image.asset('assets/images/onboarding/page5.png', fit: BoxFit.contain),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: _buildTextSection('나의 독서 취향 발견',
-              '나의 독서 취향을 확인해보세요.'),
-        ),
-      ],
+    return _buildOverlayPage(
+      'assets/images/onboarding/page5.png',
+      '나의 독서 취향 발견',
+      '나의 독서 취향을 확인해보세요.',
     );
   }
 
@@ -298,4 +300,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 }
+
+// --- Top Arc Clipper for Blur Overlay ---
+class _TopArcClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.moveTo(0, 40); // Start slightly down
+    path.quadraticBezierTo(size.width / 2, 0, size.width, 40); // Convex arc
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
 
