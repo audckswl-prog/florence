@@ -97,7 +97,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: sh(6)), // Slightly reduced for more compact layout
+          SizedBox(height: sh(16)), // Increased spacing between title and subtitle
           Text(
             subtitle,
             style: TextStyle(
@@ -131,23 +131,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             alignment: Alignment.bottomCenter,
             children: [
               ClipPath(
-                clipper: _TopArcClipper(arcStart: sh(40)), // Sleeker arc
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    height: sh(260), // Reduced height to match 4th photo proportion
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at top
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.2), // Very subtle shimmer
-                          const Color(0xFFFAF9F6), // Opaque at bottom
-                        ],
-                        stops: const [0.0, 0.5, 0.9], // Wider transparent section
-                      ),
+                clipper: _TopArcClipper(arcStart: sh(40)),
+                child: Container(
+                  height: sh(260),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFFFAF9F6).withValues(alpha: 0.0), // 0 opacity at top
+                        const Color(0xFFFAF9F6).withValues(alpha: 0.8), // 80 opacity at bottom
+                      ],
                     ),
                   ),
                 ),
