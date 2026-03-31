@@ -55,7 +55,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           flex: 3,
           child: _buildTextSection(
               '피렌체에 오신 것을 환영합니다',
-              '피렌체를 통해 편리하게 독서를 기록해보세요.\n자랑하는 것 같아서 맘 편히 독서경험을 공유하지 못했던 분들, 혹은 친구와 함께 독서하고 싶은 분들, 아울러 독서를 사랑하는 분들께 피렌체를 전합니다.'),
+              '피렌체를 통해 편리하게 독서를 기록해 보세요.\n자랑하는 것 같아서 마음 편히 독서 경험을 공유하지 못했던 분들, 혹은 친구와 함께 독서하고 싶은 분들, 아울러 독서를 사랑하는 분들께 피렌체를 전합니다.'),
         ),
       ],
     );
@@ -83,8 +83,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _buildTextSection(String title, String subtitle) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      padding: const EdgeInsets.fromLTRB(32, 24, 32, 48), // Bottom padding increased to avoid indicator overlap
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             title,
@@ -115,14 +116,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 7,
+          flex: 8,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
             child: Image.asset('assets/images/onboarding/page2.png', fit: BoxFit.contain),
           ),
         ),
         Expanded(
-          flex: 3,
+          flex: 2,
           child: _buildTextSection('내 손안의 작은 서재',
               '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.'),
         ),
@@ -137,7 +138,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         Expanded(
           flex: 8,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
             alignment: Alignment.center,
             child: Image.asset('assets/images/onboarding/page3.png', fit: BoxFit.contain),
           ),
@@ -156,16 +157,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 7,
+          flex: 8,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
             child: Image.asset('assets/images/onboarding/page4.png', fit: BoxFit.contain),
           ),
         ),
         Expanded(
-          flex: 3,
+          flex: 2,
           child: _buildTextSection('인상적인 문장을 사진과 함께',
-              '감명 깊었던 문장과 페이지는 메모 탭에서 깔끔한 사진 카드 형태로 정리해두세요.'),
+              '감명 깊었던 문장과 페이지는 메모탭에 정리해두세요.'),
         ),
       ],
     );
@@ -176,16 +177,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Column(
       children: [
         Expanded(
-          flex: 7,
+          flex: 8,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
             child: Image.asset('assets/images/onboarding/page5.png', fit: BoxFit.contain),
           ),
         ),
         Expanded(
-          flex: 3,
+          flex: 2,
           child: _buildTextSection('나의 독서 취향 발견',
-              '레이더 차트와 월간 독서량 통계로 나의 독서 취향을 우아하게 확인해보세요.'),
+              '나의 독서 취향을 확인해보세요.'),
         ),
       ],
     );
