@@ -103,42 +103,24 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
   // ══════════════════════════════════════════════════════════════════════
 
   Widget _buildPortraitLayout() {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        // Canvas area
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: _buildCanvasArea(),
-        ),
-        const Spacer(),
-        // Horizontal tool bar
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.screen_rotation, size: 64, color: Colors.white70),
+          const SizedBox(height: 24),
+          const Text(
+            '화면을 가로로 돌려\n그림을 그려주세요',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              height: 1.5,
+            ),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildUndoButton(),
-                  _buildEraserButton(isVertical: false),
-                  _buildStrokeWidths(isVertical: false),
-                ],
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _palette.map((color) => _buildColorButton(color)).toList(),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -151,6 +133,31 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: _buildCanvasArea(),
+          ),
+        ),
+
+        // 상단 안내 텍스트
+        Positioned(
+          top: 16,
+          left: 0,
+          right: 0,
+          child: IgnorePointer(
+            child: Text(
+              '구절을 그림으로 그려주세요',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 6,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
 

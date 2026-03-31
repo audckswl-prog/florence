@@ -194,7 +194,7 @@ class _ProjectDetailScreenState extends ConsumerState<ProjectDetailScreen> {
     if (quote == null || !mounted) return;
 
     // ── STEP 3: 그림 그리기 ──
-    final drawingBytes = await Navigator.of(context).push<Uint8List>(
+    final drawingBytes = await Navigator.of(context, rootNavigator: true).push<Uint8List>(
       MaterialPageRoute(
         fullscreenDialog: true,
         builder: (_) => const DrawingCanvasScreen(),
