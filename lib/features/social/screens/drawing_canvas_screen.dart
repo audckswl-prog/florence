@@ -34,10 +34,20 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
     super.initState();
     // 상단바/네비바 숨기기 (옵션 - 몰입감 증대)
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    // 모든 방향 회전 허용 (기기 설정에 따름)
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
   }
 
   @override
   void dispose() {
+    // 세로 모드로 원복
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     // 시스템 UI 복구
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
@@ -45,6 +55,8 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A), // 배경을 더 어둡게 하여 캔버스 강조
       appBar: AppBar(
@@ -79,182 +91,220 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            // Canvas area
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: AspectRatio(
-                aspectRatio: 4 / 3, // 가로가 넓은 4:3 비율 고정
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: _canvasBgColor,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: RepaintBoundary(
-                      key: _canvasKey,
-                      child: Container(
-                        color: _canvasBgColor,
-                        child: GestureDetector(
-                          onPanStart: (details) {
-                            setState(() {
-                              _currentStroke = _DrawingStroke(
-                                color: _isEraser ? _canvasBgColor : _currentColor,
-                                strokeWidth: _isEraser ? _strokeWidth * 3 : _strokeWidth,
-                              );
-                              _currentStroke!.points.add(details.localPosition);
-                            });
-                          },
-                          onPanUpdate: (details) {
-                            setState(() {
-                              _currentStroke?.points.add(details.localPosition);
-                            });
-                          },
-                          onPanEnd: (details) {
-                            setState(() {
-                              if (_currentStroke != null) {
-                                _strokes.add(_currentStroke!);
-                                _currentStroke = null;
-                              }
-                            });
-                          },
-                          child: CustomPaint(
-                            painter: _DrawingPainter(
-                              strokes: _strokes,
-                              currentStroke: _currentStroke,
-                            ),
-                            size: Size.infinite,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            
-            const Spacer(),
+        child: isLandscape ? _buildLandscapeLayout() : _buildPortraitLayout(),
+      ),
+    );
+  }
 
-            // Tool bar
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+  // ══════════════════════════════════════════════════════════════════════
+  // Layout Modes
+  // ══════════════════════════════════════════════════════════════════════
+
+  Widget _buildPortraitLayout() {
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        // Canvas area
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: _buildCanvasArea(),
+        ),
+        const Spacer(),
+        // Horizontal tool bar
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.6),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Row 1: Tools (Undo, Eraser, Line Thickness)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Undo
-                      IconButton(
-                        onPressed: () {
-                          if (_strokes.isNotEmpty) {
-                            setState(() => _strokes.removeLast());
-                          }
-                        },
-                        icon: const Icon(Icons.undo, color: Colors.white, size: 28),
-                      ),
-                      
-                      // Eraser
-                      GestureDetector(
-                        onTap: () => setState(() => _isEraser = !_isEraser),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: _isEraser ? AppColors.burgundy : Colors.white12,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.cleaning_services_rounded,
-                                color: _isEraser ? Colors.white : Colors.white70,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '지우개',
-                                style: TextStyle(
-                                  color: _isEraser ? Colors.white : Colors.white70,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Stroke Widths
-                      Row(
-                        children: [
-                          _buildThicknessButton(2.0),
-                          const SizedBox(width: 8),
-                          _buildThicknessButton(5.0),
-                          const SizedBox(width: 8),
-                          _buildThicknessButton(10.0),
-                        ],
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Row 2: Color Palette
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: _palette.map((color) {
-                      final isSelected = !_isEraser && _currentColor == color;
-                      return GestureDetector(
-                        onTap: () => setState(() {
-                          _currentColor = color;
-                          _isEraser = false;
-                        }),
-                        child: Container(
-                          width: isSelected ? 40 : 32,
-                          height: isSelected ? 40 : 32,
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isSelected ? Colors.white : Colors.white24,
-                              width: isSelected ? 3 : 1,
-                            ),
-                            boxShadow: isSelected
-                                ? [
-                                    BoxShadow(
-                                      color: color.withOpacity(0.5),
-                                      blurRadius: 8,
-                                      spreadRadius: 2,
-                                    )
-                                  ]
-                                : null,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                  _buildUndoButton(),
+                  _buildEraserButton(isVertical: false),
+                  _buildStrokeWidths(isVertical: false),
                 ],
               ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: _palette.map((color) => _buildColorButton(color)).toList(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeLayout() {
+    return Row(
+      children: [
+        // Canvas area
+        Expanded(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: _buildCanvasArea(),
+            ),
+          ),
+        ),
+        // Vertical tool bar
+        Container(
+          width: 88,
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.6),
+            borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              _buildUndoButton(),
+              const SizedBox(height: 16),
+              _buildEraserButton(isVertical: true),
+              const SizedBox(height: 16),
+              _buildStrokeWidths(isVertical: true),
+              const Spacer(),
+              ..._palette.map((color) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0),
+                child: _buildColorButton(color),
+              )).toList(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // Components
+  // ══════════════════════════════════════════════════════════════════════
+
+  Widget _buildCanvasArea() {
+    return AspectRatio(
+      aspectRatio: 4 / 3, // 가로가 넓은 4:3 비율 고정
+      child: Container(
+        decoration: BoxDecoration(
+          color: _canvasBgColor,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: RepaintBoundary(
+            key: _canvasKey,
+            child: Container(
+              color: _canvasBgColor,
+              child: GestureDetector(
+                onPanStart: (details) {
+                  setState(() {
+                    _currentStroke = _DrawingStroke(
+                      color: _isEraser ? _canvasBgColor : _currentColor,
+                      strokeWidth: _isEraser ? _strokeWidth * 3 : _strokeWidth,
+                    );
+                    _currentStroke!.points.add(details.localPosition);
+                  });
+                },
+                onPanUpdate: (details) {
+                  setState(() {
+                    _currentStroke?.points.add(details.localPosition);
+                  });
+                },
+                onPanEnd: (details) {
+                  setState(() {
+                    if (_currentStroke != null) {
+                      _strokes.add(_currentStroke!);
+                      _currentStroke = null;
+                    }
+                  });
+                },
+                child: CustomPaint(
+                  painter: _DrawingPainter(
+                    strokes: _strokes,
+                    currentStroke: _currentStroke,
+                  ),
+                  size: Size.infinite,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
+  }
+
+  Widget _buildUndoButton() {
+    return IconButton(
+      onPressed: () {
+        if (_strokes.isNotEmpty) {
+          setState(() => _strokes.removeLast());
+        }
+      },
+      icon: const Icon(Icons.undo, color: Colors.white, size: 28),
+    );
+  }
+
+  Widget _buildEraserButton({required bool isVertical}) {
+    return GestureDetector(
+      onTap: () => setState(() => _isEraser = !_isEraser),
+      child: Container(
+        padding: isVertical
+            ? const EdgeInsets.all(12)
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: _isEraser ? AppColors.burgundy : Colors.white12,
+          shape: isVertical ? BoxShape.circle : BoxShape.rectangle,
+          borderRadius: isVertical ? null : BorderRadius.circular(20),
+        ),
+        child: isVertical
+            ? Icon(
+                Icons.cleaning_services_rounded,
+                color: _isEraser ? Colors.white : Colors.white70,
+                size: 24,
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.cleaning_services_rounded,
+                    color: _isEraser ? Colors.white : Colors.white70,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '지우개',
+                    style: TextStyle(
+                      color: _isEraser ? Colors.white : Colors.white70,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildStrokeWidths({required bool isVertical}) {
+    final children = [
+      _buildThicknessButton(2.0),
+      SizedBox(width: isVertical ? 0 : 8, height: isVertical ? 8 : 0),
+      _buildThicknessButton(5.0),
+      SizedBox(width: isVertical ? 0 : 8, height: isVertical ? 8 : 0),
+      _buildThicknessButton(10.0),
+    ];
+
+    return isVertical
+        ? Column(children: children)
+        : Row(children: children);
   }
 
   Widget _buildThicknessButton(double width) {
@@ -276,6 +326,37 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
             color: Colors.white,
             shape: BoxShape.circle,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildColorButton(Color color) {
+    final isSelected = !_isEraser && _currentColor == color;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _currentColor = color;
+        _isEraser = false;
+      }),
+      child: Container(
+        width: isSelected ? 40 : 32,
+        height: isSelected ? 40 : 32,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white24,
+            width: isSelected ? 3 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.5),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  )
+                ]
+              : null,
         ),
       ),
     );
