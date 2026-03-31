@@ -32,57 +32,58 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // --- Page Builders ---
-  Widget _buildWelcomePage() {
+  Widget _buildWelcomePage(double Function(double) sh, double Function(double) sw) {
     return Column(
       children: [
-        const Expanded(flex: 2, child: SizedBox()),
+        Expanded(flex: 2, child: SizedBox(height: sh(1))),
         Expanded(
           flex: 4,
           child: Center(
             child: ShimmerText(
               text: 'Firenze',
               style: GoogleFonts.greatVibes(
-                fontSize: 84,
+                fontSize: sh(84),
                 color: AppColors.burgundy,
                 height: 1.0,
               ),
             ),
           ),
         ),
-        const Expanded(flex: 1, child: SizedBox()),
+        Expanded(flex: 1, child: SizedBox(height: sh(1))),
         Expanded(
-          flex: 3,
+          flex: 4, // Slightly increased to give more air
           child: _buildTextSection(
               '피렌체에 오신 것을 환영합니다',
-              '피렌체를 통해 편리하게 독서를 기록해 보세요.\n자랑하는 것 같아서 마음 편히 독서 경험을 공유하지 못했던 분들, 혹은 친구와 함께 독서하고 싶은 분들, 아울러 독서를 사랑하는 분들께 피렌체를 전합니다.'),
+              '피렌체를 통해 편리하게 독서를 기록해 보세요.\n자랑하는 것 같아서 마음 편히 독서 경험을 공유하지 못했던 분들, 혹은 친구와 함께 독서하고 싶은 분들, 아울러 독서를 사랑하는 분들께 피렌체 를 전합니다.',
+              sh: sh),
         ),
       ],
     );
   }
 
-  Widget _buildPageIndicator() {
+  Widget _buildPageIndicator(double Function(double) sh, double Function(double) sw) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(6, (index) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          height: 8,
-          width: _currentPage == index ? 24 : 8,
+          margin: EdgeInsets.symmetric(horizontal: sw(4)),
+          height: sh(8),
+          width: _currentPage == index ? sw(24) : sw(8),
           decoration: BoxDecoration(
             color: _currentPage == index
                 ? AppColors.burgundy
                 : AppColors.burgundy.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(sh(4)),
           ),
         );
       }),
     );
   }
 
-  Widget _buildTextSection(String title, String subtitle, {EdgeInsetsGeometry? padding, Color titleColor = AppColors.charcoal, Color subtitleColor = AppColors.grey}) {
+  Widget _buildTextSection(String title, String subtitle, {EdgeInsetsGeometry? padding, Color titleColor = AppColors.charcoal, Color subtitleColor = AppColors.grey, required double Function(double) sh}) {
     return Container(
-      padding: padding ?? const EdgeInsets.fromLTRB(32, 8, 32, 8),
+      padding: padding ?? EdgeInsets.fromLTRB(sh(32), sh(8), sh(32), sh(8)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -90,17 +91,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Text(
             title,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: sh(20),
               fontWeight: FontWeight.bold,
               color: titleColor,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: sh(8)),
           Text(
             subtitle,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: sh(14),
               height: 1.4,
               color: subtitleColor,
             ),
@@ -112,13 +113,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // --- Overlay Page Builder (Pages 2-5) ---
-  Widget _buildOverlayPage(String imagePath, String title, String subtitle) {
+  Widget _buildOverlayPage(String imagePath, String title, String subtitle, double Function(double) sh) {
     return Stack(
       children: [
         // 1. Background Image (Keep current size but allow overflow/placement)
         Positioned.fill(
           child: Container(
-            padding: const EdgeInsets.only(bottom: 150), // Increased bottom space for image
+            padding: EdgeInsets.only(bottom: sh(180)), // Adjusted bottom for image
             child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
@@ -129,11 +130,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             alignment: Alignment.bottomCenter,
             children: [
               ClipPath(
-                clipper: _TopArcClipper(),
+                clipper: _TopArcClipper(arcStart: sh(60)),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    height: 240, // Increased height for better gradient spread
+                    height: sh(340), // Fully raised to red arc line
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -141,18 +142,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at top
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.8), // Smooth transition
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.3), // More visibility at upper part
                           const Color(0xFFFAF9F6), // Opaque at bottom
                         ],
-                        stops: const [0.0, 0.4, 1.0],
+                        stops: const [0.0, 0.3, 0.6],
                       ),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 50), // Positioned clearly on the opaque part
-                child: _buildTextSection(title, subtitle),
+                padding: EdgeInsets.only(bottom: sh(120)), // Title/Subtitle positioned precisely
+                child: _buildTextSection(title, subtitle, sh: sh),
               ),
             ],
           ),
@@ -162,43 +163,47 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // 1. 서재 페이지
-  Widget _buildLibraryPage() {
+  Widget _buildLibraryPage(double Function(double) sh, double Function(double) sw) {
     return _buildOverlayPage(
       'assets/images/onboarding/page2.png',
       '내 손안의 작은 서재',
       '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.',
+      sh,
     );
   }
 
   // 2. 독서 티켓 페이지
-  Widget _buildTicketPage() {
+  Widget _buildTicketPage(double Function(double) sh, double Function(double) sw) {
     return _buildOverlayPage(
       'assets/images/onboarding/page3.png',
       '함께 읽고 개성을 남기다',
       '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아보세요!',
+      sh,
     );
   }
 
   // 3. 메모 페이지
-  Widget _buildMemoPage() {
+  Widget _buildMemoPage(double Function(double) sh, double Function(double) sw) {
     return _buildOverlayPage(
       'assets/images/onboarding/page4.png',
       '인상적인 문장을 사진과 함께',
       '감명 깊었던 문장과 페이지는 메모탭에 정리해두세요.',
+      sh,
     );
   }
 
   // 4. 통계 페이지
-  Widget _buildGraphPage() {
+  Widget _buildGraphPage(double Function(double) sh, double Function(double) sw) {
     return _buildOverlayPage(
       'assets/images/onboarding/page5.png',
       '나의 독서 취향 발견',
       '나의 독서 취향을 확인해보세요.',
+      sh,
     );
   }
 
   // 5. 도슨트 페이지
-  Widget _buildDocentPage() {
+  Widget _buildDocentPage(double Function(double) sh, double Function(double) sw) {
     return Column(
       children: [
         Expanded(
@@ -207,17 +212,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(
-                  width: 120,
-                  height: 120,
-                  child: FlorenceLoader(),
+                SizedBox(
+                  width: sw(120),
+                  height: sw(120),
+                  child: const FlorenceLoader(),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: sh(32)),
                 Text(
                   '피렌체의 도슨트가\n당신을 위한 이야기를 고르고 있습니다...',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: sh(16),
                     height: 1.8,
                     color: AppColors.charcoal.withValues(alpha: 0.8),
                     fontStyle: FontStyle.italic,
@@ -232,7 +237,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: _buildTextSection(
               '나만의 전담 AI 도슨트',
               '피렌체 도슨트가 책의 시대적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공합니다.',
-              padding: const EdgeInsets.fromLTRB(32, 24, 32, 24)),
+              padding: EdgeInsets.fromLTRB(sh(32), sh(24), sh(32), sh(24)),
+              sh: sh),
         ),
       ],
     );
@@ -240,53 +246,65 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final screenHeight = size.height;
+    final screenWidth = size.width;
+
+    // Scale helpers based on iPhone 15 Pro (393 x 852)
+    double sh(double px) => screenHeight * (px / 852);
+    double sw(double px) => screenWidth * (px / 393);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF9F6),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            const SizedBox(height: 16),
-            Expanded(
+            // 1. Background Content (PageView)
+            Positioned.fill(
+              bottom: sh(100), // Leave some space for global indicator/button
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (index) {
                   setState(() => _currentPage = index);
                 },
                 children: [
-                  _buildWelcomePage(),
-                  _buildLibraryPage(),
-                  _buildTicketPage(),
-                  _buildMemoPage(),
-                  _buildGraphPage(),
-                  _buildDocentPage(),
+                   _buildWelcomePage(sh, sw),
+                   _buildLibraryPage(sh, sw),
+                   _buildTicketPage(sh, sw),
+                   _buildMemoPage(sh, sw),
+                   _buildGraphPage(sh, sw),
+                   _buildDocentPage(sh, sw),
                 ],
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(24, 0, 24, max(8, MediaQuery.of(context).padding.bottom + 8)),
+            // 2. Global Page Indicator & Action Button
+            Positioned(
+              left: sw(24),
+              right: sw(24),
+              bottom: sh(max(8, MediaQuery.of(context).padding.bottom + (_currentPage == 5 ? 8 : 40))),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildPageIndicator(),
+                  _buildPageIndicator(sh, sw),
                   if (_currentPage == 5) ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: sh(16)),
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: sh(56),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.burgundy,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(sh(16)),
                           ),
                           elevation: 0,
                         ),
                         onPressed: _finishOnboarding,
-                        child: const Text(
+                        child: Text(
                           '피렌체 시작하기',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: sh(18),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -305,11 +323,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
 // --- Top Arc Clipper for Blur Overlay ---
 class _TopArcClipper extends CustomClipper<Path> {
+  final double arcStart;
+
+  _TopArcClipper({required this.arcStart});
+
   @override
   Path getClip(Size size) {
     var path = Path();
-    path.moveTo(0, 60); // Start further down for deeper arc
-    path.quadraticBezierTo(size.width / 2, 0, size.width, 60); // More pronounced convex arc
+    path.moveTo(0, arcStart); // Proportional arc start
+    path.quadraticBezierTo(size.width / 2, 0, size.width, arcStart); 
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
     path.close();
@@ -317,7 +339,7 @@ class _TopArcClipper extends CustomClipper<Path> {
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => true;
 }
 
 
