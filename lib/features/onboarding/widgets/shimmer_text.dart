@@ -9,7 +9,7 @@ class ShimmerText extends StatefulWidget {
     super.key,
     required this.text,
     required this.style,
-    this.duration = const Duration(milliseconds: 2500),
+    this.duration = const Duration(milliseconds: 5000),
   });
 
   @override
@@ -55,10 +55,13 @@ class _ShimmerTextState extends State<ShimmerText>
               transform: _SlidingGradientTransform(slidePercent: _controller.value),
             ).createShader(bounds);
           },
-          child: Text(
-            widget.text,
-            style: widget.style.copyWith(color: Colors.white),
-            textAlign: TextAlign.center,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Text(
+              widget.text,
+              style: widget.style.copyWith(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
           ),
         );
       },
