@@ -7,6 +7,7 @@ import '../providers/onboarding_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/florence_loader.dart';
 import '../widgets/shimmer_text.dart';
+import 'dart:ui';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -96,7 +97,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: sh(16)), // Increased spacing between title and subtitle
+          SizedBox(height: sh(6)), // Slightly reduced for more compact layout
           Text(
             subtitle,
             style: TextStyle(
@@ -115,42 +116,44 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildOverlayPage(String imagePath, String title, String subtitle, double Function(double) sh) {
     return Stack(
       children: [
-        // 1. Background Image
+        // 1. Background Image (Restored to larger size and not stuck to top)
         Positioned.fill(
-          top: sh(20),
+          top: sh(20), // Top margin to prevent sticking to ceiling
           child: Container(
-            padding: EdgeInsets.only(bottom: sh(220)), // Increased bottom space for larger overlay
+            padding: EdgeInsets.only(bottom: sh(120)), // Reduced bottom padding to grow image size
             child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
-        // 2. Opacity Overlay at the bottom
+        // 2. Blurred Arc Overlay at the bottom (Optimized proportions)
         Align(
           alignment: Alignment.bottomCenter,
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
               ClipPath(
-                clipper: _TopArcClipper(arcStart: sh(40)),
-                child: Container(
-                  height: sh(340), // Increased to cover bottom comprehensively
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Top: fully transparent
-                        const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Keep transparent until 35%
-                        const Color(0xFFFAF9F6), // Smooth transition to opaque
-                        const Color(0xFFFAF9F6), // Fully opaque at bottom
-                      ],
-                      stops: const [0.0, 0.35, 0.7, 1.0], // Adjusted stops for smoother text coverage
+                clipper: _TopArcClipper(arcStart: sh(40)), // Sleeker arc
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    height: sh(260), // Reduced height to match 4th photo proportion
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at top
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.2), // Very subtle shimmer
+                          const Color(0xFFFAF9F6), // Opaque at bottom
+                        ],
+                        stops: const [0.0, 0.5, 0.9], // Wider transparent section
+                      ),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: sh(140)), // Title/Subtitle positioned on opaque part
+                padding: EdgeInsets.only(bottom: sh(100)), // Adjusted for lower height
                 child: _buildTextSection(title, subtitle, sh: sh),
               ),
             ],
@@ -235,7 +238,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: _buildTextSection(
               '나만의 전담 AI 도슨트',
               '피렌체 도슨트가 책의 시대적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공합니다.',
-              padding: EdgeInsets.fromLTRB(sh(32), sh(8), sh(32), sh(24)),
+              padding: EdgeInsets.fromLTRB(sh(32), sh(24), sh(32), sh(24)),
               sh: sh),
         ),
       ],
@@ -260,7 +263,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             // 1. Background Content (PageView)
             Positioned.fill(
               top: sh(20), // Top padding for whole PageView
-              child: PageView( // Now full screen bottom for seamless overlay
+              bottom: sh(80), // Balanced bottom space
+              child: PageView(
                 controller: _pageController,
                 onPageChanged: (index) {
                   setState(() => _currentPage = index);
