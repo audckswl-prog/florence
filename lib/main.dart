@@ -75,7 +75,7 @@ class FlorenceApp extends ConsumerWidget {
         : AppTheme.lightTheme;
 
     return MaterialApp.router(
-      title: '피렌체 (Florence)',
+      title: '피렌체 (Firenze)',
       theme: theme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,

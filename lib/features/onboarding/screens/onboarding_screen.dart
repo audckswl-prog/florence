@@ -97,7 +97,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: sh(6)), // Slightly reduced for more compact layout
+          SizedBox(height: sh(16)), // Increased for better readability and breathing room
           Text(
             subtitle,
             style: TextStyle(
@@ -130,26 +130,37 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              ClipPath(
-                clipper: _TopArcClipper(arcStart: sh(40)), // Sleeker arc
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    height: sh(300), // Slightly increased to allow smoother fade-out
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent start
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.02), // Very subtle shimmer entry
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.1), // Entering visible range
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.4), // Mid-level coverage
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.8), // Strongly opaque
-                          const Color(0xFFFAF9F6), // 100% opaque at bottom
-                        ],
-                        stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0], // Fine-tuned multi-step fade
+              ShaderMask(
+                shaderCallback: (rect) {
+                  return const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black],
+                    stops: [0.0, 0.4], // Gradual fade-in of the blur effect
+                  ).createShader(rect);
+                },
+                blendMode: BlendMode.dstIn,
+                child: ClipPath(
+                  clipper: _TopArcClipper(arcStart: sh(40)), // Sleeker arc
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      height: sh(300), // Slightly increased to allow smoother fade-out
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent start
+                            const Color(0xFFFAF9F6).withValues(alpha: 0.02), // Very subtle shimmer entry
+                            const Color(0xFFFAF9F6).withValues(alpha: 0.1), // Entering visible range
+                            const Color(0xFFFAF9F6).withValues(alpha: 0.4), // Mid-level coverage
+                            const Color(0xFFFAF9F6).withValues(alpha: 0.8), // Strongly opaque
+                            const Color(0xFFFAF9F6), // 100% opaque at bottom
+                          ],
+                          stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0], // Fine-tuned multi-step fade
+                        ),
                       ),
                     ),
                   ),

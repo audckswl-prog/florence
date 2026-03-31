@@ -81,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               // Logo or Title
               Text(
-                'Florence',
+                'Firenze',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontFamily: 'Serif', // Use a serif font if available
