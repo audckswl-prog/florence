@@ -842,7 +842,7 @@ class _RadarChartPainter extends CustomPainter {
     for (int i = 0; i < sides; i++) {
       final angle = startAngle + angleStep * i;
       final isTop3 = top3Set.contains(i);
-      final labelRadius = radius + 22; // Slightly closer but outside the last grid line
+      final labelRadius = radius + 14;
       final labelPos = Offset(
         center.dx + labelRadius * cos(angle),
         center.dy + labelRadius * sin(angle),
@@ -869,38 +869,31 @@ class _RadarChartPainter extends CustomPainter {
       );
       textPainter.layout();
 
-      // Better alignment based on position relative to center to avoid overlap
-      double xOffset;
-      double yOffset;
-
-      final cosVal = cos(angle);
-      final sinVal = sin(angle);
-
-      // Horizontal alignment:
-      // If noticeably on the right (cos > 0.1), anchor left (text grows right)
-      // If noticeably on the left (cos < -0.1), anchor right (text grows left)
-      // Otherwise (near top/bottom), center it.
-      if (cosVal > 0.1) {
-        xOffset = 0;
-      } else if (cosVal < -0.1) {
-        xOffset = -textPainter.width;
+      // Adjust label offset based on quadrant so text grows outwards
+      double dxOffset = 0;
+      double dyOffset = 0;
+      
+      const threshold = 0.1;
+      final c = cos(angle);
+      final s = sin(angle);
+      
+      if (c > threshold) {
+        dxOffset = 0; // Right side: anchor left
+      } else if (c < -threshold) {
+        dxOffset = -textPainter.width; // Left side: anchor right
       } else {
-        xOffset = -textPainter.width / 2;
+        dxOffset = -textPainter.width / 2; // Center horizontally
+      }
+      
+      if (s > threshold) {
+        dyOffset = 0; // Bottom side: anchor top
+      } else if (s < -threshold) {
+        dyOffset = -textPainter.height; // Top side: anchor bottom
+      } else {
+        dyOffset = -textPainter.height / 2; // Center vertically
       }
 
-      // Vertical alignment:
-      // If noticeably on the bottom (sin > 0.1), anchor top (text grows down)
-      // If noticeably on the top (sin < -0.1), anchor bottom (text grows up)
-      // Otherwise (near left/right), anchor middle.
-      if (sinVal > 0.1) {
-        yOffset = 0;
-      } else if (sinVal < -0.1) {
-        yOffset = -textPainter.height;
-      } else {
-        yOffset = -textPainter.height / 2;
-      }
-
-      final offset = Offset(labelPos.dx + xOffset, labelPos.dy + yOffset);
+      final offset = Offset(labelPos.dx + dxOffset, labelPos.dy + dyOffset);
       textPainter.paint(canvas, offset);
     }
   }
