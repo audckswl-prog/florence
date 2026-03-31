@@ -115,10 +115,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildOverlayPage(String imagePath, String title, String subtitle) {
     return Stack(
       children: [
-        // 1. Background Image (Keep current size but allow overflow/placement)
+        // 1. Background Image
         Positioned.fill(
           child: Container(
-            padding: const EdgeInsets.only(bottom: 120), // Leave some space for text background
+            padding: const EdgeInsets.only(bottom: 60), // Adjusted to let image sit lower
             child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
@@ -131,17 +131,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ClipPath(
                 clipper: _TopArcClipper(),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
                   child: Container(
-                    height: 220,
+                    height: 200,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.7),
-                          const Color(0xFFFAF9F6),
+                          const Color(0xFFFAF9F6), // Top (100% Opaque) - Blends with background
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Bottom (Low opacity) - Reveals image
                         ],
                       ),
                     ),
@@ -149,7 +149,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.only(bottom: 30), // Placing text in the lower low-opacity area
                 child: _buildTextSection(title, subtitle),
               ),
             ],
