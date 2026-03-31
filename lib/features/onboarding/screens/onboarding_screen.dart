@@ -115,15 +115,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildOverlayPage(String imagePath, String title, String subtitle, double Function(double) sh) {
     return Stack(
       children: [
-        // 1. Background Image (Restored to larger size and not stuck to top)
+        // 1. Background Image
         Positioned.fill(
-          top: sh(20), // Top margin to prevent sticking to ceiling
+          top: sh(20),
           child: Container(
-            padding: EdgeInsets.only(bottom: sh(120)), // Reduced bottom padding to grow image size
+            padding: EdgeInsets.only(bottom: sh(220)), // Increased bottom space for larger overlay
             child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
-        // 2. Blurred Arc Overlay at the bottom (Optimized proportions)
+        // 2. Opacity Overlay at the bottom
         Align(
           alignment: Alignment.bottomCenter,
           child: Stack(
@@ -132,24 +132,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ClipPath(
                 clipper: _TopArcClipper(arcStart: sh(40)),
                 child: Container(
-                  height: sh(260),
+                  height: sh(340), // Increased to cover bottom comprehensively
                   width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Transparent until middle
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Transition starts at 60%
-                          const Color(0xFFFAF9F6), // Fully opaque at bottom (1.0)
-                        ],
-                        stops: const [0.0, 0.6, 1.0],
-                      ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Top: fully transparent
+                        const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Keep transparent until 35%
+                        const Color(0xFFFAF9F6), // Smooth transition to opaque
+                        const Color(0xFFFAF9F6), // Fully opaque at bottom
+                      ],
+                      stops: const [0.0, 0.35, 0.7, 1.0], // Adjusted stops for smoother text coverage
                     ),
+                  ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: sh(100)), // Adjusted for lower height
+                padding: EdgeInsets.only(bottom: sh(140)), // Title/Subtitle positioned on opaque part
                 child: _buildTextSection(title, subtitle, sh: sh),
               ),
             ],
@@ -259,8 +260,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             // 1. Background Content (PageView)
             Positioned.fill(
               top: sh(20), // Top padding for whole PageView
-              bottom: sh(80), // Balanced bottom space
-              child: PageView(
+              child: PageView( // Now full screen bottom for seamless overlay
                 controller: _pageController,
                 onPageChanged: (index) {
                   setState(() => _currentPage = index);
