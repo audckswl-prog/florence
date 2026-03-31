@@ -115,10 +115,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _buildOverlayPage(String imagePath, String title, String subtitle) {
     return Stack(
       children: [
-        // 1. Background Image
+        // 1. Background Image (Keep current size but allow overflow/placement)
         Positioned.fill(
           child: Container(
-            padding: const EdgeInsets.only(bottom: 60), // Adjusted to let image sit lower
+            padding: const EdgeInsets.only(bottom: 150), // Increased bottom space for image
             child: Image.asset(imagePath, fit: BoxFit.contain),
           ),
         ),
@@ -131,25 +131,27 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ClipPath(
                 clipper: _TopArcClipper(),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    height: 200,
+                    height: 240, // Increased height for better gradient spread
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          const Color(0xFFFAF9F6), // Top (100% Opaque) - Blends with background
-                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Bottom (Low opacity) - Reveals image
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at top
+                          const Color(0xFFFAF9F6).withValues(alpha: 0.8), // Smooth transition
+                          const Color(0xFFFAF9F6), // Opaque at bottom
                         ],
+                        stops: const [0.0, 0.4, 1.0],
                       ),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 30), // Placing text in the lower low-opacity area
+                padding: const EdgeInsets.only(bottom: 50), // Positioned clearly on the opaque part
                 child: _buildTextSection(title, subtitle),
               ),
             ],
@@ -306,8 +308,8 @@ class _TopArcClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     var path = Path();
-    path.moveTo(0, 40); // Start slightly down
-    path.quadraticBezierTo(size.width / 2, 0, size.width, 40); // Convex arc
+    path.moveTo(0, 60); // Start further down for deeper arc
+    path.quadraticBezierTo(size.width / 2, 0, size.width, 60); // More pronounced convex arc
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
     path.close();
