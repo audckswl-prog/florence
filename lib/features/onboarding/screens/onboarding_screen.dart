@@ -234,7 +234,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: _buildTextSection(
               '나만의 전담 AI 도슨트',
               '피렌체 도슨트가 책의 시대적 배경과 작가에 대한 비하인드 설명을 심도 있게 제공합니다.',
-              padding: EdgeInsets.fromLTRB(sh(32), sh(24), sh(32), sh(24)),
+              padding: EdgeInsets.fromLTRB(sh(32), sh(8), sh(32), sh(24)),
               sh: sh),
         ),
       ],
