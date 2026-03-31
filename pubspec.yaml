@@ -80,7 +80,7 @@ flutter:
   assets:
     - .env
     - assets/images/florence_bg.jpg
-  #   - images/a_dot_burr.jpeg
+    - assets/images/onboarding/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
