@@ -733,7 +733,7 @@ class _RadarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = min(size.width, size.height) / 2 - 36;
+    final radius = min(size.width, size.height) / 2 - 44;
     final sides = genres.length;
     final angleStep = (2 * pi) / sides;
     // Start from top (−π/2)
@@ -848,11 +848,11 @@ class _RadarChartPainter extends CustomPainter {
         center.dy + labelRadius * sin(angle),
       );
 
-      final countText = genreCounts[i] > 0 ? '  ${genreCounts[i]}' : '';
+      final countText = genreCounts[i] > 0 ? '\n${genreCounts[i]}' : '';
       final textSpan = TextSpan(
         text: genres[i] + countText,
         style: TextStyle(
-          fontSize: isTop3 ? 12.5 : 10.5,
+          fontSize: isTop3 ? 12.0 : 10.5,
           fontWeight: isTop3
               ? FontWeight.w900
               : (genreCounts[i] > 0 ? FontWeight.w700 : FontWeight.w400),
@@ -861,37 +861,19 @@ class _RadarChartPainter extends CustomPainter {
               : (genreCounts[i] > 0
                   ? AppColors.charcoal
                   : AppColors.greyLight),
+          height: 1.25,
         ),
       );
       final textPainter = TextPainter(
         text: textSpan,
         textDirection: TextDirection.ltr,
+        textAlign: TextAlign.center,
       );
       textPainter.layout();
 
-      // Adjust label offset based on quadrant so text grows outwards
-      double dxOffset = 0;
-      double dyOffset = 0;
-      
-      const threshold = 0.1;
-      final c = cos(angle);
-      final s = sin(angle);
-      
-      if (c > threshold) {
-        dxOffset = 0; // Right side: anchor left
-      } else if (c < -threshold) {
-        dxOffset = -textPainter.width; // Left side: anchor right
-      } else {
-        dxOffset = -textPainter.width / 2; // Center horizontally
-      }
-      
-      if (s > threshold) {
-        dyOffset = 0; // Bottom side: anchor top
-      } else if (s < -threshold) {
-        dyOffset = -textPainter.height; // Top side: anchor bottom
-      } else {
-        dyOffset = -textPainter.height / 2; // Center vertically
-      }
+      // Ensure text is centered around the anchor, but smoothly pushed outwards
+      final dxOffset = -textPainter.width / 2 + (textPainter.width / 2) * cos(angle);
+      final dyOffset = -textPainter.height / 2 + (textPainter.height / 2) * sin(angle);
 
       final offset = Offset(labelPos.dx + dxOffset, labelPos.dy + dyOffset);
       textPainter.paint(canvas, offset);
