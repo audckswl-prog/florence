@@ -59,9 +59,11 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A), // 배경을 더 어둡게 하여 캔버스 강조
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      appBar: isLandscape
+          ? null
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
         toolbarHeight: 48,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
@@ -141,38 +143,77 @@ class _DrawingCanvasScreenState extends State<DrawingCanvasScreen> {
   }
 
   Widget _buildLandscapeLayout() {
-    return Row(
+    return Stack(
       children: [
-        // Canvas area
-        Expanded(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: _buildCanvasArea(),
+        // 스케치 영역 (가운데 정렬, 남는 공간을 최대로 채움)
+        Align(
+          alignment: Alignment.center,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: _buildCanvasArea(),
+          ),
+        ),
+
+        // 좌측 도구 모음 (플로팅 패널 느낌)
+        Positioned(
+          left: 16,
+          top: 8,
+          bottom: 8,
+          child: Container(
+            width: 72,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: '닫기',
+                ),
+                const Spacer(),
+                _buildUndoButton(),
+                const SizedBox(height: 16),
+                _buildEraserButton(isVertical: true),
+                const SizedBox(height: 16),
+                _buildStrokeWidths(isVertical: true),
+              ],
             ),
           ),
         ),
-        // Vertical tool bar
-        Container(
-          width: 88,
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              _buildUndoButton(),
-              const SizedBox(height: 16),
-              _buildEraserButton(isVertical: true),
-              const SizedBox(height: 16),
-              _buildStrokeWidths(isVertical: true),
-              const Spacer(),
-              ..._palette.map((color) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0),
-                child: _buildColorButton(color),
-              )).toList(),
-            ],
+
+        // 우측 도구 모음 (플로팅 패널 느낌)
+        Positioned(
+          right: 16,
+          top: 8,
+          bottom: 8,
+          child: Container(
+            width: 72,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              children: [
+                TextButton(
+                  onPressed: _saveAndReturn,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: const Text('완료', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+                const Spacer(),
+                ..._palette.map((color) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: _buildColorButton(color),
+                )).toList(),
+              ],
+            ),
           ),
         ),
       ],
