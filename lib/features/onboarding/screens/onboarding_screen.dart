@@ -176,7 +176,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
               Padding(
-                padding: EdgeInsets.only(bottom: sh(95)), // Centered between image (120) and indicators (~80)
+                padding: EdgeInsets.only(bottom: sh(15)), // Adjusted to account for the sh(80) PageView offset
                 child: _buildTextSection(title, subtitle, sh: sh),
               ),
             ],
