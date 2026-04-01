@@ -113,7 +113,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   // --- Overlay Page Builder (Pages 2-5) ---
-  Widget _buildOverlayPage(String imagePath, String title, String subtitle, double Function(double) sh) {
+  Widget _buildOverlayPage(String imagePath, String title, String subtitle, double Function(double) sh, {bool showBlur = true}) {
     return Stack(
       children: [
         // 1. Background Image (Restored to larger size and not stuck to top)
@@ -146,7 +146,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         },
                         blendMode: BlendMode.dstIn,
                         child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50), // Extremely strong blur
+                          filter: ImageFilter.blur(sigmaX: showBlur ? 50 : 0, sigmaY: showBlur ? 50 : 0), // Disable blur if showBlur is false
                           child: Container(
                             height: sh(300),
                             width: double.infinity,
@@ -203,6 +203,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       '함께 읽고 개성을 남기다',
       '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아보세요!',
       sh,
+      showBlur: false, // 3번 페이지만 블러 제거
     );
   }
 
