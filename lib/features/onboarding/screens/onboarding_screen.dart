@@ -191,7 +191,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _buildOverlayPage(
       'assets/images/onboarding/page2.png',
       '내 손안의 작은 서재',
-      '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어보세요.',
+      '읽은 책이 실제 두께에 비례하여 빼곡하게 꽂히는 나만의 책장을 만들어 보세요.',
       sh,
     );
   }
@@ -201,7 +201,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _buildOverlayPage(
       'assets/images/onboarding/page3.png',
       '함께 읽고 개성을 남기다',
-      '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아보세요!',
+      '책을 친구와 함께 읽고, 개성이 담긴 독서 티켓을 받아 보세요!',
       sh,
       showBlur: false, // 3번 페이지만 블러 제거
     );
@@ -212,7 +212,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _buildOverlayPage(
       'assets/images/onboarding/page4.png',
       '인상적인 문장을 사진과 함께',
-      '감명 깊었던 문장과 페이지는 메모탭에 정리해두세요.',
+      '감명 깊었던 문장과 페이지는 메모탭에 정리해 보세요.',
       sh,
     );
   }
@@ -222,7 +222,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _buildOverlayPage(
       'assets/images/onboarding/page5.png',
       '나의 독서 취향 발견',
-      '나의 독서 취향을 확인해보세요.',
+      '나는 어떤 취향을 가졌는지 기록해 드립니다.',
       sh,
     );
   }
