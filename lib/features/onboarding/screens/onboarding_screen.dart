@@ -141,12 +141,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [Colors.transparent, Colors.black, Colors.black],
-                            stops: [0.0, 0.6, 1.0], // More gradual fade-in for the blur
+                            stops: [0.0, 0.4, 1.0], // More rapid fade-in for the blur
                           ).createShader(rect);
                         },
                         blendMode: BlendMode.dstIn,
                         child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18), // Stronger blur
+                          filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50), // Extremely strong blur
                           child: Container(
                             height: sh(300),
                             width: double.infinity,
@@ -164,11 +164,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             end: Alignment.bottomCenter,
                             colors: [
                               const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at peak
-                              const Color(0xFFFAF9F6).withValues(alpha: 0.2), // Early hint of shape
-                              const Color(0xFFFAF9F6).withValues(alpha: 0.8), // Solidifying near text
+                              const Color(0xFFFAF9F6).withValues(alpha: 0.4), // More density early on
+                              const Color(0xFFFAF9F6).withValues(alpha: 0.95), // Nearly solid near text
                               const Color(0xFFFAF9F6), // Fully opaque at bottom
                             ],
-                            stops: const [0.0, 0.3, 0.7, 1.0], // Sync with blur but slightly earlier
+                            stops: const [0.0, 0.2, 0.6, 1.0], // Reaching high density earlier
                           ),
                         ),
                       ),
