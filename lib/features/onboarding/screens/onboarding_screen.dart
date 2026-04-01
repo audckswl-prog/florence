@@ -130,51 +130,52 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              ClipPath(
-                clipper: _TopArcClipper(arcStart: sh(40)), // Arc shape boundary
-                  child: Stack(
-                    children: [
-                      // Layer 1: Gradient Blur Layer
-                      ShaderMask(
-                        shaderCallback: (rect) {
-                          return const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black, Colors.black],
-                            stops: [0.0, 0.4, 1.0], // More rapid fade-in for the blur
-                          ).createShader(rect);
-                        },
-                        blendMode: BlendMode.dstIn,
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: showBlur ? 50 : 0, sigmaY: showBlur ? 50 : 0), // Disable blur if showBlur is false
-                          child: Container(
-                            height: sh(300),
-                            width: double.infinity,
-                            color: Colors.transparent, // Must have a child
+              if (showBlur)
+                ClipPath(
+                  clipper: _TopArcClipper(arcStart: sh(40)), // Arc shape boundary
+                    child: Stack(
+                      children: [
+                        // Layer 1: Gradient Blur Layer
+                        ShaderMask(
+                          shaderCallback: (rect) {
+                            return const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black, Colors.black],
+                              stops: [0.0, 0.4, 1.0], // More rapid fade-in for the blur
+                            ).createShader(rect);
+                          },
+                          blendMode: BlendMode.dstIn,
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50), 
+                            child: Container(
+                              height: sh(300),
+                              width: double.infinity,
+                              color: Colors.transparent, // Must have a child
+                            ),
                           ),
                         ),
-                      ),
-                      // Layer 2: Ivory Tint Layer (provides the shape and text background)
-                      Container(
-                        height: sh(300),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at peak
-                              const Color(0xFFFAF9F6).withValues(alpha: 0.4), // More density early on
-                              const Color(0xFFFAF9F6).withValues(alpha: 0.95), // Nearly solid near text
-                              const Color(0xFFFAF9F6), // Fully opaque at bottom
-                            ],
-                            stops: const [0.0, 0.2, 0.6, 1.0], // Reaching high density earlier
+                        // Layer 2: Ivory Tint Layer (provides the shape and text background)
+                        Container(
+                          height: sh(300),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color(0xFFFAF9F6).withValues(alpha: 0.0), // Fully transparent at peak
+                                const Color(0xFFFAF9F6).withValues(alpha: 0.4), // More density early on
+                                const Color(0xFFFAF9F6).withValues(alpha: 0.95), // Nearly solid near text
+                                const Color(0xFFFAF9F6), // Fully opaque at bottom
+                              ],
+                              stops: const [0.0, 0.2, 0.6, 1.0], // Reaching high density earlier
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
               Padding(
                 padding: EdgeInsets.only(bottom: sh(15)), // Adjusted to account for the sh(80) PageView offset
                 child: _buildTextSection(title, subtitle, sh: sh),
