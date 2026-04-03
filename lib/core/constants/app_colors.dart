@@ -8,7 +8,7 @@ class AppColors {
   ); // Darker shade for neumorphic shadows
 
   // Point Color (Action) - Dark Wine (#751013)
-  static const Color burgundy = Color(0xFF751013);
+  static const Color burgundy = Color(0xFF680F0E);
   static const Color burgundyLight = Color(
     0xFF9A2024,
   ); // Lighter shade for gradients
