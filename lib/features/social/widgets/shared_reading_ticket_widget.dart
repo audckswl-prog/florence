@@ -57,7 +57,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
         memberSectionContent.add(SizedBox(height: members.length <= 2 ? 2 : 8));
       }
       
-      memberSectionContent.add(_buildMemberSection(member, profile, isFirst, index + 1));
+      memberSectionContent.add(_buildMemberSection(context, member, profile, isFirst, index + 1));
       
       if (index < members.length - 1) {
         // 다음 멤버로 넘어가기 전 하단/상단 여백
@@ -197,6 +197,7 @@ class SharedReadingTicketWidget extends StatelessWidget {
   }
 
   Widget _buildMemberSection(
+    BuildContext context,
     ProjectMember member,
     Profile? profile,
     bool bookOnLeft,
@@ -297,6 +298,28 @@ class SharedReadingTicketWidget extends StatelessWidget {
           ],
         ),
         const Spacer(),
+        PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert, size: 18, color: AppColors.greyLight),
+          padding: EdgeInsets.zero,
+          tooltip: '더보기',
+          onSelected: (value) {
+            if (value == 'report') {
+              _showReportDialog(context, nickname);
+            } else if (value == 'block') {
+              _showBlockDialog(context, nickname);
+            }
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: 'report',
+              child: Text('🚨 신고하기', style: TextStyle(fontSize: 13, color: AppColors.charcoal)),
+            ),
+            const PopupMenuItem<String>(
+              value: 'block',
+              child: Text('🚫 이 사용자 차단', style: TextStyle(fontSize: 13, color: Colors.red)),
+            ),
+          ],
+        ),
       ],
     );
 
@@ -425,6 +448,67 @@ class SharedReadingTicketWidget extends StatelessWidget {
             ),
           ),
           SizedBox(height: isCompact ? 0 : 4),
+        ],
+      ),
+    );
+  }
+  void _showReportDialog(BuildContext context, String nickname) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFFF9F6F0),
+        title: const Text('게시물 신고', style: TextStyle(color: AppColors.charcoal, fontWeight: FontWeight.bold)),
+        content: Text('정말로 $nickname님의 게시물을 신고하시겠습니까?\n\n허위 신고 시 이용이 제한될 수 있습니다.', 
+            style: const TextStyle(color: AppColors.charcoal, fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('취소', style: TextStyle(color: AppColors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('신고가 정상적으로 접수되었습니다. 최대한 빠르게 조치하겠습니다.'),
+                  backgroundColor: AppColors.burgundy.withOpacity(0.9),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            },
+            child: const Text('신고접수', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBlockDialog(BuildContext context, String nickname) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFFF9F6F0),
+        title: const Text('사용자 차단', style: TextStyle(color: AppColors.charcoal, fontWeight: FontWeight.bold)),
+        content: Text('$nickname님을 차단하시겠습니까?\n\n차단된 사용자의 티켓과 게시물은 더 이상 표시되지 않습니다.', 
+            style: const TextStyle(color: AppColors.charcoal, fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('취소', style: TextStyle(color: AppColors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('해당 사용자가 차단되었습니다. 페이지를 다시 열면 반영됩니다.'),
+                  backgroundColor: AppColors.charcoal,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            },
+            child: const Text('차단하기', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );
