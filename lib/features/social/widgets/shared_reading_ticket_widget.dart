@@ -297,29 +297,6 @@ class SharedReadingTicketWidget extends StatelessWidget {
             ),
           ],
         ),
-        const Spacer(),
-        PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, size: 18, color: AppColors.greyLight),
-          padding: EdgeInsets.zero,
-          tooltip: '더보기',
-          onSelected: (value) {
-            if (value == 'report') {
-              _showReportDialog(context, nickname);
-            } else if (value == 'block') {
-              _showBlockDialog(context, nickname);
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-            const PopupMenuItem<String>(
-              value: 'report',
-              child: Text('🚨 신고하기', style: TextStyle(fontSize: 13, color: AppColors.charcoal)),
-            ),
-            const PopupMenuItem<String>(
-              value: 'block',
-              child: Text('🚫 이 사용자 차단', style: TextStyle(fontSize: 13, color: Colors.red)),
-            ),
-          ],
-        ),
       ],
     );
 

@@ -152,6 +152,16 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 _buildDivider(),
                 _buildActionTile(
+                  icon: Icons.person_off_outlined,
+                  title: '사용자 신고 및 차단',
+                  subtitle: '불건전한 사용자 신고 및 차단 관리',
+                  onTap: () {
+                    // Navigate to a report/block dialog or screen
+                    _showReportUserDialog(context);
+                  },
+                ),
+                _buildDivider(),
+                _buildActionTile(
                   icon: Icons.campaign_outlined,
                   title: '공지사항',
                   onTap: () {
@@ -492,6 +502,70 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showReportUserDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text(
+            '사용자 신고 및 차단',
+            style: TextStyle(
+              color: AppColors.charcoal,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text(
+                '불쾌감을 주는 콘텐츠를 올리거나 부적절한 사용자를 신고할 수 있습니다. 수집된 신고는 운영 정책에 따라 검토 후 조치됩니다.',
+                style: TextStyle(fontSize: 13, color: AppColors.charcoal, height: 1.4),
+              ),
+              SizedBox(height: 16),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: '신고할 사용자 닉네임',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextField(
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: '신고 사유 작성',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('취소', style: TextStyle(color: AppColors.charcoal)),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('신고 접수', style: TextStyle(color: AppColors.burgundy, fontWeight: FontWeight.bold)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('정상적으로 신고가 접수되었습니다.'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
