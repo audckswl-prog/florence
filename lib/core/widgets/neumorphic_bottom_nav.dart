@@ -18,20 +18,23 @@ class NeumorphicBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80,
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE0E0E0), width: 1.0)),
       ),
       child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(context, 0, Icons.home_rounded, '홈'),
-            _buildNavItem(context, 1, Icons.edit_note_rounded, '메모'),
-            _buildNavItem(context, 2, Icons.auto_stories_rounded, '책 보관함'),
-            _buildNavItem(context, 3, Icons.person_rounded, '마이'),
-          ],
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(context, 0, Icons.home_rounded, '홈'),
+              _buildNavItem(context, 1, Icons.edit_note_rounded, '메모'),
+              _buildNavItem(context, 2, Icons.auto_stories_rounded, '책 보관함'),
+              _buildNavItem(context, 3, Icons.person_rounded, '마이'),
+            ],
+          ),
         ),
       ),
     );
