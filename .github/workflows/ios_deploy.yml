@@ -49,6 +49,9 @@ jobs:
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
+          # set temporary keychain as default
+          security default-keychain -s $KEYCHAIN_PATH
+
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -57,6 +60,10 @@ jobs:
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+
+      - name: Update Xcode Build Settings
+        run: |
+          sed -i '' 's/iPhone Developer/Apple Distribution/g' ios/Runner.xcodeproj/project.pbxproj
 
       - name: Build iOS App
         run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
