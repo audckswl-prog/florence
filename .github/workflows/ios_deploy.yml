@@ -61,9 +61,34 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
-      - name: Update Xcode Build Settings
+      - name: Update Xcode Build Settings and ExportOptions
         run: |
-          sed -i '' 's/iPhone Developer/Apple Distribution/g' ios/Runner.xcodeproj/project.pbxproj
+          # Extract Profile Info
+          MOBILE_PROVISION_XML=$(security cms -D -i "$RUNNER_TEMP/build_pp.mobileprovision")
+          export TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin <<< "$MOBILE_PROVISION_XML")
+          export PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$MOBILE_PROVISION_XML")
+          
+          echo "Extracted Team ID: $TEAM_ID"
+          echo "Extracted Profile Name: $PROFILE_NAME"
+          
+          # Inject to project.pbxproj using python
+          python3 -c "
+          import re, os
+          path = 'ios/Runner.xcodeproj/project.pbxproj'
+          with open(path, 'r') as f: content = f.read()
+          team_id = os.environ.get('TEAM_ID')
+          profile_name = os.environ.get('PROFILE_NAME')
+          replacement = f'CODE_SIGN_STYLE = Manual;\n\t\t\t\tDEVELOPMENT_TEAM = {chr(34)}{team_id}{chr(34)};\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = {chr(34)}{profile_name}{chr(34)};'
+          content = re.sub(r'CODE_SIGN_STYLE = Automatic;', replacement, content)
+          content = re.sub(r'\"iPhone Developer\"', '\"Apple Distribution\"', content)
+          with open(path, 'w') as f: f.write(content)
+          "
+          
+          # Update ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :teamID string $TEAM_ID" ios/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :signingStyle string manual" ios/ExportOptions.plist
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles dict" ios/ExportOptions.plist || true
+          /usr/libexec/PlistBuddy -c "Add :provisioningProfiles:com.audckswl.firenze string $PROFILE_NAME" ios/ExportOptions.plist
 
       - name: Build iOS App
         run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
