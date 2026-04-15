@@ -55,7 +55,7 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
+          security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | sed s/\"//g | grep -v "$KEYCHAIN_PATH")
 
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
@@ -78,8 +78,12 @@ jobs:
           with open(path, 'r') as f: content = f.read()
           team_id = os.environ.get('TEAM_ID')
           profile_name = os.environ.get('PROFILE_NAME')
-          replacement = f'CODE_SIGN_STYLE = Manual;\n\t\t\t\tDEVELOPMENT_TEAM = {chr(34)}{team_id}{chr(34)};\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = {chr(34)}{profile_name}{chr(34)};'
-          content = re.sub(r'CODE_SIGN_STYLE = Automatic;', replacement, content)
+          
+          # Inject settings right after the bundle identifier
+          target = r'PRODUCT_BUNDLE_IDENTIFIER = com\.audckswl\.firenze;'
+          replacement = f'PRODUCT_BUNDLE_IDENTIFIER = com.audckswl.firenze;\n\t\t\t\tCODE_SIGN_STYLE = Manual;\n\t\t\t\tDEVELOPMENT_TEAM = {chr(34)}{team_id}{chr(34)};\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = {chr(34)}{profile_name}{chr(34)};'
+          content = re.sub(target, replacement, content)
+          
           content = re.sub(r'\"iPhone Developer\"', '\"Apple Distribution\"', content)
           with open(path, 'w') as f: f.write(content)
           "
