@@ -42,7 +42,6 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
-    </queries>
 
     <!-- Permissions for Image Picker and Camera (OCR) -->
     <uses-permission android:name="android.permission.CAMERA"/>
