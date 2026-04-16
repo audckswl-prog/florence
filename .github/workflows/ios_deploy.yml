@@ -87,8 +87,19 @@ jobs:
           replacement = f'PRODUCT_BUNDLE_IDENTIFIER = com.audckswl.firenze;\n\t\t\t\tCODE_SIGN_STYLE = Manual;\n\t\t\t\tDEVELOPMENT_TEAM = {chr(34)}{team_id}{chr(34)};\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = {chr(34)}{profile_name}{chr(34)};'
           content = re.sub(target, replacement, content)
           
+          # Fix deployment target for ML Kit compatibility
+          content = re.sub(r'IPHONEOS_DEPLOYMENT_TARGET = [\d\.]+;', 'IPHONEOS_DEPLOYMENT_TARGET = 15.5;', content)
+          
           content = re.sub(r'\"iPhone Developer\"', '\"Apple Distribution\"', content)
           with open(path, 'w') as f: f.write(content)
+          
+          # Fix Podfile target
+          pod_path = 'ios/Podfile'
+          if os.path.exists(pod_path):
+              with open(pod_path, 'r') as f: pod_content = f.read()
+              # Match commented or uncommented platform :ios
+              pod_content = re.sub(r'^#?\s*platform\s+:ios,\s*\'[\d\.]+\'', \"platform :ios, '15.5'\", pod_content, flags=re.MULTILINE)
+              with open(pod_path, 'w') as f: f.write(pod_content)
           "
           
           # Update ExportOptions.plist
