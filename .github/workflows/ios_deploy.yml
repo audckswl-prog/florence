@@ -112,9 +112,16 @@ jobs:
         run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
 
       - name: Upload to TestFlight
-        uses: apple-actions/upload-testflight-build@v1
-        with:
-          app-path: 'build/ios/ipa/florence.ipa' 
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_P8_KEY }}
+        env:
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          P8_KEY_BASE64: ${{ secrets.APPSTORE_P8_KEY }}
+        run: |
+          # Create private keys directory
+          mkdir -p ~/.appstoreconnect/private_keys
+          
+          # Decode the base64 secret back into the original .p8 file
+          echo "$P8_KEY_BASE64" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_$KEY_ID.p8
+          
+          # Upload the app using altool directly
+          xcrun altool --upload-app --file build/ios/ipa/florence.ipa --type ios --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
