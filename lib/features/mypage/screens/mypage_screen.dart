@@ -132,6 +132,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen>
       source: ImageSource.gallery,
       maxWidth: 800,
       maxHeight: 800,
+      imageQuality: 80,
     );
 
     if (pickedFile == null) return;

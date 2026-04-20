@@ -6,7 +6,12 @@ class ImagePickerService {
 
   Future<XFile?> pickImage({required ImageSource source}) async {
     try {
-      final XFile? image = await _picker.pickImage(source: source);
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 2000,
+        maxHeight: 2000,
+        imageQuality: 92,
+      );
       return image;
     } catch (e) {
       // Handle permission errors or other exceptions

@@ -104,7 +104,12 @@ class _AddPhotoMemoScreenState extends ConsumerState<AddPhotoMemoScreen> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? image = await _picker.pickImage(source: source);
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 2000,
+        maxHeight: 2000,
+        imageQuality: 92,
+      );
       if (image == null) return;
 
       final bytes = await image.readAsBytes();
