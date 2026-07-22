@@ -128,4 +128,4 @@ jobs:
           echo "$P8_KEY_BASE64" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_$KEY_ID.p8
           
           # Upload the app using altool directly
-          xcrun altool --upload-app --file build/ios/ipa/florence.ipa --type ios --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+          xcrun altool --upload-app --file build/ios/ipa/florence.ipa --type ios --apple-id "6762153619" --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
