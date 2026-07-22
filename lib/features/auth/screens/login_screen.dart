@@ -5,8 +5,9 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neumorphic_button.dart';
 import '../../../core/widgets/neumorphic_container.dart';
 import '../../../core/widgets/florence_loader.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_providers.dart';
-
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -18,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isSocialLoading = false;
 
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -47,6 +49,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _socialLogin(Future<void> Function() loginMethod) async {
+    setState(() => _isSocialLoading = true);
+    try {
+      await loginMethod();
+      // Navigation is handled by router redirect
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('소셜 로그인 실패: ${_translateAuthError(e.toString())}'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSocialLoading = false);
     }
   }
 
@@ -83,9 +103,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Text(
                 'Firenze',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontFamily: 'Serif', // Use a serif font if available
+                style: GoogleFonts.greatVibes(
                   color: AppColors.burgundy,
+                  fontSize: 56,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -155,6 +175,63 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: TextStyle(color: AppColors.burgundy),
                 ),
               ),
+
+              const SizedBox(height: 32),
+              const Divider(color: Colors.grey),
+              const SizedBox(height: 32),
+
+              // Social Login Options
+              if (_isSocialLoading)
+                const Center(child: FlorenceLoader())
+              else ...[
+                NeumorphicButton(
+                  onPressed: () => _socialLogin(() => ref.read(authRepositoryProvider).signInWithKakao()),
+                  color: const Color(0xFFFEE500),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icon/kakao_logo.svg',
+                        width: 20,
+                        height: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '카카오로 로그인',
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.85),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                NeumorphicButton(
+                  onPressed: () => _socialLogin(() => ref.read(authRepositoryProvider).signInWithGoogle()),
+                  color: Colors.white,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icon/google_logo.svg',
+                        width: 24,
+                        height: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '구글로 로그인',
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.54),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),

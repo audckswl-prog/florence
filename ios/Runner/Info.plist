@@ -45,6 +45,31 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- 카카오 로그인 설정 -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaokompassauth</string>
+		<string>kakaolink</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kakao8e2c6b4d427bc1aa4565a46aaec30474</string>
+				<string>com.googleusercontent.apps.743431634039-29u2u1vkj07ujdbiuke0qki2q8ckgvuv</string>
+			</array>
+		</dict>
+	</array>
+
+	<!-- Google 로그인 설정 -->
+	<key>GIDClientID</key>
+	<string>743431634039-29u2u1vkj07ujdbiuke0qki2q8ckgvuv.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>743431634039-llgo49v3f4f1mshkv0m1dqhk3a41sbsh.apps.googleusercontent.com</string>
 	
 	<!-- Permissions for Image Picker and OCR -->
 	<key>NSPhotoLibraryUsageDescription</key>

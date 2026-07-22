@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 import 'config/router.dart';
 import 'config/theme.dart';
@@ -29,6 +30,22 @@ void main() async {
   await dotenv.load(fileName: ".env").catchError((_) {
     // Web 배포 시엔 .env 파일이 없어도 괜찮음 (--dart-define 사용)
   });
+
+  // Initialize Kakao SDK
+  final kakaoAppKey = const String.fromEnvironment('KAKAO_NATIVE_APP_KEY').isNotEmpty
+      ? const String.fromEnvironment('KAKAO_NATIVE_APP_KEY')
+      : dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
+      
+  final kakaoJsKey = const String.fromEnvironment('KAKAO_JAVASCRIPT_APP_KEY').isNotEmpty
+      ? const String.fromEnvironment('KAKAO_JAVASCRIPT_APP_KEY')
+      : dotenv.env['KAKAO_JAVASCRIPT_APP_KEY'] ?? '';
+  
+  if (kakaoAppKey.isNotEmpty) {
+    KakaoSdk.init(
+      nativeAppKey: kakaoAppKey,
+      javaScriptAppKey: kakaoJsKey.isNotEmpty ? kakaoJsKey : null,
+    );
+  }
 
   // Supabase Credentials
   // 1) --dart-define으로 주입된 값을 우선 사용

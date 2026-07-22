@@ -13,5 +13,5 @@
 - `flutter build appbundle --release` 빌드가 정상적으로 완료되었으며, `build/app/outputs/bundle/release/app-release.aab` 파일이 생성되었습니다 (약 70.2MB).
 
 ## 3. 남은 작업
-- 구글 플레이 콘솔(Google Play Console)에 App Bundle(aab) 업로드 및 내부 테스트/출시 진행.
-- iOS 배포를 위한 설정 및 `flutter build ipa` 진행 (필요 시).
+- ~~구글 플레이 콘솔(Google Play Console)에 App Bundle(aab) 업로드 및 내부 테스트/출시 진행.~~ (프로덕션 정식 출시 완료! 🎉)
+- iOS 배포를 위한 설정 및 `flutter build ipa` 진행.
