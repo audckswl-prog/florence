@@ -60,16 +60,16 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>kakao8e2c6b4d427bc1aa4565a46aaec30474</string>
-				<string>com.googleusercontent.apps.743431634039-29u2u1vkj07ujdbiuke0qki2q8ckgvuv</string>
+				<string>com.googleusercontent.apps.1009821725496-mhd8koitlhaupgfpeprm63ep8g46hmdo</string>
 			</array>
 		</dict>
 	</array>
 
 	<!-- Google 로그인 설정 -->
 	<key>GIDClientID</key>
-	<string>743431634039-29u2u1vkj07ujdbiuke0qki2q8ckgvuv.apps.googleusercontent.com</string>
+	<string>1009821725496-mhd8koitlhaupgfpeprm63ep8g46hmdo.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
-	<string>743431634039-llgo49v3f4f1mshkv0m1dqhk3a41sbsh.apps.googleusercontent.com</string>
+	<string>1009821725496-vsqbamhgdqbfrdrs0fkkoamcoqobr12l.apps.googleusercontent.com</string>
 	
 	<!-- Permissions for Image Picker and OCR -->
 	<key>NSPhotoLibraryUsageDescription</key>

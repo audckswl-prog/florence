@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
@@ -29,9 +31,15 @@ class AuthRepository {
       await _client.auth.signOut();
       // Optionally sign out of Google/Kakao to allow re-selecting accounts
       try {
+        final String webClientId = '1009821725496-vsqbamhgdqbfrdrs0fkkoamcoqobr12l.apps.googleusercontent.com';
+        final String iosClientId = '1009821725496-mhd8koitlhaupgfpeprm63ep8g46hmdo.apps.googleusercontent.com';
+        final String? clientId = kIsWeb 
+            ? webClientId 
+            : (Platform.isIOS || Platform.isMacOS ? iosClientId : null);
+
         await GoogleSignIn(
-          clientId: '743431634039-llgo49v3f4f1mshkv0m1dqhk3a41sbsh.apps.googleusercontent.com',
-          serverClientId: '743431634039-llgo49v3f4f1mshkv0m1dqhk3a41sbsh.apps.googleusercontent.com',
+          clientId: clientId,
+          serverClientId: webClientId,
         ).signOut();
       } catch (_) {}
     } catch (e) {
@@ -41,10 +49,17 @@ class AuthRepository {
 
   Future<void> signInWithGoogle() async {
     try {
+      final String webClientId = '1009821725496-vsqbamhgdqbfrdrs0fkkoamcoqobr12l.apps.googleusercontent.com';
+      final String iosClientId = '1009821725496-mhd8koitlhaupgfpeprm63ep8g46hmdo.apps.googleusercontent.com';
+      
       // 1. Google Native Login
+      final String? clientId = kIsWeb 
+          ? webClientId 
+          : (Platform.isIOS || Platform.isMacOS ? iosClientId : null);
+
       final GoogleSignInAccount? googleUser = await GoogleSignIn(
-        clientId: '743431634039-llgo49v3f4f1mshkv0m1dqhk3a41sbsh.apps.googleusercontent.com',
-        serverClientId: '743431634039-llgo49v3f4f1mshkv0m1dqhk3a41sbsh.apps.googleusercontent.com',
+        clientId: clientId,
+        serverClientId: webClientId,
       ).signIn();
       if (googleUser == null) {
         throw Exception('Google sign-in was canceled.');
