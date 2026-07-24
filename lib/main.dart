@@ -31,14 +31,16 @@ void main() async {
     // Web 배포 시엔 .env 파일이 없어도 괜찮음 (--dart-define 사용)
   });
 
-  // Initialize Kakao SDK
-  final kakaoAppKey = const String.fromEnvironment('KAKAO_NATIVE_APP_KEY').isNotEmpty
+  // Initialize Kakao SDK (GitHub Secrets 누락 방지를 위해 하드코딩 폴백 추가)
+  String kakaoAppKey = const String.fromEnvironment('KAKAO_NATIVE_APP_KEY').isNotEmpty
       ? const String.fromEnvironment('KAKAO_NATIVE_APP_KEY')
       : dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '';
       
-  final kakaoJsKey = const String.fromEnvironment('KAKAO_JAVASCRIPT_APP_KEY').isNotEmpty
+  String kakaoJsKey = const String.fromEnvironment('KAKAO_JAVASCRIPT_APP_KEY').isNotEmpty
       ? const String.fromEnvironment('KAKAO_JAVASCRIPT_APP_KEY')
       : dotenv.env['KAKAO_JAVASCRIPT_APP_KEY'] ?? '';
+      
+  if (kakaoAppKey.isEmpty) kakaoAppKey = '8e2c6b4d427bc1aa4565a46aaec30474';
   
   if (kakaoAppKey.isNotEmpty) {
     KakaoSdk.init(
