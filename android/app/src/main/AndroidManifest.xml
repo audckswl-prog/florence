@@ -52,6 +52,8 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- 카카오톡 앱 설치 여부 확인용 -->
+        <package android:name="com.kakao.talk" />
     </queries>
 
     <!-- Permissions for Image Picker and Camera (OCR) -->
