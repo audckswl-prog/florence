@@ -55,6 +55,7 @@ dependencies:
   google_sign_in: ^6.2.1
   kakao_flutter_sdk_user: ^2.0.0+1
   crypto: ^3.0.7
+  upgrader: ^13.7.0
 
 dev_dependencies:
   flutter_test:

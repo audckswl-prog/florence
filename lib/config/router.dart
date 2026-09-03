@@ -23,6 +23,7 @@ import '../features/social/screens/ai_chat_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import '../features/onboarding/providers/onboarding_provider.dart';
 import '../features/onboarding/screens/onboarding_screen.dart';
+import 'package:upgrader/upgrader.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -97,7 +98,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return ScaffoldWithNavBar(navigationShell: navigationShell);
+          return UpgradeAlert(
+            upgrader: Upgrader(
+              languageCode: 'ko',
+              countryCode: 'KR',
+              dialogStyle: UpgradeDialogStyle.cupertino,
+            ),
+            child: ScaffoldWithNavBar(navigationShell: navigationShell),
+          );
         },
         branches: [
           // Home Branch
