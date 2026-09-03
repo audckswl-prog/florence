@@ -102,8 +102,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             upgrader: Upgrader(
               languageCode: 'ko',
               countryCode: 'KR',
-              dialogStyle: UpgradeDialogStyle.cupertino,
             ),
+            dialogStyle: UpgradeDialogStyle.cupertino,
             child: ScaffoldWithNavBar(navigationShell: navigationShell),
           );
         },
