@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/book_model.dart';
-import '../../core/constants/api_constants.dart';
 
 class AladinService {
   final String ttbKey;

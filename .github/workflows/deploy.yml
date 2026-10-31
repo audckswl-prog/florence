@@ -33,6 +33,8 @@ jobs:
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
           echo "KAKAO_NATIVE_APP_KEY=${{ secrets.KAKAO_NATIVE_APP_KEY }}" >> .env
           echo "KAKAO_JAVASCRIPT_APP_KEY=${{ secrets.KAKAO_JAVASCRIPT_APP_KEY }}" >> .env
+          echo "KAKAO_REST_API_KEY=${{ secrets.KAKAO_REST_API_KEY }}" >> .env
+          echo "NL_API_KEY=${{ secrets.NL_API_KEY }}" >> .env
 
       - name: Install dependencies
         run: flutter pub get

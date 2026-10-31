@@ -56,3 +56,6 @@ test_gemini*.dart
 
 # Flutter plugins file
 .flutter-plugins
+
+# Supabase temp
+supabase/.temp/

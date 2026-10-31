@@ -14,9 +14,12 @@ serve(async (req) => {
   try {
     const { title, author, description } = await req.json();
 
-    if (!title || !author || !description) {
-      throw new Error("Missing required parameters: title, author, description");
+    if (!title) {
+      throw new Error("Missing required parameter: title is required");
     }
+
+    const safeAuthor = author || "저자 미상";
+    const safeDescription = description || "내용 없음";
 
     const prompt = `
 너는 세계 최고의 베스트셀러 편집자이자 매혹적인 스토리텔러야. 
@@ -24,8 +27,8 @@ serve(async (req) => {
 
 [책 정보]
 - 제목: ${title}
-- 저자: ${author}
-- 책 소개: ${description}
+- 저자: ${safeAuthor}
+- 책 소개: ${safeDescription}
 
 [작성 규칙]
 2. [책의 시대와 장르에 따른 맞춤형 분석 지시]
