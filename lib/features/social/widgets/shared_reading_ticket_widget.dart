@@ -205,13 +205,16 @@ class SharedReadingTicketWidget extends StatelessWidget {
   ) {
     final nickname = profile?.nickname ?? 'Member ${member.userId.substring(0, 4)}';
     
-    // 알라딘 API 썸네일 URL을 고화질(cover500)로 자동 변환
+    // 알라딘/카카오 API 썸네일 URL을 고화질(cover500 또는 R500x0)로 자동 변환
     String? highResCover = member.selectedBookCover;
     if (highResCover != null && highResCover.contains('aladin.co.kr')) {
       highResCover = highResCover.replaceAll(
         RegExp(r'coversum|cover150|cover200'),
         'cover500',
       );
+    } else if (highResCover != null &&
+        highResCover.contains('kakaocdn.net/thumb/')) {
+      highResCover = highResCover.replaceAll(RegExp(r'R\d+x\d+'), 'R500x0');
     }
     
     final drawingUrl = member.drawingUrl;

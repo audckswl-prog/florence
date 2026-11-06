@@ -14,13 +14,7 @@ class KakaoBookService {
     if (trimmedQuery.isEmpty) return [];
 
     final encodedQuery = Uri.encodeComponent(trimmedQuery);
-    String urlStr = '$baseUrl?query=$encodedQuery&size=30&page=1';
-
-    if (kIsWeb) {
-      urlStr =
-          'https://api.codetabs.com/v1/proxy/?quest=${Uri.encodeComponent(urlStr)}';
-    }
-
+    final urlStr = '$baseUrl?query=$encodedQuery&size=30&page=1';
     final url = Uri.parse(urlStr);
 
     try {

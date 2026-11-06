@@ -360,7 +360,9 @@ class _SharedReadingTab extends ConsumerWidget {
                 ),
                 child: coverUrl != null && coverUrl.isNotEmpty
                     ? Image.network(
-                        coverUrl.replaceAll('coversum', 'cover200'),
+                        coverUrl.contains('kakaocdn.net/thumb/')
+                            ? coverUrl.replaceAll(RegExp(r'R\d+x\d+'), 'R500x0')
+                            : coverUrl.replaceAll('coversum', 'cover200'),
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Center(
                           child: CustomPaint(
